@@ -1,0 +1,192 @@
+/* General styles */
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #eeeeee;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2 {
+    color: #333;
+    font-weight: bold;
+}
+
+h1 {
+    font-size: 2em;
+    margin-top: 20px;
+}
+
+h2 {
+    font-size: 1.5em;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Home Background */
+.home-background {
+    background: url("{% static 'img/garden.jpg' %}") no-repeat center center;
+    background-size: cover;
+    align-items: center;
+    min-height: 80vh;
+    min-width: 160vh;
+    padding: 80px;
+    text-align: justify-all;
+}
+
+/* Header */
+header {
+    background: white; /* UWM gold */
+    color: black;
+    padding: 10px 0;
+    text-align: center;
+}
+
+header img {
+    max-height: 50px;
+    vertical-align: middle;
+}
+
+/* Navigation Bar */
+.navbar {
+    background-color: #fff;
+    border-bottom: 12px solid #eeeeee;
+    padding: 7px 0;
+}
+
+.navbar .navbar-brand {
+    display: flex;
+    align-items: center;
+}
+
+.navbar .navbar-brand img {
+    max-height: 50px;
+    vertical-align: middle;
+}
+
+.navbar .navbar-brand-text {
+    font-size: 1.5em;
+    font-weight: bolder;
+    margin-left: 15px; /* Adjust this value to move the text further to the right */
+}
+
+.navbar .navbar-brand, .navbar .navbar-nav .nav-link {
+    color: black !important;
+    font-weight: bold;
+}
+
+.navbar-nav .nav-link:hover {
+    background-color: white;
+}
+
+.navbar .navbar-toggler {
+    border: #eeeeee;
+    background-color: #eeeeee;
+    color: black;
+}
+
+.navbar .navbar-toggler-icon {
+    color: black;
+}
+
+.navbar .collapse {
+    justify-content: flex-end;
+}
+
+/* Footer */
+footer {
+    background: transparent;
+    color: black;
+    text-align: center;
+    padding: 20px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #333;
+    border-color: #333;
+    color: white;
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    background-color: white; /* Keep the same color on hover */
+    border-color: white;
+}
+
+.btn-secondary {
+    background-color: #333;
+    border-color: #333;
+    color: white;
+    font-weight: bold;
+}
+
+.btn-secondary:hover {
+    background-color: white; /* Keep the same color on hover */
+    border-color: white;
+}
+
+/* Jumbotron */
+.jumbotron {
+    padding: 2rem 1rem;
+    border-radius: 0.3rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.8); /* Add a semi-transparent background to make text readable */
+}
+
+/* Forms */
+form .alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+/* Links */
+a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Specific Elements */
+.search-form {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.search-form input[type="text"] {
+    width: 300px;
+    padding: 10px;
+}
+
+.search-form button {
+    padding: 10px 20px;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+
+/* Hero Section */
+.jumbotron.bg-white {
+    background-color: #fff;
+}
+
+.jumbotron .lead {
+    color: #666;
+}

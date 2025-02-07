@@ -1,0 +1,33 @@
+{% extends 'basic_generic.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h2>Update Information</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" class="form">
+                {% csrf_token %}
+                <div class="form-group">
+                    {{ form.non_field_errors }}
+                </div>
+                {% for field in form %}
+                    {% if field.name != 'role' %}
+                    <div class="form-group">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {{ field.help_text }}
+                        {{ field.errors }}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                <div class="form-group text-center">
+                    <button type="submit" class="btn btn-primary">Update</button>
+                    <a href="{% url 'user_management:user_list' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

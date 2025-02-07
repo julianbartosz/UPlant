@@ -1,0 +1,89 @@
+{% extends 'basic_generic.html' %}
+
+{% block title %}Send Email{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Send Message</h2>
+    <form method="post" action="{% url 'user_management:send_email' %}" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="subject" class="form-label">Subject</label>
+            <input type="text" class="form-control" id="subject" name="subject" required>
+            <div class="invalid-feedback">
+                Please provide a subject.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="message" class="form-label">Message</label>
+            <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+            <div class="invalid-feedback">
+                Please write a message.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="recipient" class="form-label">Recipient's Email</label>
+            <input type="email" class="form-control" id="recipient" name="recipient">
+            <div class="invalid-feedback">
+                Please provide a valid email.
+            </div>
+        </div>
+
+        <!-- Administrator options -->
+        {% if request.user.is_superuser %}
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="send_to_all" name="send_to_all">
+            <label class="form-check-label" for="send_to_all">Send to all users</label>
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="send_to_all_instructors" name="send_to_all_instructors">
+            <label class="form-check-label" for="send_to_all_instructors">Send to all instructors</label>
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="send_to_all_tas" name="send_to_all_tas">
+            <label class="form-check-label" for="send_to_all_tas">Send to all TAs</label>
+        </div>
+        {% endif %}
+
+        <!-- broken Instructor options -->
+        {% if request.user.role == 'Instructor' %}
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="send_to_all_tas_in_one_course" name="send_to_all_tas_in_one_course">
+            <label class="form-check-label" for="send_to_all_tas_in_one_course">Send to all TAs in one of my courses</label>
+        </div>
+        <div class="mb-3">
+            <label for="course" class="form-label">Course</label>
+            <select class="form-control" id="course" name="course">
+                {% for course in form.course.field.queryset %}
+                    <option value="{{ course.id }}">{{ course.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="send_to_all_tas" name="send_to_all_tas">
+                <label class="form-check-label" for="send_to_all_tas">Send to all TAs in any of my courses</label>
+            </div>
+        {% endif %}
+        
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+</div>
+
+<script>
+    // JavaScript for Bootstrap validation
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+    })();
+</script>
+{% endblock %}

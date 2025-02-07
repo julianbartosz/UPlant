@@ -1,0 +1,52 @@
+<!-- Navigation bar using Bootstrap's navbar component -->
+{% load static %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <img src="{% static 'img/logo.jpg' %}" alt="Logo" class="uwm-logo">
+            <span class="navbar-brand-text">UPlant</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                </li>
+                {% if request.user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'search_select' %}">Search</a>
+                    </li>
+                    {% if request.user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'user_management:user_list' %}">Admin Dashboard</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Quick Actions
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{% url 'user_management:user_list' %}">New Discussion Post</a></li>
+                                <li><a class="dropdown-item" href="{% url 'user_management:user_list' %}">Create Garden</a></li>
+                                <li><a class="dropdown-item" href="{% url 'user_management:user_list' %}">Share Produce</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-link" >Logout</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+

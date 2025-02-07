@@ -1,0 +1,11 @@
+<!-- search_select.html -->
+{% extends 'basic_generic.html' %}
+
+{% block content %}
+    <h2>What would you like to search?</h2>
+    <ul>
+        <li><a href="{% url 'user_management:user_list' %}">Produce Shares</a></li>
+        <li><a href="{% url 'user_management:user_list' %}">Discussions</a></li>
+        <li><a href="{% url 'user_management:user_list' %}">Plant Info</a></li>
+    </ul>
+{% endblock %}
