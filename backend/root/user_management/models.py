@@ -1,3 +1,4 @@
+from datetime import timezone
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -44,8 +45,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(_('first name'), max_length=50)
     last_name = models.CharField(_('last name'), blank=True, null=True, max_length=50)
     role = models.CharField(_('role'), max_length=9, choices=Roles.choices, default=Roles.US)
-    is_active = models.BooleanField(_('active'), default=True)
+    is_active = models.BooleanField(_('active'), default=True) # not needed carryover
     zip_code = models.CharField(_('zip code'), blank=True, null=True, max_length=5, validators=[MinLengthValidator(5)])
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
 
     objects = UserManager()
 
@@ -82,6 +85,7 @@ class Plants(models.Model):
     species = models.CharField(max_length=50)
     variety = models.CharField(blank=True, null=True, max_length=50)
     maturity_time = models.IntegerField() # in number of days
+    is_deleted = models.BooleanField(default=False)
     # possible other attributes
     germination_time = models.IntegerField(blank=True, null=True) # in number of days
     spacing_x = models.IntegerField(blank=True, null=True) # in inches
@@ -129,9 +133,11 @@ class Plants(models.Model):
 
 
 class Gardens(models.Model):
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     size_x = models.IntegerField() # in inches
     size_y = models.IntegerField() # in inches
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
@@ -153,7 +159,7 @@ class Gardens(models.Model):
 class Garden_log(models.Model):
     garden_id = models.ForeignKey(Gardens, on_delete=models.CASCADE)
     plant_id = models.ForeignKey(Plants, on_delete=models.DO_NOTHING)
-    # Note: planted_date should be user entered rather than auto-generated/timestamp.
+    # planted_date should be user entered rather than auto-generated/timestamp.
     planted_date = models.DateField()
     x_coordinate = models.IntegerField() # in inches
     y_coordinate = models.IntegerField() # in inches
@@ -161,7 +167,7 @@ class Garden_log(models.Model):
     class Meta:
         constraints = [
             UniqueConstraint(
-                fields=['id', 'x_coordinate', 'y_coordinate'],
+                fields=['garden_id', 'x_coordinate', 'y_coordinate'],
                 name='unq_plot_space'
             ),
 
@@ -179,3 +185,45 @@ class Garden_log(models.Model):
     def __str__(self):
         return f"garden:{self.garden_id} - plant:{self.plant_id} @ [{self.x_coordinate},{self.y_coordinate}]"
     
+
+class Forums(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    title = models.CharField(max_length=50)
+    body = models.TextField() # don't allow blank
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Forum ID:{self.id}"
+
+
+class Replies(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    forum_id = models.ForeignKey(Forums, on_delete=models.DO_NOTHING)
+    parent_id = models.ForeignKey("self", blank=True, null=True, on_delete=models.DO_NOTHING)
+    # Note: if parent_id is null, its parent is the initial forum post indicated by forum_id
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Reply ID:{self.id}"
+    
+
+class Likes(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    reply_id = models.ForeignKey(Replies, on_delete=models.DO_NOTHING)
+    ld_value = models.BooleanField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=['user_id', 'reply_id'],
+                name='unq_vote'
+            )
+        ]
+
+    def __str__(self):
+        return f"Like ID:{self.id}"
+
