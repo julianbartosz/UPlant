@@ -12,6 +12,7 @@ The Grid dimensions are loaded dynamically to .garden.
   display: flex;    /* Use flexbox to center the garden */
   justify-content: center;  /* Center horizontally */
   align-items: center;      /* Center vertically */
+  background-color: #156082;
 }
 
 .garden {
