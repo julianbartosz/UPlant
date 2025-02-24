@@ -8,6 +8,9 @@ from django.db.models import UniqueConstraint, CheckConstraint, Q
 
 
 class UserManager(BaseUserManager):
+    def get_by_natural_key(self, email):
+        return self.get(**{self.model.USERNAME_FIELD: email})
+
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError(_('The Email must be set'))
@@ -27,9 +30,9 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 class Roles(models.TextChoices):
-    AD = "admin"
-    US = "user"
-    MO = "moderator"
+    AD = "Admin"
+    US = "User"
+    MO = "Moderator"
 
 
 class Sun_levels(models.TextChoices):
@@ -41,13 +44,12 @@ class Sun_levels(models.TextChoices):
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_('email address'), unique=True)
-    user_password = models.CharField(_('password'), max_length=100, blank=True, null=True)
     first_name = models.CharField(_('first name'), max_length=50)
     last_name = models.CharField(_('last name'), blank=True, null=True, max_length=50)
     role = models.CharField(_('role'), max_length=9, choices=Roles.choices, default=Roles.US)
     is_active = models.BooleanField(_('active'), default=True) # not needed carryover
     zip_code = models.CharField(_('zip code'), blank=True, null=True, max_length=5, validators=[MinLengthValidator(5)])
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
     is_deleted = models.BooleanField(default=False)
 
     objects = UserManager()
@@ -63,6 +65,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f"{self.email} id:{self.id}"
 
+    @classmethod
+    def get_by_natural_key(cls, username):
+        return cls.objects.get(**{cls.USERNAME_FIELD: username})
+    
     def get_full_name(self):
         full_name = f'{self.first_name} {self.last_name}'.strip()
         return full_name or self.email

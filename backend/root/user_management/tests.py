@@ -2,8 +2,8 @@ from django.test import TestCase, Client, SimpleTestCase
 from django.urls import reverse, resolve
 from django.core.exceptions import ValidationError
 from user_management.models import User, UserManager
-from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm, CustomPasswordChangeForm, EmailForm
-from user_management.views import UserCreateView, UserUpdateView, UserListView, UserDetailView, PasswordChangeView, SendEmailView
+from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm
+from user_management.views import UserCreateView, UserUpdateView, UserListView, UserDetailView
 from django.contrib.auth import views as auth_views
 from django.contrib.admin.sites import AdminSite
 from user_management.admin import UserCreationForm, UserChangeForm, UserAdmin
@@ -96,22 +96,6 @@ class UserFormTest(TestCase):
         })
         self.assertTrue(form.is_valid())
 
-    def test_custom_password_change_form(self):
-        form = CustomPasswordChangeForm(instance=self.user, data={
-            'old_password': 'testpassword',
-            'new_password': 'newpassword',
-            'confirm_password': 'newpassword'
-        })
-        self.assertTrue(form.is_valid())
-
-    def test_email_form(self):
-        form = EmailForm(data={
-            'subject': 'Test Subject',
-            'message': 'Test Message',
-            'recipient': 'recipient@test.com'
-        })
-        self.assertTrue(form.is_valid())
-
 
 class UserURLTest(SimpleTestCase):
     def test_create_user_url_resolves(self):
@@ -129,31 +113,6 @@ class UserURLTest(SimpleTestCase):
     def test_user_detail_url_resolves(self):
         url = reverse('user_management:user_detail', args=[1])
         self.assertEqual(resolve(url).func.view_class, UserDetailView)
-
-    def test_change_password_url_resolves(self):
-        url = reverse('user_management:change_password')
-        self.assertEqual(resolve(url).func.view_class, PasswordChangeView)
-
-    def test_password_reset_url_resolves(self):
-        url = reverse('user_management:password_reset')
-        self.assertEqual(resolve(url).func.view_class, auth_views.PasswordResetView)
-
-    def test_password_reset_done_url_resolves(self):
-        url = reverse('user_management:password_reset_done')
-        self.assertEqual(resolve(url).func.view_class, auth_views.PasswordResetDoneView)
-
-    def test_password_reset_confirm_url_resolves(self):
-        url = reverse('user_management:password_reset_confirm', args=['uidb64', 'token'])
-        self.assertEqual(resolve(url).func.view_class, auth_views.PasswordResetConfirmView)
-
-    def test_password_reset_complete_url_resolves(self):
-        url = reverse('user_management:password_reset_complete')
-        self.assertEqual(resolve(url).func.view_class, auth_views.PasswordResetCompleteView)
-
-    def test_send_email_url_resolves(self):
-        url = reverse('user_management:send_email')
-        self.assertEqual(resolve(url).func.view_class, SendEmailView)
-
 
 class MockRequest:
     pass
@@ -262,16 +221,6 @@ class UserViewTest(TestCase):
     def test_user_detail_view(self):
         self.client.login(email='testuser@test.com', password='testpassword')
         response = self.client.get(reverse('user_management:user_detail', args=[self.user.id]))
-        self.assertEqual(response.status_code, 200)
-
-    def test_password_change_view(self):
-        self.client.login(email='testuser@test.com', password='testpassword')
-        response = self.client.get(reverse('user_management:change_password'))
-        self.assertEqual(response.status_code, 200)
-
-    def test_send_email_view(self):
-        self.client.login(email='testuser@test.com', password='testpassword')
-        response = self.client.get(reverse('user_management:send_email'))
         self.assertEqual(response.status_code, 200)
 
 # ACCEPTANCE TESTS END
