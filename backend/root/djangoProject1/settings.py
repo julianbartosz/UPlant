@@ -23,6 +23,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'user_management.apps.UserManagementConfig',
     'core.apps.CoreConfig',
     'django_extensions',
@@ -34,6 +39,7 @@ AUTH_USER_MODEL = 'user_management.User'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -103,4 +109,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Email configurations
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 
+# Set SITE_ID
+SITE_ID = 1
+
+# Authentication backends including allauth
+AUTHENTICATION_BACKENDS = (
+    'user_management.backends.EmailBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
 LOGIN_REDIRECT_URL = 'home'
