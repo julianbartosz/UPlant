@@ -2,11 +2,10 @@ from django.test import TestCase, Client, SimpleTestCase
 from django.urls import reverse, resolve
 from django.core.exceptions import ValidationError
 from user_management.models import User, UserManager
-from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm, CustomPasswordChangeForm, EmailForm
-from user_management.views import UserCreateView, UserUpdateView, UserListView, UserDetailView, PasswordChangeView, SendEmailView
+from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm, CustomPasswordChangeForm
+from user_management.views import UserCreateView, UserUpdateView, UserListView, UserDetailView, PasswordChangeView
 from django.contrib.auth import views as auth_views
 from django.contrib.admin.sites import AdminSite
-from user_management.admin import UserCreationForm, UserChangeForm, UserAdmin
 
 #UNIT TESTS
 

@@ -1,4 +1,5 @@
 from datetime import timezone
+import datetime
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -12,8 +13,7 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError(_('The Email must be set'))
         email = self.normalize_email(email)
-        epantherid = email.split('@')[0]
-        user = self.model(email=email, epantherid=epantherid, **extra_fields)
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -41,7 +41,7 @@ class Sun_levels(models.TextChoices):
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_('email address'), unique=True)
-    user_password = models.CharField(_('password'), max_length=100, blank=True, null=True)
+    #user_password = models.CharField(_('password'), max_length=100, blank=True, null=True)
     first_name = models.CharField(_('first name'), max_length=50)
     last_name = models.CharField(_('last name'), blank=True, null=True, max_length=50)
     role = models.CharField(_('role'), max_length=9, choices=Roles.choices, default=Roles.US)
@@ -61,7 +61,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = _('users')
 
     def __str__(self):
-        return f"{self.email} id:{self.id}"
+        return f"{self.email} - ID:{self.id}"
 
     def get_full_name(self):
         full_name = f'{self.first_name} {self.last_name}'.strip()
@@ -84,12 +84,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Plants(models.Model):
     species = models.CharField(max_length=50)
     variety = models.CharField(blank=True, null=True, max_length=50)
-    maturity_time = models.IntegerField() # in number of days
+    maturity_time = models.PositiveIntegerField() # in number of days
     is_deleted = models.BooleanField(default=False)
     # possible other attributes
-    germination_time = models.IntegerField(blank=True, null=True) # in number of days
-    spacing_x = models.IntegerField(blank=True, null=True) # in inches
-    spacing_y = models.IntegerField(blank=True, null=True) # in inches
+    germination_time = models.PositiveIntegerField(blank=True, null=True) # in number of days
+    spacing_x = models.PositiveIntegerField(blank=True, null=True) # in inches
+    spacing_y = models.PositiveIntegerField(blank=True, null=True) # in inches
     sun_level = models.CharField(blank=True, null=True, max_length=13, choices=Sun_levels.choices)
     planting_depth = models.DecimalField(blank=True, null=True, max_digits=4, decimal_places=2) # in inches
     water_req = models.DecimalField(blank=True, null=True, max_digits=4, decimal_places=2) # in inches
@@ -97,26 +97,6 @@ class Plants(models.Model):
 
     class Meta:
         constraints = [
-            CheckConstraint(
-                check = Q(maturity_time__gte=0), 
-                name = 'check_maturity_pos',
-            ),
-
-            CheckConstraint(
-                check = Q(germination_time__gte=0 or Q(germination_time__isnull=True)), 
-                name = 'check_germ_pos',
-            ),
-
-            CheckConstraint(
-                check = Q(spacing_x__gte=0 or Q(spacing_x__isnull=True)), 
-                name = 'check_spacing_x_pos',
-            ),
-
-            CheckConstraint(
-                check = Q(spacing_y__gte=0 or Q(spacing_y__isnull=True)), 
-                name = 'check_spacing_y_pos',
-            ),
-
             CheckConstraint(
                 check = Q(planting_depth__gte=0 or Q(planting_depth__isnull=True)), 
                 name = 'check_depth_pos',
@@ -134,8 +114,8 @@ class Plants(models.Model):
 
 class Gardens(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    size_x = models.IntegerField() # in inches
-    size_y = models.IntegerField() # in inches
+    size_x = models.PositiveIntegerField() # in inches
+    size_y = models.PositiveIntegerField() # in inches
     created_at = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
 
@@ -153,37 +133,33 @@ class Gardens(models.Model):
         ]
     
     def __str__(self):
-        return f"user id:{self.user_id} - size:{self.size_x}x{self.size_y}"
+        return f"user id:{self.user_id.id} - size:{self.size_x}x{self.size_y}"
 
 
 class Garden_log(models.Model):
     garden_id = models.ForeignKey(Gardens, on_delete=models.CASCADE)
     plant_id = models.ForeignKey(Plants, on_delete=models.DO_NOTHING)
-    # planted_date should be user entered rather than auto-generated/timestamp.
-    planted_date = models.DateField()
-    x_coordinate = models.IntegerField() # in inches
-    y_coordinate = models.IntegerField() # in inches
+    planted_date = models.DateField(default=datetime.date.today) # note user-entered
+    x_coordinate = models.PositiveIntegerField() # in inches
+    y_coordinate = models.PositiveIntegerField() # in inches
 
     class Meta:
         constraints = [
             UniqueConstraint(
                 fields=['garden_id', 'x_coordinate', 'y_coordinate'],
                 name='unq_plot_space'
-            ),
-
-            CheckConstraint(
-                check = Q(x_coordinate__gte=0), 
-                name = 'check_x_coor_pos',
-            ),
-
-            CheckConstraint(
-                check = Q(y_coordinate__gte=0), 
-                name = 'check_y_coor_pos',
-            ),
+            )
         ]
     
     def __str__(self):
-        return f"garden:{self.garden_id} - plant:{self.plant_id} @ [{self.x_coordinate},{self.y_coordinate}]"
+        return f"garden:{self.garden_id.id} - plant:({self.plant_id}) @ [{self.x_coordinate},{self.y_coordinate}]"
+    
+    def is_in_bounds(self):
+        record = Gardens.objects.get(pk=self.garden_id.id)
+        if record.size_x < self.x_coordinate or record.size_y < self.y_coordinate:
+            return False
+        else:
+            return True
     
 
 class Forums(models.Model):
@@ -199,7 +175,7 @@ class Forums(models.Model):
 
 class Replies(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    forum_id = models.ForeignKey(Forums, on_delete=models.DO_NOTHING)
+    forum_id = models.ForeignKey(Forums, on_delete=models.DO_NOTHING) # maybe cascade
     parent_id = models.ForeignKey("self", blank=True, null=True, on_delete=models.DO_NOTHING)
     # Note: if parent_id is null, its parent is the initial forum post indicated by forum_id
     body = models.TextField()
@@ -212,7 +188,7 @@ class Replies(models.Model):
 
 class Likes(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    reply_id = models.ForeignKey(Replies, on_delete=models.DO_NOTHING)
+    reply_id = models.ForeignKey(Replies, on_delete=models.CASCADE)
     ld_value = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True)
 
