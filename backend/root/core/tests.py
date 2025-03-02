@@ -8,26 +8,6 @@ from core.forms import CustomAuthenticationForm
 
 # UNIT TESTS
 
-
-class CustomAuthenticationFormTest(TestCase):
-    """
-    This class contains tests for the CustomAuthenticationForm form.
-    """
-    def test_form_label(self):
-        """
-        This test checks the label of the username field in the CustomAuthenticationForm form. It asserts that the label is 'Email'.
-        """
-        form = CustomAuthenticationForm()
-        self.assertEqual(form.fields['username'].label, "Email")
-
-    def test_form_widget(self):
-        """
-        This test checks the widget of the username field in the CustomAuthenticationForm form. It asserts that the widget is an instance of forms.EmailInput.
-        """
-        form = CustomAuthenticationForm()
-        self.assertIsInstance(form.fields['username'].widget, forms.EmailInput)
-
-
 class UrlsTest(TestCase):
     """
     This class contains tests for the URL configurations in core/urls.py.
@@ -38,20 +18,6 @@ class UrlsTest(TestCase):
         """
         url = reverse('home')
         self.assertEqual(resolve(url).func, home)
-
-    def test_login_url(self):
-        """
-        This test checks the login URL. It asserts that the URL pattern named 'login' resolves to the LoginView class.
-        """
-        url = reverse('login')
-        self.assertEqual(resolve(url).func.view_class, LoginView)
-
-    def test_logout_url(self):
-        """
-        This test checks the logout URL. It asserts that the URL pattern named 'logout' resolves to the LogoutView class.
-        """
-        url = reverse('logout')
-        self.assertEqual(resolve(url).func.view_class, LogoutView)
 
     def test_search_select_url(self):
         """

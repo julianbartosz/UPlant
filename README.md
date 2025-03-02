@@ -97,6 +97,18 @@ Example use for shell: resetting a user's password (your own if you bug the app)
 
   ```
 
+  To print out the file structure, navigate to the project file and run the commands below.
+
+  ```
+tree -I '__pycache__|migrations|venv|node_modules'
+
+  ```
+or
+  ```
+find . -maxdepth 5 -type d \( -name '__pycache__' -o -name 'migrations' -o -name 'venv' -o -name 'node_modules' -o -name '.git' \) -prune -o -print
+
+  ```
+
 ## Testing
 
 To run the tests, use the following command:
