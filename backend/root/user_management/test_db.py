@@ -10,9 +10,7 @@ class CommonUsers(TestCase):
         # add a user entry
         self.test_user = User.objects.create(
             email = "test@gmail.com",
-            #user_password = "123",
-            first_name = "first",
-            last_name = "last",
+            username = "first",
             role = "user",
             zip_code = "53211"
         )
@@ -42,6 +40,7 @@ class CommonGardens(CommonUsers):
         # add a garden entry
         self.test_garden = Gardens.objects.create(
             user_id = self.test_user,
+            name = "test garden",
             size_x = 1,
             size_y = 1
         )
@@ -126,7 +125,6 @@ class CommonLikes(CommonReplies):
 
 # SCHEMA CODE TESTS:
 # These are safety tests to ensure that models code was implemented according to vision
-# (Note that these are not unit tests)
 class UserSchema(CommonUsers):
     # create one user
     def test_add_user(self):
@@ -140,7 +138,7 @@ class PlantsSchema(CommonPlants):
     
     # catches violation of maturity time >= 0
     # (note: also works as a check for all other >= 0 constraints)
-    # use: tracked validity through swap of constraint for data type
+    # use: tracked validity through swap of constraint for new data type
     def test_maturity_constraint(self):
         with self.assertRaises(IntegrityError, msg="negative value failed to raise error"):
             Plants.objects.create(
@@ -273,7 +271,7 @@ class PlantsUnit(CommonPlants):
 
 class GardensUnit(CommonGardens):
     def test_gardens_string(self):
-        self.assertEqual("user id:1 - size:1x1", self.test_garden.__str__(), "Gardens string representation is incorrect")
+        self.assertEqual("garden id:1 - size:1x1", self.test_garden.__str__(), "Gardens string representation is incorrect")
 
 
 class Garden_logUnit(CommonLogs):
