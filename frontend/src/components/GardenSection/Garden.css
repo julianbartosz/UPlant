@@ -1,0 +1,69 @@
+/* Garden.css */
+
+/* NOTES: 
+
+The Cells of the garden are made square by the .garden class being square because of how grid-display works.
+The Grid dimensions are loaded dynamically to .garden.
+*/
+
+.container {
+  width: 100%;      /* You can set a specific width, or it can be responsive */
+  height: 100%;     /* You can set a specific height, or make it flexible */
+  display: flex;    /* Use flexbox to center the garden */
+  justify-content: center;  /* Center horizontally */
+  align-items: center;      /* Center vertically */
+  background: linear-gradient(to bottom,  #156082, rgb(83, 118, 83));
+  border-radius: 10px 0 0 0;
+}
+
+.garden {
+  padding: 30px;
+  background-color: lightgreen;
+  border-radius: 8px;
+
+  display: grid;
+  gap: 5px;  /* Space between the grid cells */
+  
+  /* Ensure that the garden container is a square */
+  width: 50vw;
+  height: 50vw;
+  
+  position: relative;
+
+  /* Avoid overflow */
+  max-width: 70%;  
+  max-height: 70%;  
+}
+
+.row {
+    display: contents;  /* Ensure the row doesn't add extra spacing */
+}
+  
+.square {
+  background-color: darkgreen;
+  border: 1px solid black;
+  width: 100%;  /* Make each square fill the grid cell */
+  height: 100%; /* Ensure the height matches the width for a square shape */
+  display: flex;
+  justify-content: center; /* Center the text horizontally */
+  align-items: center;     /* Center the text vertically */
+  overflow: hidden;        /* Prevent text from stretching the square */
+}
+
+.garden-bar {
+  margin-left: 20px;
+  position: absolute;
+  width: 100%;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+
+.garden-bar-item {
+  margin: 0 10px;
+  color: none;
+  margin-top: 30px;
+}

@@ -1,35 +1,40 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import './App.css'
+import Login from './pages/Login.jsx';
+import Garden from './components/GardenSection/Garden'
+import NavBar from './components/NavBarSection/NavBar';
+import SearchPlants from './components/SearchSection/SearchPlants'
+
+<Route path="/login" element={<Login />} />
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  // TODO: Retrieve user info and authentication token from login redirect
+  const username = "Johnny Appleseed";
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className='app' style={{ backgroundColor: 'white', width: '100vw', height: '100vh', position: 'relative' }}>
+      <NavBar username={username} />
+      <DndProvider backend={HTML5Backend}>
+        <div className="sidebar" style={{
+          position: 'fixed', top: '60px', left: 0, width: '200px', height: 'calc(100vh - 60px)',
+          background: 'linear-gradient(to right, rgb(152, 152, 152),rgb(65, 64, 64))', padding: '10px', zIndex: 5
+          , borderRadius: '0 10px 0 0'
+        }}>
+          <SearchPlants username={username} />
+        </div>
+        <div  style={{
+          position: 'fixed', top: '60px', left: '240px', width: 'calc(100vw - 200px)',
+          height: 'calc(100vh - 60px)', background: 'white',
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+        }}>
+          <Garden username={username} />
+        </div>
+      </DndProvider>
+    </div>
   )
 }
 
-export default App
+export default App;
