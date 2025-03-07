@@ -207,9 +207,15 @@ class Replies(models.Model):
     def __str__(self):
         return f"Reply ID:{self.id}"
 
-    ld_value = models.BooleanField()
+    
+class Likes(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    reply_id = models.ForeignKey(Replies, on_delete=models.CASCADE)
+    ld_value = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    ld_value = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
     class Meta:
         verbose_name = _('like')
         verbose_name_plural = _('likes')
