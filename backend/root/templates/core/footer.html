@@ -1,0 +1,44 @@
+{% load static %}
+<footer class="footer bg-dark mt-auto py-3">
+  <div class="container">
+    <!-- First row with navigation links (left) and social media links (right) -->
+    <div class="row align-items-center mb-3">
+      <!-- Left section: Navigation links -->
+      <div class="col-md-6 text-md-start">
+        <a href="{% url 'home' %}" class="text-muted me-3">About</a>
+        <a href="{% url 'home' %}" class="text-muted me-3">Privacy</a>
+        <a href="{% url 'home' %}" class="text-muted me-3">Help</a>
+        <a href="{% url 'home' %}" class="text-muted me-3">Terms</a>
+        <a href="{% url 'home' %}" class="text-muted">Contact</a>
+      </div>
+      
+      <!-- Right section: Social media links -->
+      <div class="col-md-6 text-md-end">
+        <a href="https://instagram.com" target="_blank" class="text-muted me-3">
+          <img src="{% static 'img/instagram-icon.png' %}" alt="Instagram" height="24">
+        </a>
+        <a href="https://twitter.com" target="_blank" class="text-muted me-3">
+          <img src="{% static 'img/twitter-icon.png' %}" alt="Twitter" height="24">
+        </a>
+        <a href="https://facebook.com" target="_blank" class="text-muted me-3">
+          <img src="{% static 'img/facebook-icon.png' %}" alt="Facebook" height="24">
+        </a>
+        <a href="https://tiktok.com" target="_blank" class="text-muted me-3">
+          <img src="{% static 'img/tiktok-icon.png' %}" alt="TikTok" height="24">
+        </a>
+        <a href="https://youtube.com" target="_blank" class="text-muted">
+          <img src="{% static 'img/youtube-icon.png' %}" alt="YouTube" height="24">
+        </a>
+      </div>
+    </div>
+    
+    <!-- Second row with copyright info -->
+    <div class="row">
+      <div class="col-md-12 text-md-start">
+        <p class="mb-0 text-muted">
+          &copy; {% now "Y" %} UPlant. Plant data from Trefle.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>

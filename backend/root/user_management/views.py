@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, ListView, DetailView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm
+from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm, CustomPasswordChangeForm
 from user_management.models import User
 from django.core.mail import send_mail
 from django.db.models import Q, Count
@@ -63,4 +63,21 @@ class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
-    
+
+class PasswordChangeView(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = CustomPasswordChangeForm
+    template_name = 'user_management/change_password.html'
+    success_url = reverse_lazy('core:login')
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def form_valid(self, form):
+        user = self.request.user
+        if user.check_password(form.cleaned_data['old_password']):
+            user.set_password(form.cleaned_data['new_password'])
+            user.save()
+            return super().form_valid(form)
+        form.add_error(None, 'Old password is incorrect')
+        return self.form_invalid(form)

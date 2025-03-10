@@ -1,3 +1,32 @@
+import django
+from django.utils.encoding import force_str
+import datetime
+
+import django.utils.encoding
+django.utils.encoding.smart_text = force_str
+django.utils.encoding.force_text = force_str
+
+# Patch timezone utc attribute missing in Django 4.2 for DRF compatibility
+from django.utils import timezone
+if not hasattr(timezone, 'utc'):
+    timezone.utc = datetime.timezone.utc
+
+# Patch FieldDoesNotExist for DRF compatibility with Django 4.2
+import django.core.exceptions
+import django.db.models.fields
+django.db.models.fields.FieldDoesNotExist = django.core.exceptions.FieldDoesNotExist
+
+# Patch missing parse_header from django.http.multipartparser
+import cgi
+from django.http import multipartparser
+if not hasattr(multipartparser, 'parse_header'):
+    multipartparser.parse_header = cgi.parse_header
+
+# Patch missing ugettext_lazy by aliasing it to gettext_lazy
+from django.utils.translation import gettext_lazy
+import django.utils.translation
+django.utils.translation.ugettext_lazy = gettext_lazy
+
 import os
 import sys
 from dotenv import load_dotenv
