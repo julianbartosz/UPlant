@@ -1,10 +1,12 @@
+<!-- backend/root/templates/user_management/user_detail.html -->
+
 {% extends 'basic_generic.html' %}
 
 {% block title %}User Detail{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2>{{ user.get_full_name }}</h2>
+    <h2>{{ user.get_full_name }}, {{ user.email }}</h2>
     <div class="card">
         <div class="card-header">
             Profile Information

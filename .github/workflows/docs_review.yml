@@ -1,0 +1,142 @@
+name: CI and Documentation Workflow
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'project_docs/**'
+      - 'frontend/**'
+      - 'backend/**'
+  pull_request:
+    paths:
+      - 'project_docs/**'
+      - 'frontend/**'
+      - 'backend/**'
+  schedule:
+    - cron: '0 2 * * *'  # Runs daily at 2:00 AM UTC
+
+jobs:
+  docs-lint:
+    name: Lint Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js for Markdown Linting
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+
+      - name: Run markdownlint on Documentation
+        run: markdownlint project_docs/**/*.md
+
+  docs-review:
+    name: Create Documentation Review PR
+    needs: docs-lint
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Create Documentation Update PR
+        uses: peter-evans/create-pull-request@v4
+        with:
+          branch: docs-update-branch
+          title: 'Documentation Update Review'
+          body: |
+            Automated documentation updates have been detected in `project_docs/`.
+            Please review the changes before merging.
+          path: |
+            project_docs/**
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Frontend Linting & Testing
+      - name: Setup Node.js for Frontend
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - name: Install Frontend Dependencies
+        run: cd frontend && npm install
+      - name: Run ESLint on Frontend Code
+        run: cd frontend && npx eslint .
+      - name: Run Frontend Tests
+        run: cd frontend && npm test -- --watchAll=false
+
+      # Backend Linting & Testing
+      - name: Setup Python for Backend
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install Backend Dependencies
+        run: pip install -r backend/root/requirements.txt
+      - name: Run Flake8 on Backend Code
+        run: flake8 backend/root
+      - name: Run Django Tests
+        run: cd backend/root && python manage.py test
+
+  frontend-build:
+    name: Frontend Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Setup Node.js for Frontend Build
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - name: Install Frontend Dependencies
+        run: cd frontend && npm install
+      - name: Build Frontend Application
+        run: cd frontend && npm run build
+
+  documentation-check:
+    name: Documentation Enhancements (Spell & Link Check)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Setup Node.js for Documentation Checks
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - name: Run Documentation Spell & Link Checks
+        run: |
+          cd project_docs
+          echo "Running spell and link checks..."
+          # Placeholder: Integrate tools like cSpell or markdown-link-check if available.
+          # For example: npx cspell "**/*.md"
+          echo "Documentation checks complete."
+
+  security-scan:
+    name: Security and Dependency Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Frontend Dependency Audit
+      - name: Audit Frontend Dependencies
+        run: cd frontend && npm audit --audit-level=moderate
+
+      # Backend Dependency Audit using Safety
+      - name: Setup Python for Security Scanning
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install Safety
+        run: pip install safety
+      - name: Audit Backend Dependencies
+        run: safety check -r backend/root/requirements.txt

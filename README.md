@@ -97,6 +97,18 @@ Example use for shell: resetting a user's password (your own if you bug the app)
 
   ```
 
+  To print out the file structure, navigate to the project file and run the commands below.
+
+  ```
+tree -I '__pycache__|migrations|venv|node_modules'
+
+  ```
+or
+  ```
+find . -maxdepth 5 -type d \( -name '__pycache__' -o -name 'migrations' -o -name 'venv' -o -name 'node_modules' -o -name '.git' \) -prune -o -print
+
+  ```
+
 ## Testing
 
 To run the tests, use the following command:
@@ -112,14 +124,20 @@ Run Tests with Coverage
   coverage report
   ```
 
-## Managing Static Files
+## Managing Static/Requirement Files
 
 To collect static files into the STATIC_ROOT directory, run the following command:
 
   ```
   python manage.py collectstatic
   ```
+  
+Grab current requirements.
 
+  ```
+  pip freeze > requirements_complete.txt
+  ```
+  
 ## Access the Admin Panel
 
 To access the Django admin interface, navigate to http://127.0.0.1:8000/admin and log in using the superuser credentials you created earlier.

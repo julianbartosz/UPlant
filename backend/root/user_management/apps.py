@@ -1,3 +1,5 @@
+# backend/root/user_management/apps.py
+
 from django.apps import AppConfig
 
 

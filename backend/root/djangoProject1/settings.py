@@ -1,3 +1,5 @@
+# backend/root/djangoProject1/settings.py
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -23,6 +25,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'user_management.apps.UserManagementConfig',
     'core.apps.CoreConfig',
     'django_extensions',
@@ -34,6 +41,7 @@ AUTH_USER_MODEL = 'user_management.User'
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -72,7 +80,9 @@ DATABASES = {
         'HOST': os.getenv('DATABASE_HOST'),
         'PORT': os.getenv('DATABASE_PORT', '3306'),
         'OPTIONS': {
-            'ssl': {'ca': os.getenv('SSL_CERT')}
+            'ssl': {'ca': os.path.expanduser('~/DigiCertGlobalRootCA.crt.pem')},
+            'charset': 'utf8mb4',
+            'auth_plugin': 'caching_sha2_password',  # Changed from mysql_clear_password
         }
     }
 }
@@ -110,4 +120,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Email configurations
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 
+# Set SITE_ID
+SITE_ID = 1
+
+# Authentication backends including allauth
+AUTHENTICATION_BACKENDS = (
+    'user_management.backends.EmailBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+ACCOUNT_LOGIN_METHOD = 'email'
+ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username'
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
 LOGIN_REDIRECT_URL = 'home'

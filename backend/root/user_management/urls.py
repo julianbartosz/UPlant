@@ -1,3 +1,5 @@
+# backend/root/user_management/urls.py
+
 from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
 from user_management.views import UserCreateView, UserUpdateView, UserListView, UserDetailView, PasswordChangeView, UserDeleteView
@@ -7,7 +9,7 @@ urlpatterns = [
     path('update/<int:pk>/', UserUpdateView.as_view(), name='update_user'),
     path('', UserListView.as_view(), name='user_list'),
     path('user/<int:pk>/', UserDetailView.as_view(), name='user_detail'),
-    path('delete/<int:pk>/', UserDeleteView.as_view(), name='user_confirm_delete'),  # Added delete path
+    path('delete/<int:pk>/', UserDeleteView.as_view(), name='user_confirm_delete'),
     path('change-password/', PasswordChangeView.as_view(), name='change_password'),
     path('password_reset/', auth_views.PasswordResetView.as_view(
         template_name='user_management/email/password_reset_form.html',

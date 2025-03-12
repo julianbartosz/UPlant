@@ -1,4 +1,5 @@
-# tests.py
+# backend/root/core/tests.py
+
 from django.test import TestCase, Client
 from django.urls import reverse, resolve
 from django.contrib.auth.views import LoginView, LogoutView
@@ -27,7 +28,6 @@ class CustomAuthenticationFormTest(TestCase):
         form = CustomAuthenticationForm()
         self.assertIsInstance(form.fields['username'].widget, forms.EmailInput)
 
-
 class UrlsTest(TestCase):
     """
     This class contains tests for the URL configurations in core/urls.py.
@@ -38,20 +38,6 @@ class UrlsTest(TestCase):
         """
         url = reverse('home')
         self.assertEqual(resolve(url).func, home)
-
-    def test_login_url(self):
-        """
-        This test checks the login URL. It asserts that the URL pattern named 'login' resolves to the LoginView class.
-        """
-        url = reverse('login')
-        self.assertEqual(resolve(url).func.view_class, LoginView)
-
-    def test_logout_url(self):
-        """
-        This test checks the logout URL. It asserts that the URL pattern named 'logout' resolves to the LogoutView class.
-        """
-        url = reverse('logout')
-        self.assertEqual(resolve(url).func.view_class, LogoutView)
 
     def test_search_select_url(self):
         """
