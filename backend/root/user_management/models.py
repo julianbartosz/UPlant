@@ -1,3 +1,5 @@
+# backend/root/user_management/models.py
+
 from datetime import timezone
 import datetime
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -48,7 +50,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     role = models.CharField(_('role'), max_length=9, choices=Roles.choices, default=Roles.US)
     zip_code = models.CharField(_('zip code'), blank=True, null=True, max_length=5, validators=[MinLengthValidator(5)])
     created_at = models.DateTimeField(default=datetime.datetime.now, verbose_name='created at')
-    is_deleted = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     objects = UserManager()
 

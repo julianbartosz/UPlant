@@ -1,3 +1,5 @@
+// frontend/src/components/SearchSection/SearchPlants.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
 import './SearchPlants.css';

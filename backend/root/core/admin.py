@@ -1,2 +1,1 @@
-
-# Register your models here.
+# backend/root/core/admin.py

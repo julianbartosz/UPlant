@@ -1,3 +1,5 @@
+# backend/root/djangoProject1/settings.py
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -71,8 +73,17 @@ WSGI_APPLICATION = 'djangoProject1.wsgi.application'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / os.getenv('DATABASE_NAME', 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DATABASE_NAME'),
+        'USER': os.getenv('DATABASE_USER'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': os.getenv('DATABASE_HOST'),
+        'PORT': os.getenv('DATABASE_PORT', '3306'),
+        'OPTIONS': {
+            'ssl': {'ca': os.path.expanduser('~/DigiCertGlobalRootCA.crt.pem')},
+            'charset': 'utf8mb4',
+            'auth_plugin': 'caching_sha2_password',  # Changed from mysql_clear_password
+        }
     }
 }
 

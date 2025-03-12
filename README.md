@@ -124,14 +124,20 @@ Run Tests with Coverage
   coverage report
   ```
 
-## Managing Static Files
+## Managing Static/Requirement Files
 
 To collect static files into the STATIC_ROOT directory, run the following command:
 
   ```
   python manage.py collectstatic
   ```
+  
+Grab current requirements.
 
+  ```
+  pip freeze > requirements_complete.txt
+  ```
+  
 ## Access the Admin Panel
 
 To access the Django admin interface, navigate to http://127.0.0.1:8000/admin and log in using the superuser credentials you created earlier.

@@ -1,4 +1,5 @@
-# tests.py
+# backend/root/core/tests.py
+
 from django.test import TestCase, Client
 from django.urls import reverse, resolve
 from django.contrib.auth.views import LoginView, LogoutView

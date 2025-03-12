@@ -1,3 +1,5 @@
+# backend/root/manage.py
+
 import django
 from django.utils.encoding import force_str
 import datetime

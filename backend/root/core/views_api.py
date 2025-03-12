@@ -1,4 +1,5 @@
-# core/views_api.py
+# backend/root/core/views_api.py
+
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from user_management.models import Plants

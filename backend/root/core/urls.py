@@ -1,4 +1,5 @@
-# urls.py
+# backend/root/core/urls.py
+
 from django.urls import path, include
 from . import views
 from django.contrib.auth.views import LoginView, LogoutView

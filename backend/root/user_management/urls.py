@@ -1,3 +1,5 @@
+# backend/root/user_management/urls.py
+
 from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
 from user_management.views import UserCreateView, UserUpdateView, UserListView, UserDetailView, PasswordChangeView, UserDeleteView

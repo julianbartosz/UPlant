@@ -1,3 +1,5 @@
+# backend/root/Dockerfile
+
 # Use an official Python runtime as a parent image
 FROM python:3.10
 
@@ -13,6 +15,9 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 # Copy the wait-for-it script into the container
 COPY wait-for-it.sh /app/wait-for-it.sh
 RUN chmod +x /app/wait-for-it.sh
+
+# Copy the current directory contents into the container at /app
+COPY . /app/
 
 # Expose port 8000 for the Django server
 EXPOSE 8000
