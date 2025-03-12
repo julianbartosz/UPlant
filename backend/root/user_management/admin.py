@@ -45,21 +45,26 @@ class UserChangeForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ("email", "username", "password", "is_superuser")
+        fields = ("email", "username", "password", "is_superuser")
 
 
 class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
     list_display = ('email', 'username', 'is_superuser')
+    list_display = ('email', 'username', 'is_superuser')
     list_filter = ('is_superuser',)
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
+        ('Personal info', {'fields': ('username',)}),
+        ("Permissions", {"fields": ("is_superuser", "groups", "user_permissions")}),
         ('Personal info', {'fields': ('username',)}),
         ("Permissions", {"fields": ("is_superuser", "groups", "user_permissions")}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
+            'fields': ('email', 'username', 'password1', 'password2')}
             'fields': ('email', 'username', 'password1', 'password2')}
         ),
     )
