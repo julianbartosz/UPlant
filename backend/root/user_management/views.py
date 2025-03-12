@@ -6,6 +6,12 @@ from user_management.models import User
 from django.core.mail import send_mail
 from django.db.models import Q, Count
 
+# Cainan work from 3/12
+from django.shortcuts import render, redirect
+from .forms import ContactForm
+from django.views import View
+#END
+
 
 class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = User
@@ -64,3 +70,30 @@ class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         context = super().get_context_data(**kwargs)
         return context
     
+# Cainan work from 3/12
+    
+class ContactUsView(LoginRequiredMixin, View):
+    def get(self, request):
+        form = ContactForm()
+        return render(request, "contact_us.html", {"form": form})
+
+    def post(self, request):
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            subject = form.cleaned_data['subject']
+            message = form.cleaned_data['message']
+            user_email = request.user.email  
+
+            full_message = f"From: {name} ({user_email})\n\n{message}"
+
+            send_mail(
+                subject=f"New Contact Form Submission: {subject}",
+                message=full_message,
+                from_email=user_email,  
+                recipient_list=["uplant@gmail.com"],  # This needs to be whatever our email is
+            )
+            return redirect("/dashboard")  #needs to be the actual dashboard url i couldnt find it
+
+        return render(request, "contact_us.html", {"form": form})
+    #END

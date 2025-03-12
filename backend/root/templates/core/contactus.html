@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #97c39b;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .form-box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+        .form-box h2 {
+            color: #1b4d1e;
+        }
+        .uplant-email {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #1b4d1e;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            color: #333;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .submit-btn {
+            background-color: #1b4d1e;
+            color: white;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .submit-btn:hover {
+            background-color: #145a18;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-box">
+            <h2>Contact Us</h2>
+            <p class="uplant-email">U-Plant Email: <strong>temp@gmail.com</strong></p>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_name">Name</label>
+                    {{ form.name }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_subject">Subject</label>
+                    {{ form.subject }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_message">Description</label>
+                    {{ form.message }}
+                </div>
+
+                <button type="submit" class="submit-btn">Send Message</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

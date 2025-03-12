@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.utils.translation import gettext_lazy as _
 from user_management.models import User
+from django.core.mail import send_mail
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
@@ -42,3 +43,18 @@ class CustomPasswordChangeForm(forms.ModelForm):
         if new_password and confirm_password and new_password != confirm_password:
             self.add_error('confirm_password', 'New password and Confirm new password do not match')
         return cleaned_data
+    
+    # Cainan work from 3/12
+    class ContactForm(forms.Form):
+        name = forms.CharField(
+            max_length=100, 
+            widget=forms.TextInput(attrs={'placeholder': 'Enter your name', 'class': 'form-control'})
+        )
+        subject = forms.CharField(
+            max_length=100, 
+            widget=forms.TextInput(attrs={'placeholder': 'Enter subject', 'class': 'form-control'})
+        )
+        message = forms.CharField(
+            widget=forms.Textarea(attrs={'placeholder': 'Describe your problem', 'class': 'form-control', 'rows': 4})
+        )
+        #END
