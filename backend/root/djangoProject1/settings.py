@@ -137,7 +137,7 @@ ACCOUNT_USERNAME_REQUIRED = False
 
 # Configure allauth settings
 SOCIALACCOUNT_AUTO_SIGNUP = True
-ACCOUNT_EMAIL_VERIFICATION = 'none'  # For development; set to 'mandatory' in production
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # For development; set to 'mandatory' in production
 SOCIALACCOUNT_LOGIN_ON_GET = True  # Enables one-click login
 
 # Update the provider settings to request the proper OAuth flow
