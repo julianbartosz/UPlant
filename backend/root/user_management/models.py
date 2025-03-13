@@ -70,11 +70,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         return cls.objects.get(**{cls.USERNAME_FIELD: username})
     
     def get_full_name(self):
-        full_name = f'{self.first_name} {self.last_name}'.strip()
-        return full_name or self.email
+        # Use username instead of first_name + last_name
+        return self.username or self.email
 
     def get_short_name(self):
-        return self.first_name
+        # Return username instead of first_name
+        return self.username
 
     @property
     def is_staff(self):

@@ -1,6 +1,5 @@
-<!-- backend/root/templates/core/login.html -->
-
 {% extends 'basic_generic.html' %}
+{% load socialaccount %}
 
 {% block title %}Login{% endblock %}
 
@@ -25,5 +24,14 @@
             <a href="{% url 'user_management:password_reset' %}">Forgot Password?</a>
         </div>
     </form>
+    
+    <div class="mt-4">
+        <hr>
+        <p>Or sign in with:</p>
+        <a href="{% provider_login_url 'google' %}" class="btn btn-outline-dark">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" height="18" class="me-2">
+            Sign in with Google
+        </a>
+    </div>
 </div>
 {% endblock %}

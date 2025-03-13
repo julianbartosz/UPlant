@@ -134,4 +134,27 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username'
 
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
+
+# Configure allauth settings
+SOCIALACCOUNT_AUTO_SIGNUP = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # For development; set to 'mandatory' in production
+SOCIALACCOUNT_LOGIN_ON_GET = True  # Enables one-click login
+
+# Update the provider settings to request the proper OAuth flow
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+            'prompt': 'select_account',  # This forces the account selection screen
+        }
+    }
+}
+
+# Configure URL paths for allauth
+LOGIN_URL = 'account_login'
 LOGIN_REDIRECT_URL = 'home'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
