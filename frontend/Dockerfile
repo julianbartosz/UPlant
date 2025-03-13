@@ -1,28 +1,24 @@
 # frontend/Dockerfile
 
-# Use an official Node.js runtime as a parent image
-FROM node:18
+FROM node:18-alpine
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy the package.json and package-lock.json files
+# Copy package files
 COPY package*.json ./
 
-# Install any needed packages
-RUN npm ci --no-optional
+# Use Alpine and avoid architecture-specific modules completely
+RUN apk add --no-cache python3 make g++ && \
+    npm install --no-optional --no-package-lock --force && \
+    npm install esbuild@0.17.19 --no-package-lock --force
 
-# Explicitly install the missing module for ARM64
-RUN npm install @rollup/rollup-linux-arm64-gnu
+# Disable Rollup native optimization flag
+ENV ROLLUP_SKIP_OPTIMIZE=true
 
-# Copy the current directory contents into the container at /app
+# Copy the rest of the app
 COPY . .
 
-# Build the app
-RUN npm run build
+EXPOSE 5137
 
-# Make port 3000 available to the world outside this container
-EXPOSE 3000
-
-# Run the application
-CMD ["npm", "run", "dev"]
+# Use a simpler server since Vite is having issues
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

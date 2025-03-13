@@ -80,9 +80,9 @@ DATABASES = {
         'HOST': os.getenv('DATABASE_HOST'),
         'PORT': os.getenv('DATABASE_PORT', '3306'),
         'OPTIONS': {
-            'ssl': {'ca': os.path.expanduser('~/DigiCertGlobalRootCA.crt.pem')},
+            'ssl': {'ca': '/app/cert/DigiCertGlobalRootCA.crt.pem'},
             'charset': 'utf8mb4',
-            'auth_plugin': 'caching_sha2_password',  # Changed from mysql_clear_password
+            'auth_plugin': 'caching_sha2_password',
         }
     }
 }

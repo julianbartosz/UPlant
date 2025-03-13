@@ -145,3 +145,28 @@ To access the Django admin interface, navigate to http://127.0.0.1:8000/admin an
 ## Stopping the Server
 
 To stop the Django development server, press Ctrl+C in your command prompt or terminal window.
+
+
+# Docker
+
+## Prerequisites
+- Docker and Docker Compose
+- SSL Certificate for Azure MySQL connection
+
+## Setup
+1. Clone this repository
+2. Place the DigiCertGlobalRootCA.crt.pem in backend/root/
+3. Create .env file in backend/root/djangoProject1/ with database credentials
+4. Run `docker-compose up`
+
+## Accessing the App
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- Admin panel: http://localhost:8000/admin
+
+## Nginx
+- Main application: http://localhost (port 80 is the default HTTP port)
+- Backend API: http://localhost/api/
+- Admin panel: http://localhost/admin/
+- Direct access to frontend (bypassing nginx): http://localhost:5173
+- Direct access to backend (bypassing nginx): http://localhost:8000

@@ -6,7 +6,7 @@ from django.shortcuts import render
 
 def home(request):
     return render(request, 'core/home.html')
-
+    # return render(request, 'core/home.html', {'test_message': 'BACKEND HOME PAGE - DJANGO'})
 
 @login_required
 def search_select(request):

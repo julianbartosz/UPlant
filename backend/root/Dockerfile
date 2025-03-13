@@ -1,29 +1,26 @@
 # backend/root/Dockerfile
 
-# Use an official Python runtime as a parent image
 FROM python:3.10
 
-# Set the working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy requirements file first to leverage Docker cache
+# Copy requirements first for better caching
 COPY requirements.txt /app/
 
-# Upgrade pip and install dependencies
+# Install dependencies
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copy the wait-for-it script into the container
-COPY wait-for-it.sh /app/wait-for-it.sh
-RUN chmod +x /app/wait-for-it.sh
+# Create certificate directory
+RUN mkdir -p /app/cert/
 
-# Copy the current directory contents into the container at /app
+# Copy SSL certificate
+COPY DigiCertGlobalRootCA.crt.pem /app/cert/DigiCertGlobalRootCA.crt.pem
+
+# Copy the rest of the application code
 COPY . /app/
 
-# Expose port 8000 for the Django server
+# Expose port
 EXPOSE 8000
 
-# Define environment variable
-ENV DJANGO_SETTINGS_MODULE=djangoProject1.settings
-
-# Run the Django development server
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
