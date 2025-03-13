@@ -11,3 +11,23 @@ def home(request):
 @login_required
 def search_select(request):
     return render(request, 'core/search_select.html')
+
+
+def about(request):
+    return render(request, 'core/about.html')
+
+
+def privacy(request):
+    return render(request, 'core/privacy.html')
+
+
+def help_page(request):
+    return render(request, 'core/help.html')
+
+
+def terms(request):
+    return render(request, 'core/terms.html')
+
+
+def contact(request):
+    return render(request, 'core/contact.html')

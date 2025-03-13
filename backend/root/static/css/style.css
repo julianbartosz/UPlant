@@ -1,6 +1,6 @@
 /* backend/root/static/css/style.css */
 
-/* General styles */
+/* Garbage */
 :root {
     --leaf-green: #4CAF50;
     --earth-brown: #8D6E63;
@@ -87,11 +87,11 @@ header img {
     font-size: 1.5em;
     font-weight: bolder;
     margin-left: 15px;
-    color: var(--soft-white) !important;
+    color: var(--slate-grey) !important;
 }
 
 .navbar .navbar-brand, .navbar .navbar-nav .nav-link {
-    color: var(--soft-white) !important;
+    color: var(--slate-grey) !important;
     font-weight: 500;
     transition: color 0.3s ease;
 }
@@ -118,7 +118,7 @@ header img {
 footer, 
 body > footer,
 html body footer {
-    background-color: var(--earth-brown) !important;
+    background-color: var(--soft-white) !important;
     color: var(--soft-white) !important;
     padding: 20px 0;
     text-align: center;
@@ -128,7 +128,7 @@ html body footer {
 .bg-light,
 footer.bg-light,
 .footer.bg-light {
-    background-color: var(--earth-brown) !important;
+    background-color: var(--soft-white) !important;
 }
   
 /* Utility Classes */
@@ -288,5 +288,24 @@ a:hover {
     color: var(--slate-grey);
 }
 
+/* Sticky footer styles */
+html {
+    position: relative;
+    min-height: 100%;
+  }
+  
+  body {
+    min-height: 100vh;
+  }
+  
+  main {
+    flex: 1 0 auto;
+  }
+  
+  .footer {
+    background-color: var(--soft-white);
+    border-top: 1px solid rgba(0,0,0,.1);
+  }
+  
 /* Import Roboto font */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');

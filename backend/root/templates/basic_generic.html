@@ -3,7 +3,7 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-100">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,21 +13,21 @@
     <!-- Link to custom stylesheet -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
 </head>
-<body>
-    
+<body class="d-flex flex-column h-100">
 
     <header>
         {% include 'core/navbar.html' %}
     </header>
 
-    <main class="content">
-        {% block content %}
-        <!-- Content goes here -->
-        {% endblock %}
+    <main class="flex-shrink-0">
+        <div class="container py-4">
+            {% block content %}
+            <!-- Content goes here -->
+            {% endblock %}
+        </div>
     </main>
 
-
-    <footer>
+    <footer class="footer mt-auto py-3">
         {% include 'core/footer.html' %}
     </footer>
 
