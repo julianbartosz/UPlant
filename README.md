@@ -155,16 +155,11 @@ To stop the Django development server, press Ctrl+C in your command prompt or te
 
 ## Setup
 1. Clone this repository
-2. Place the DigiCertGlobalRootCA.crt.pem in backend/root/
+2. Download and place the DigiCertGlobalRootCA.crt.pem in backend/root/
 3. Create .env file in backend/root/djangoProject1/ with database credentials
 4. Run `docker-compose up`
 
 ## Accessing the App
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
-- Admin panel: http://localhost:8000/admin
-
-## Nginx
 - Main application: http://localhost (port 80 is the default HTTP port)
 - Backend API: http://localhost/api/
 - Admin panel: http://localhost/admin/
