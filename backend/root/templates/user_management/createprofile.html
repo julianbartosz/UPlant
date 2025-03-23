@@ -1,0 +1,21 @@
+<!-- backend/root/templates/user_management/createprofile.html -->
+{% extends "basic_generic.html" %}
+
+{% block title %}Create Profile{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Create Your Profile</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_username" class="form-label">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div class="text-danger">{{ form.username.errors.0 }}</div>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+{% endblock %}

@@ -2,7 +2,9 @@
 
 from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
-from user_management.views import UserCreateView, UserUpdateView, UserListView, UserDetailView, PasswordChangeView, UserDeleteView
+from user_management.views import UserCreateView, UserUpdateView, UserListView, UserDetailView, PasswordChangeView, UserDeleteView, CreateProfileView, View
+from user_management.views import ForumListView, ForumDetailView, CreateForumView, ReplyView, LikeReplyView
+
 
 urlpatterns = [
     path('create/', UserCreateView.as_view(), name='create_user'),
@@ -27,4 +29,13 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
         template_name='user_management/email/password_reset_complete.html'),
         name='password_reset_complete'),
+    # New Paths
+    path('create-profile/', CreateProfileView.as_view(), name='create_profile'),
+    path('forums/<int:forum_id>/reply/', ReplyView.as_view(), name='forum_reply'),
+    path('forum/<int:forum_id>/reply/<int:parent_id>/reply/', ReplyView.as_view(), name='reply_to_reply'),
+    path('forum/<int:forum_id>/reply/<int:reply_id>/like/', LikeReplyView.as_view(), name='like_reply'),
+    path('forums/', ForumListView.as_view(), name='forum_list'),  
+    path('forum/<int:pk>/', ForumDetailView.as_view(), name='forum_detail'),  
+    path('create/forum/', CreateForumView.as_view(), name='create_forum'),  
+    #New Paths END
 ]

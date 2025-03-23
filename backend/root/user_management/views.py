@@ -3,10 +3,21 @@
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, ListView, DetailView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm, CustomPasswordChangeForm
+from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm, CustomPasswordChangeForm, ProfileForm
 from user_management.models import User
 from django.core.mail import send_mail
 from django.db.models import Q, Count
+
+#New Imports
+from django.views import View
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.shortcuts import get_object_or_404
+from .models import Forums, Replies, Likes
+from user_management.forms import ForumForm, ReplyForm
+from django.db import models
+#New Imports END
+
 
 
 class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -83,3 +94,80 @@ class PasswordChangeView(LoginRequiredMixin, UpdateView):
             return super().form_valid(form)
         form.add_error(None, 'Old password is incorrect')
         return self.form_invalid(form)
+
+#my changes
+class CreateProfileView(LoginRequiredMixin, View):
+    def get(self, request):
+        form = ProfileForm(instance=request.user)
+        return render(request, 'user_management/createprofile.html', {'form': form})
+
+    def post(self, request):
+        form = ProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated successfully!")
+            return redirect('forum_home')  # Redirect to the discussion board
+        return render(request, 'user_management/createprofile.html', {'form': form})
+
+class ForumListView(LoginRequiredMixin, ListView):
+    model = Forums
+    template_name = 'user_management/forum_list.html'
+    context_object_name = 'forums'
+
+    def get_queryset(self):
+        return Forums.objects.filter(is_deleted=False).annotate(reply_count=models.Count('replies')).order_by('-created_at')
+
+
+class ForumDetailView(LoginRequiredMixin, DetailView):
+    model = Forums
+    template_name = 'user_management/forum_detail.html'
+    context_object_name = 'forum'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['replies'] = Replies.objects.filter(forum_id=self.object, is_deleted=False).annotate(
+            like_count=models.Count('likes'),
+            reply_count=models.Count('replies')
+        ).order_by('-created_at')
+        context['reply_form'] = ReplyForm()
+        return context
+
+
+class CreateForumView(LoginRequiredMixin, CreateView):
+    model = Forums
+    form_class = ForumForm
+    template_name = 'user_management/create_forum.html'
+    success_url = reverse_lazy('forum_list')
+
+    def form_valid(self, form):
+        form.instance.user_id = self.request.user
+        messages.success(self.request, "Your forum has been created!")
+        return super().form_valid(form)
+
+
+class ReplyView(LoginRequiredMixin, View):
+    def post(self, request, forum_id, parent_id=None):
+        forum = get_object_or_404(Forums, pk=forum_id)
+        form = ReplyForm(request.POST)
+        if form.is_valid():
+            reply = form.save(commit=False)
+            reply.user_id = request.user
+            reply.forum_id = forum
+            if parent_id:
+                reply.parent_id = get_object_or_404(Replies, pk=parent_id)
+            reply.save()
+            messages.success(request, "Your reply has been posted.")
+        else:
+            messages.error(request, "There was an error posting your reply.")
+        return redirect('user_management:forum_detail', pk=forum.id)
+
+class LikeReplyView(LoginRequiredMixin, View):
+    def post(self, request, forum_id, reply_id):
+        reply = get_object_or_404(Replies, pk=reply_id)
+        like, created = Likes.objects.get_or_create(user_id=request.user, reply_id=reply)
+        if not created:
+            like.delete()
+            messages.success(request, "You unliked this reply.")
+        else:
+            messages.success(request, "You liked this reply.")
+        return redirect('user_management:forum_detail', pk=forum_id)  # Use forum_id for redirection

@@ -1,0 +1,14 @@
+{% extends 'basic_generic.html' %}
+
+{% block content %}
+<h2>Forum Board</h2>
+<a href="{% url 'user_management:create_forum' %}" class="btn btn-primary">Create New Forum</a>
+<ul>
+    {% for forum in forums %}
+        <li>
+            <a href="{% url 'user_management:forum_detail' forum.id %}">{{ forum.title }}</a>
+            <small>Created by {{ forum.user_id.username }} on {{ forum.created_at|date:"F d, Y" }} | Replies: {{ forum.reply_count }}</small>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}
