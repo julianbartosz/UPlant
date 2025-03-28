@@ -20,6 +20,8 @@ services:
     environment:
       - ROLLUP_SKIP_OPTIMIZE=true  # Added this line to disable native modules
       - CHOKIDAR_USEPOLLING=true  # Help with hot reload
+      - BASE_URL=/app/
+      - API_URL=http://backend:8000/api  # Added API URL for frontend to communicate with backend
     volumes:
       - ./frontend:/app
       - /app/node_modules  # Prevent overwriting node_modules

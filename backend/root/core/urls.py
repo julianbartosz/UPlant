@@ -3,7 +3,6 @@
 from django.urls import path, include
 from core import views
 from django.contrib.auth.views import LoginView, LogoutView
-from core.views_api import plants_list, api_root
 from core.forms import CustomAuthenticationForm
 
 urlpatterns = [
@@ -16,8 +15,6 @@ urlpatterns = [
     path('search_select/', views.search_select, name='search_select'),
 
     # API
-    path('api/', api_root, name='api_root'),
-    path('api/plants/', plants_list, name='plants_list'),
 
     # Footer links
     path('about/', views.about, name='about'),

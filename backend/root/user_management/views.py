@@ -8,6 +8,18 @@ from user_management.models import User
 from django.core.mail import send_mail
 from django.db.models import Q, Count
 
+from django.http import HttpResponse
+from django.core.mail import send_mail
+
+def test_email(request):
+    send_mail(
+        'Test Email from UPlant',
+        'This is a test email from UPlant.',
+        'UPlant <uplant.notifications@gmail.com>',
+        ['jbartosz@uwm.edu'],
+        fail_silently=False,
+    )
+    return HttpResponse("Test email sent. Check your inbox.")
 
 class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = User
