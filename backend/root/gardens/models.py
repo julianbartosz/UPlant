@@ -1,63 +1,74 @@
 # backend/root/gardens/models.py
-
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.db.models import CheckConstraint, Q, UniqueConstraint
-import datetime
+from django.utils import timezone
+from user_management.models import User
+from plants.models import Plant
 
-
-class Gardens(models.Model):
-    user_id = models.ForeignKey('user_management.User', on_delete=models.DO_NOTHING)
-    name = models.CharField(_('garden name'), blank=True, null=True, max_length=25)
-    size_x = models.PositiveIntegerField(_('garden length'))  # in inches
-    size_y = models.PositiveIntegerField(_('garden width'))  # in inches
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_deleted = models.BooleanField(default=False)
-
+class Garden(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, help_text="Owner of the garden")
+    name = models.CharField(_('Garden Name'), max_length=25, null=True, blank=True)
+    size_x = models.PositiveIntegerField(_('Garden Length'), help_text="Length of the garden (e.g., in inches)")
+    size_y = models.PositiveIntegerField(_('Garden Width'), help_text="Width of the garden (e.g., in inches)")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="Timestamp when the garden was created")
+    is_deleted = models.BooleanField(default=False, help_text="Flag indicating if the garden is deleted (soft delete)")
+    
     class Meta:
         verbose_name = _('garden')
         verbose_name_plural = _('gardens')
-
         constraints = [
-            CheckConstraint(
-                check=Q(size_x__gt=0),
-                name='check_size_x_pos',
-            ),
-
-            CheckConstraint(
-                check=Q(size_y__gt=0),
-                name='check_size_y_pos',
-            ),
+            CheckConstraint(check=Q(size_x__gt=0), name='check_size_x_pos'),
+            CheckConstraint(check=Q(size_y__gt=0), name='check_size_y_pos'),
         ]
     
     def __str__(self):
-        return f"garden id:{self.id} - size:{self.size_x}x{self.size_y}"
+        return f"Garden {self.id} - {self.name or 'Unnamed'} ({self.size_x} x {self.size_y})"
+    
+    # Helper methods
+    def total_plots(self):
+        """Return the total number of plots in the garden grid."""
+        return self.size_x * self.size_y
+    
+    def occupied_plots(self):
+        """Return the number of occupied plots (i.e., logs associated with this garden)."""
+        return self.gardenlog_set.count()
+    
+    def available_plots(self):
+        """Return the number of available plots."""
+        return self.total_plots() - self.occupied_plots()
+    
+    def is_plot_available(self, x, y):
+        """
+        Check if a specific plot (x, y) in the garden is available.
+        Returns True if there is no GardenLog for the given coordinates.
+        """
+        return not self.gardenlog_set.filter(x_coordinate=x, y_coordinate=y).exists()
 
 
-class Garden_log(models.Model):
-    garden_id = models.ForeignKey(Gardens, on_delete=models.CASCADE)
-    plant_id = models.ForeignKey('plants.Plant', on_delete=models.DO_NOTHING)
-    planted_date = models.DateField(_('date planted'), default=datetime.date.today)  # note user-entered
-    x_coordinate = models.PositiveIntegerField(_('x-coordinate location'))  # in inches
-    y_coordinate = models.PositiveIntegerField(_('y-coordinate location'))  # in inches
-
+class GardenLog(models.Model):
+    garden = models.ForeignKey(Garden, on_delete=models.CASCADE, help_text="The garden to which this log belongs")
+    plant = models.ForeignKey(
+        'plants.Plant', on_delete=models.SET_NULL, null=True, blank=True, 
+        help_text="The plant placed in the garden"
+    )
+    planted_date = models.DateField(_('Date Planted'), default=timezone.now, help_text="The date when the plant was planted")
+    x_coordinate = models.PositiveIntegerField(_('X Coordinate'), help_text="X coordinate position in the garden grid")
+    y_coordinate = models.PositiveIntegerField(_('Y Coordinate'), help_text="Y coordinate position in the garden grid")
+    updated_at = models.DateTimeField(auto_now=True, help_text="Timestamp when this log was last updated")
+    
     class Meta:
         verbose_name = _('garden log')
         verbose_name_plural = _('garden logs')
-
         constraints = [
-            UniqueConstraint(
-                fields=['garden_id', 'x_coordinate', 'y_coordinate'],
-                name='unq_plot_space'
-            )
+            UniqueConstraint(fields=['garden', 'x_coordinate', 'y_coordinate'], name='unique_plot_space')
         ]
+        ordering = ['garden', 'planted_date']
     
     def __str__(self):
-        return f"garden:{self.garden_id.id} - plant:({self.plant_id}) @ [{self.x_coordinate},{self.y_coordinate}]"
+        plant_info = self.plant.scientific_name if self.plant else "Unknown Plant"
+        return f"Garden {self.garden.id} - Plant: {plant_info} at [{self.x_coordinate}, {self.y_coordinate}]"
     
     def is_in_bounds(self):
-        record = Gardens.objects.get(pk=self.garden_id.id)
-        if record.size_x < self.x_coordinate or record.size_y < self.y_coordinate:
-            return False
-        else:
-            return True
+        # Assumes coordinates start at 1 and must be <= garden dimensions.
+        return self.x_coordinate <= self.garden.size_x and self.y_coordinate <= self.garden.size_y

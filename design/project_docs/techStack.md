@@ -67,7 +67,7 @@ This document outlines the primary technologies and architectural decisions driv
   *Rationale:*  
   Automate testing, linting, and documentation review workflows, helping to maintain consistency and quality throughout the development process.
 
-- **Docker (if applicable)**  
+- **Docker**  
   *Rationale:*  
   Provides containerization for consistent development and deployment environments, streamlining the workflow from local to production.
 
