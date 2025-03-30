@@ -1,0 +1,32 @@
+{% extends 'basic_generic.html' %}
+
+{% block content %}
+<h2>{{ forum.title }}</h2>
+<p>{{ forum.body }}</p>
+<small>Created by {{ forum.user_id.username }} on {{ forum.created_at|date:"F d, Y" }}</small>
+
+<h3>Replies</h3>
+<ul>
+    {% for reply in replies %}
+        <li>
+            <p>{{ reply.body }}</p>
+            <small>Created by {{ reply.user_id.username }} on {{ reply.created_at|date:"F d, Y" }} | Likes: {{ reply.like_count }} | Replies: {{ reply.reply_count }}</small>
+            <form method="POST" action="{% url 'user_management:like_reply' forum_id=forum.id reply_id=reply.id %}">
+                {% csrf_token %}
+                <button type="submit">Like</button>
+            </form>            
+            <form method="POST" action="{% url 'user_management:reply_to_reply' forum_id=forum.id parent_id=reply.id %}">
+                {% csrf_token %}
+                <button type="submit">Reply</button>
+            </form>            
+        </li>
+    {% endfor %}
+</ul>
+
+<h3>Leave a Reply</h3>
+<form method="post" action="{% url 'user_management:forum_reply' forum.id %}">
+    {% csrf_token %}
+    {{ reply_form.as_p }}
+    <button type="submit">Reply</button>
+</form>
+{% endblock %}
