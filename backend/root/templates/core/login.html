@@ -1,0 +1,38 @@
+{% extends 'basic_generic.html' %}
+{% load socialaccount %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Login</h2>
+    <form method="post" action="{% url 'login' %}" class="mt-3">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary">Login</button>
+        <div class="mt-3">
+            <a href="{% url 'user_management:password_reset' %}">Forgot Password?</a>
+        </div>
+    </form>
+
+    <div class="mt-4">
+        <hr>
+        <p>Or sign in with:</p>
+        <a href="{% provider_login_url 'google' %}" class="btn btn-outline-dark">
+            <img src="{% static 'img/web_neutral_sq_na@2x.png' %}" alt="Google" height="18" class="me-2">
+            Sign in with Google
+        </a>
+    </div>
+</div>
+{% endblock %}

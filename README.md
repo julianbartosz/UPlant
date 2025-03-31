@@ -124,14 +124,20 @@ Run Tests with Coverage
   coverage report
   ```
 
-## Managing Static Files
+## Managing Static/Requirement Files
 
 To collect static files into the STATIC_ROOT directory, run the following command:
 
   ```
   python manage.py collectstatic
   ```
+  
+Grab current requirements.
 
+  ```
+  pip freeze > requirements_complete.txt
+  ```
+  
 ## Access the Admin Panel
 
 To access the Django admin interface, navigate to http://127.0.0.1:8000/admin and log in using the superuser credentials you created earlier.
@@ -139,3 +145,23 @@ To access the Django admin interface, navigate to http://127.0.0.1:8000/admin an
 ## Stopping the Server
 
 To stop the Django development server, press Ctrl+C in your command prompt or terminal window.
+
+
+# Docker
+
+## Prerequisites
+- Docker and Docker Compose
+- SSL Certificate for Azure MySQL connection
+
+## Setup
+1. Clone this repository
+2. Download and place the DigiCertGlobalRootCA.crt.pem in backend/root/
+3. Create .env file in backend/root/djangoProject1/ with database credentials
+4. Run `docker-compose up`
+
+## Accessing the App
+- Main application: http://localhost (port 80 is the default HTTP port)
+- Backend API: http://localhost/api/
+- Admin panel: http://localhost/admin/
+- Direct access to frontend (bypassing nginx): http://localhost:5173
+- Direct access to backend (bypassing nginx): http://localhost:8000

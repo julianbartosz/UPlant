@@ -20,10 +20,9 @@ UPlant is a virtual community garden platform that combines a modern React-based
 - **React Application:**  
   - Located in `/frontend`.
   - **Main Components:**  
-    - **Login Page:** Found in `frontend/src/pages/Login.jsx` for user authentication.
     - **Garden Dashboard:** Includes the dynamic garden grid in `frontend/src/components/GardenSection/Garden.jsx`.
   - **Routing:**  
-    - Managed by React Router, with key routes such as `/login` and `/garden`.
+    - Managed by React Router, with key routes such as `/garden`.
 
 ### Backend
 - **Django Application:**  

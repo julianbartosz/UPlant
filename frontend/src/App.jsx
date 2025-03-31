@@ -1,13 +1,12 @@
+// frontend/src/App.jsx
 
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { Routes, Route } from 'react-router-dom';
 import './App.css'
-import Login from './pages/Login.jsx';
 import Garden from './components/GardenSection/Garden'
 import NavBar from './components/NavBarSection/NavBar';
 import SearchPlants from './components/SearchSection/SearchPlants'
-
-<Route path="/login" element={<Login />} />
 
 function App() {
 

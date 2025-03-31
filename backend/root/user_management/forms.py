@@ -1,7 +1,10 @@
+# backend/root/user_management/forms.py
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.utils.translation import gettext_lazy as _
 from user_management.models import User
+from django.core.exceptions import ValidationError
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
@@ -42,3 +45,17 @@ class CustomPasswordChangeForm(forms.ModelForm):
         if new_password and confirm_password and new_password != confirm_password:
             self.add_error('confirm_password', 'New password and Confirm new password do not match')
         return cleaned_data
+    
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your username'}),
+        }
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise ValidationError("This username is already taken. Please choose another.")
+        return username

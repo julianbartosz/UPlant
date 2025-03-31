@@ -1,3 +1,5 @@
+// frontend/src/components/NavBarSection/NavBar.jsx
+
 import React from 'react';
 import { FaCog } from 'react-icons/fa';
 

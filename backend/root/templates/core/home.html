@@ -1,3 +1,5 @@
+<!-- backend/root/templates/core/home.html -->
+
 {% extends 'basic_generic.html' %}
 
 {% load static %}
@@ -11,7 +13,8 @@
         <h1 class="display-4">Welcome to UPlant</h1>
         <p class="lead"></p>
         {% if user.is_authenticated %}
-            <p>Hello, {{ user.get_full_name }}! Ready to garden?</p>
+            <p>Hello! Ready to garden?</p>
+            <!-- Temporary Buttons END-->
             {% if user.role == 'Supervisor' %}
                 <a href="{% url 'user_management:user_list' %}" class="btn btn-primary btn-lg" role="button">My Garden</a>
                 <a href="{% url 'user_management:user_list' %}" class="btn btn-secondary btn-lg" role="button">Share Produce</a>
@@ -21,7 +24,7 @@
             <hr class="my-4">
             <p>Sign in to access your dashboard and start managing or participating in gardening activities.</p>
             <p class="lead">
-                <a href="{% url 'home' %}" class="btn btn-primary btn-lg" role="button">Login</a>
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg" role="button">Login</a>
             </p>
         {% endif %}
     </div>

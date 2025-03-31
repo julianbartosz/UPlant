@@ -1,3 +1,5 @@
+# backend/root/djangoProject1/settings.py
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -30,6 +32,9 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'user_management.apps.UserManagementConfig',
     'core.apps.CoreConfig',
+    'plants.apps.PlantsConfig',
+    'gardens.apps.GardensConfig',
+    'community.apps.CommunityConfig',
     'django_extensions',
     'django_select2',
 ]
@@ -78,8 +83,15 @@ DATABASES = {
         'HOST': os.getenv('DATABASE_HOST'),
         'PORT': os.getenv('DATABASE_PORT', '3306'),
         'OPTIONS': {
+<<<<<<< HEAD
             'ssl': {'ca': os.getenv('SSL_CERT')}
         }
+=======
+            'ssl': {'ca': os.getenv('SSL_CERT')},
+            'charset': 'utf8mb4',
+            'auth_plugin': 'caching_sha2_password',
+        },
+>>>>>>> jb-datafetching
     }
 }
 
@@ -114,7 +126,13 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email configurations
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Hardcode instead of using os.getenv
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 # Set SITE_ID
 SITE_ID = 1
@@ -130,4 +148,71 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username'
 
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
+
+# Configure allauth settings
+SOCIALACCOUNT_AUTO_SIGNUP = True
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # For development; set to 'mandatory' in production
+SOCIALACCOUNT_LOGIN_ON_GET = True  # Enables one-click login
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+            'prompt': 'select_account',  # This forces the account selection screen
+        }
+    }
+}
+
+# Configure URL paths for allauth
+LOGIN_URL = 'account_login'
 LOGIN_REDIRECT_URL = 'home'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
+
+
+
+# LOGGING
+import logging.config
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.security': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.core.mail': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+# Enable more detailed SMTP debugging
+if DEBUG:
+    import smtplib
+    smtplib.SMTP.debuglevel = 1

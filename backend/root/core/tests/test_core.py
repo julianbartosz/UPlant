@@ -1,4 +1,5 @@
-# tests.py
+# backend/root/core/tests/tests_core.py
+
 from django.test import TestCase, Client
 from django.urls import reverse, resolve
 from django.contrib.auth.views import LoginView, LogoutView
@@ -7,6 +8,25 @@ from core.views import home, search_select
 from core.forms import CustomAuthenticationForm
 
 # UNIT TESTS
+
+
+class CustomAuthenticationFormTest(TestCase):
+    """
+    This class contains tests for the CustomAuthenticationForm form.
+    """
+    def test_form_label(self):
+        """
+        This test checks the label of the username field in the CustomAuthenticationForm form. It asserts that the label is 'Email'.
+        """
+        form = CustomAuthenticationForm()
+        self.assertEqual(form.fields['username'].label, "Email")
+
+    def test_form_widget(self):
+        """
+        This test checks the widget of the username field in the CustomAuthenticationForm form. It asserts that the widget is an instance of forms.EmailInput.
+        """
+        form = CustomAuthenticationForm()
+        self.assertIsInstance(form.fields['username'].widget, forms.EmailInput)
 
 class UrlsTest(TestCase):
     """

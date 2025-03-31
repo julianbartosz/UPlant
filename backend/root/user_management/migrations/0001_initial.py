@@ -63,6 +63,7 @@ class Migration(migrations.Migration):
                 'verbose_name_plural': 'users',
             },
         ),
+<<<<<<< HEAD
         migrations.CreateModel(
             name='Forums',
             fields=[
@@ -155,3 +156,6 @@ class Migration(migrations.Migration):
             constraint=models.UniqueConstraint(fields=('user_id', 'reply_id'), name='unq_vote'),
         ),
     ]
+=======
+    ]
+>>>>>>> jb-datafetching
