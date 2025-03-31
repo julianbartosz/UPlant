@@ -18,11 +18,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-<<<<<<< HEAD
-        fields = ('email', 'username')
-=======
         fields = ('email', 'username',)
->>>>>>> jb-datafetching
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -64,11 +60,7 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('email', 'username', 'password1', 'password2')}
         ),
     )
-<<<<<<< HEAD
-    search_fields = ('email', 'username')
-=======
     search_fields = ('email', 'username',)
->>>>>>> jb-datafetching
     ordering = ('email',)
     filter_horizontal = ()
 
