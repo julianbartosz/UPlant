@@ -83,15 +83,10 @@ DATABASES = {
         'HOST': os.getenv('DATABASE_HOST'),
         'PORT': os.getenv('DATABASE_PORT', '3306'),
         'OPTIONS': {
-<<<<<<< HEAD
-            'ssl': {'ca': os.getenv('SSL_CERT')}
-        }
-=======
             'ssl': {'ca': os.getenv('SSL_CERT')},
             'charset': 'utf8mb4',
             'auth_plugin': 'caching_sha2_password',
         },
->>>>>>> jb-datafetching
     }
 }
 
