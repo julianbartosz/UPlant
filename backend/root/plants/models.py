@@ -6,6 +6,9 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class Plant(models.Model):
+    # Explicitly define the primary key field (Django would create this anyway)
+    id = models.AutoField(primary_key=True)
+
     # API fields
     api_id = models.IntegerField(
         null=True, blank=True, unique=True, 
@@ -18,15 +21,6 @@ class Plant(models.Model):
     slug = models.SlugField(unique=True, help_text="Unique human-readable identifier")
     scientific_name = models.CharField(max_length=255)
 
-    STATUS_CHOICES = [
-        ('accepted', 'Accepted'),
-        ('unknown', 'Unknown'),
-    ]
-    status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, 
-        help_text="Acceptance status of the plant name"
-    )
-    
     RANK_CHOICES = [
         ('species', 'Species'),
         ('ssp', 'Subspecies'),
