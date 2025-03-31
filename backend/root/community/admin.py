@@ -1,8 +1,8 @@
 # backend/root/community/admin.py
 
 from django.contrib import admin
-from community.models import Forums, Replies, Likes
+from community.models import Forum, Reply, Like
 
-admin.site.register(Forums)
-admin.site.register(Replies)
-admin.site.register(Likes)
+admin.site.register(Forum)
+admin.site.register(Reply)
+admin.site.register(Like)

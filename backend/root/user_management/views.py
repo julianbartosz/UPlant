@@ -3,7 +3,7 @@
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, ListView, DetailView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm, CustomPasswordChangeForm, ProfileForm
+from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm, CustomPasswordChangeForm
 from user_management.models import User
 from django.core.mail import send_mail
 from django.db.models import Q, Count
@@ -97,16 +97,3 @@ class PasswordChangeView(LoginRequiredMixin, UpdateView):
             return super().form_valid(form)
         form.add_error(None, 'Old password is incorrect')
         return self.form_invalid(form)
-
-class CreateProfileView(LoginRequiredMixin, View):
-    def get(self, request):
-        form = ProfileForm(instance=request.user)
-        return render(request, 'user_management/createprofile.html', {'form': form})
-
-    def post(self, request):
-        form = ProfileForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Your profile has been updated successfully!")
-            return redirect('forum_home')  # Redirect to the discussion board
-        return render(request, 'user_management/createprofile.html', {'form': form})
