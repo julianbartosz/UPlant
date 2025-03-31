@@ -51,7 +51,7 @@ class GardenLog(models.Model):
     plant = models.ForeignKey(
         'plants.Plant', on_delete=models.SET_NULL, null=True, blank=True, 
         help_text="The plant placed in the garden"
-    )
+    ) # Consider CASCADE: When a Plant is deleted, all GardenLog records that reference that plant are automatically deleted as well.
     planted_date = models.DateField(_('Date Planted'), default=timezone.now, help_text="The date when the plant was planted")
     x_coordinate = models.PositiveIntegerField(_('X Coordinate'), help_text="X coordinate position in the garden grid")
     y_coordinate = models.PositiveIntegerField(_('Y Coordinate'), help_text="Y coordinate position in the garden grid")

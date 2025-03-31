@@ -67,7 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_staff(self):
-        return self.role in [Roles.AD]
+        return self.role in [Roles.AD] or self.is_superuser
 
     def has_perm(self, perm, obj=None):
         return self.is_superuser

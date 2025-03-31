@@ -49,6 +49,74 @@ class Plant(models.Model):
         help_text="List of synonym names (as a JSON array)"
     )
     
+    # Botanical & classification data for catalog filtering
+    vegetable = models.BooleanField(
+        default=False, 
+        help_text="Is the plant classified as a vegetable?"
+    )
+    duration = models.JSONField(
+        null=True, blank=True, 
+        help_text="Plant duration(s) (e.g., annual, biennial, perennial)"
+    )
+    edible = models.BooleanField(
+        default=False, 
+        help_text="Is the plant edible?"
+    )
+    edible_part = models.JSONField(
+        null=True, blank=True, 
+        help_text="Edible parts of the plant (e.g., roots, leaves, fruits)"
+    )
+
+    # Flower details
+    flower_color = models.JSONField(
+        null=True, blank=True, 
+        help_text="Flower color(s) (e.g., ['red', 'yellow'])"
+    )
+    flower_conspicuous = models.BooleanField(
+        null=True, default=False, 
+        help_text="Are the flowers visually prominent?"
+    )
+    # Foliage details
+    foliage_texture = models.CharField(
+        max_length=50, null=True, blank=True, 
+        help_text="Texture of the foliage (e.g., fine, medium, coarse)"
+    )
+    foliage_color = models.JSONField(
+        null=True, blank=True, 
+        help_text="Foliage color(s) (e.g., ['green', 'grey'])"
+    )
+    foliage_retention = models.BooleanField(
+        null=True, default=False, 
+        help_text="Does the plant retain its foliage all year?"
+    )
+    # Fruit/seed details
+    fruit_or_seed_conspicuous = models.BooleanField(
+        null=True, default=False, 
+        help_text="Are the fruits or seeds visually prominent?"
+    )
+    fruit_or_seed_color = models.JSONField(
+        null=True, blank=True, 
+        help_text="Fruit or seed color(s) (e.g., ['red', 'orange'])"
+    )
+    fruit_or_seed_shape = models.CharField(
+        max_length=50, null=True, blank=True, 
+        help_text="Shape of the fruit or seed"
+    )
+    fruit_or_seed_persistence = models.BooleanField(
+        null=True, default=False, 
+        help_text="Do the fruits/seeds remain on the plant persistently?"
+    )
+
+    # Spacing details
+    row_spacing_cm = models.DecimalField(
+        max_digits=6, decimal_places=3, null=True, blank=True, 
+        help_text="Minimum spacing between rows (cm)"
+    )
+    spread_cm = models.DecimalField(
+        max_digits=7, decimal_places=3, null=True, blank=True, 
+        help_text="Average plant spread (cm)"
+    )
+
     # Fields for plant care guide, which may be filled by API data or users:
     detailed_description = models.TextField(
         null=True, blank=True, 
@@ -89,8 +157,8 @@ class Plant(models.Model):
     )
     
     # From the Trefle's 'growth' and 'specifications' sections:
-    days_to_harvest = models.PositiveIntegerField(
-        null=True, blank=True, 
+    days_to_harvest = models.DecimalField(
+        max_digits=4, decimal_places=2, null=True, blank=True, 
         help_text="Average number of days from planting to harvest"
     )
     sowing = models.TextField(
