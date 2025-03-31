@@ -1,7 +1,8 @@
 import React from 'react';
 import { FaCog } from 'react-icons/fa';
+import { useUser } from '../../contexts/ProtectedRoute';
 
-const NavBar = ({username}) => {
+const NavBar = ({user}) => {
 
     return (
         <div className="navbar" style={{
@@ -17,7 +18,7 @@ const NavBar = ({username}) => {
             <h1 style={{fontFamily:'Brush Script MT', color: 'black', fontSize: '50px',fontWeight: 'bold'}}>UPlant</h1>
             <div style={{ display: 'flex', alignItems: 'center' }}>
                 <div style={{ color: 'black', fontSize: '20px', marginRight: '50px', border: '1px dotted gray', padding: '0 10px' }}>
-                    {username}
+                    {user.username}
                 </div>
                 <FaCog style={{ color: 'black', fontSize: '50px', cursor: 'pointer', marginRight: '30px' }} />
             </div>

@@ -6,10 +6,15 @@
     box-sizing: border-box;
 }
 
+
 .plant-list {
     width: 50%;
     height: calc(100% - 40px);
     overflow-y: auto;
+}
+
+button:focus {
+    outline: none
 }
 
 .plant-item {
