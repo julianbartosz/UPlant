@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from user_management.models import User, Replies
 
 #New Imports
+from datetime import datetime
 from django.core.exceptions import ValidationError
 from .models import Forums, Replies
 #NEw Imports END
@@ -13,15 +14,24 @@ from .models import Forums, Replies
 
 
 class CustomUserCreationForm(UserCreationForm):
-    class Meta(UserCreationForm.Meta):
+    email = forms.EmailField(required=True)
+
+    class Meta:
         model = User
-        fields = ('email', 'username', 'role')
+        fields = ("username", "email", "password1", "password2", 'created_at')
 
     def __init__(self, *args, **kwargs):
-        super(CustomUserCreationForm, self).__init__(*args, **kwargs)
-        self.fields['email'].required = True
-        self.fields['role'].choices = [('User', 'User')]
+        super().__init__(*args, **kwargs)
+        self.fields["username"].initial = ""  # Ensure no default value
 
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        # Ensure created_at is set if needed (although it should be auto-set by the model)
+        if not user.created_at:
+            user.created_at = datetime.datetime.now()
+        if commit:
+            user.save()
+        return user
 
 class CustomUserUpdateForm(UserChangeForm):
     password = None

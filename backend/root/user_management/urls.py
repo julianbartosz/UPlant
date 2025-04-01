@@ -30,6 +30,7 @@ urlpatterns = [
         template_name='user_management/email/password_reset_complete.html'),
         name='password_reset_complete'),
     # New Paths
+    path('create-account/', UserCreateView.as_view(), name='create_account'),
     path('create-profile/', CreateProfileView.as_view(), name='create_profile'),
     path('forums/<int:forum_id>/reply/', ReplyView.as_view(), name='forum_reply'),
     path('forum/<int:forum_id>/reply/<int:parent_id>/reply/', ReplyView.as_view(), name='reply_to_reply'),
