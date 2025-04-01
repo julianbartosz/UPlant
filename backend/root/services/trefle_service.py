@@ -6,174 +6,195 @@ import logging
 from django.conf import settings
 from django.core.cache import cache
 from requests.exceptions import RequestException, Timeout
+from pydantic import BaseModel, ValidationError
+from typing import List, Optional, Dict, Any
 
 # Configure logging
 logger = logging.getLogger(__name__)
 
 # Constants
 TREFLE_BASE_URL = "https://trefle.io/api/v1"
-TREFLE_API_KEY = settings.TREFLE_API_KEY if hasattr(settings, 'TREFLE_API_KEY') else os.getenv('TREFLE_API')
+TREFLE_API_KEY = (
+    settings.TREFLE_API_KEY if hasattr(settings, "TREFLE_API_KEY") else os.getenv("TREFLE_API")
+)
 REQUEST_TIMEOUT = 10  # seconds
-CACHE_TIMEOUT = 300  # 5 minutes in seconds
+CACHE_TIMEOUT = 300   # 5 minutes in seconds
 
-def _get_headers():
-    """Return the default headers for Trefle API requests."""
-    return {
-        "Authorization": f"Bearer {TREFLE_API_KEY}"
-    }
+# Persistent session for connection reuse
+session = requests.Session()
 
-def _make_request(url, params=None):
+# Custom exception for API errors
+class TrefleAPIError(Exception):
+    def __init__(self, message: str, status_code: Optional[int] = None):
+        self.message = message
+        self.status_code = status_code
+        super().__init__(message)
+
+# Pydantic model for simplified plant data
+class PlantModel(BaseModel):
+    id: int
+    common_name: Optional[str] = ""
+    slug: str
+    scientific_name: str
+    status: Optional[str] = ""
+    rank: Optional[str] = ""
+    family_common_name: Optional[str] = ""
+    family: Optional[str] = ""
+    genus_id: Optional[int] = None
+    genus: Optional[str] = ""
+    image_url: Optional[str] = ""
+    synonyms: List[str] = []
+    links: Dict[str, Any] = {}
+
+def _sorted_params_str(params: Dict) -> str:
+    """Return a string of sorted query parameter items for cache key consistency."""
+    return str(sorted(params.items()))
+
+def _make_request_query_auth(url: str, params: Optional[Dict] = None) -> Dict:
     """
-    Make a request to the Trefle API with error handling and caching.
-    
-    Args:
-        url: The API endpoint URL
-        params: Optional query parameters
-        
-    Returns:
-        dict: API response data or error message
+    Make a request to the Trefle API using query parameter authentication.
+    Adds the API token as a query parameter, uses a persistent session,
+    handles errors (raising TrefleAPIError), ensures JSON decoding, and caches the response.
     """
-    # Create cache key from URL and params
-    cache_key = f"trefle_{url}_{str(params)}"
+    if params is None:
+        params = {}
+    # Add token authentication via query parameter
+    params["token"] = TREFLE_API_KEY
+
+    # Build a consistent cache key from sorted parameters
+    sorted_params = _sorted_params_str(params)
+    cache_key = f"trefle_{url}_{sorted_params}"
     cached_data = cache.get(cache_key)
-    
     if cached_data:
-        logger.debug(f"Returning cached data for {url}")
+        logger.debug(f"Returning cached data for {url} with params {params}")
         return cached_data
-    
+
     try:
-        response = requests.get(
-            url,
-            params=params,
-            headers=_get_headers(),
-            timeout=REQUEST_TIMEOUT
-        )
-        
-        # Raise exception for 4XX/5XX status codes
+        logger.debug(f"Making request to {url} with params {params}")
+        response = session.get(url, params=params, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
-        
-        data = response.json()
-        
-        # Cache successful responses
+        try:
+            data = response.json()
+        except ValueError as e:
+            logger.error(f"JSON decoding failed for {url}: {str(e)}")
+            raise TrefleAPIError("Failed to decode JSON response", status_code=response.status_code)
         cache.set(cache_key, data, CACHE_TIMEOUT)
-        
         return data
-        
     except Timeout:
-        logger.error(f"Timeout error accessing Trefle API: {url}")
-        return {"error": "The request to the plant database timed out. Please try again later."}
-        
+        logger.error(f"Timeout error accessing {url} with params {params}")
+        raise TrefleAPIError("The request to the plant database timed out. Please try again later.")
     except RequestException as e:
-        logger.error(f"Error accessing Trefle API: {str(e)}")
-        
-        # Handle common status codes with user-friendly messages
-        if hasattr(e, 'response') and e.response is not None:
-            status_code = e.response.status_code
-            if status_code == 401:
-                return {"error": "Authentication error with the plant database. Please contact support."}
-            elif status_code == 404:
-                return {"error": "The requested plant information could not be found."}
-            elif status_code == 429:
-                return {"error": "Too many requests to the plant database. Please try again later."}
-            elif status_code >= 500:
-                return {"error": "The plant database service is currently unavailable. Please try again later."}
-        
-        return {"error": "An error occurred while fetching plant data. Please try again later."}
-    
+        status_code = e.response.status_code if e.response else None
+        logger.error(f"RequestException for {url} with params {params}: {str(e)}")
+        if status_code == 401:
+            raise TrefleAPIError("Authentication error with the plant database. Please contact support.", status_code=401)
+        elif status_code == 404:
+            raise TrefleAPIError("The requested plant information could not be found.", status_code=404)
+        elif status_code == 429:
+            raise TrefleAPIError("Too many requests to the plant database. Please try again later.", status_code=429)
+        elif status_code and status_code >= 500:
+            raise TrefleAPIError("The plant database service is currently unavailable. Please try again later.", status_code=status_code)
+        raise TrefleAPIError("An error occurred while fetching plant data. Please try again later.", status_code=status_code)
     except Exception as e:
-        logger.error(f"Unexpected error in Trefle API request: {str(e)}")
-        return {"error": "An unexpected error occurred. Please try again later."}
+        logger.error(f"Unexpected error for {url} with params {params}: {str(e)}")
+        raise TrefleAPIError("An unexpected error occurred. Please try again later.")
 
-def list_species(filters=None, page=1):
+def _process_single_plant(plant: Dict) -> Dict:
     """
-    List plant species with optional filters and pagination.
+    Process and simplify a single plant object.
+    Validates and transforms the raw plant data using the PlantModel.
+    """
+    # Ensure required keys have default values
+    plant.setdefault("id", None)
+    plant.setdefault("slug", None)
+    plant.setdefault("scientific_name", None)
+    plant.setdefault("common_name", "")
+    plant.setdefault("status", "")
+    plant.setdefault("rank", "")
+    plant.setdefault("family_common_name", "")
+    plant.setdefault("family", "")
+    plant.setdefault("genus_id", None)
+    plant.setdefault("genus", "")
+    plant.setdefault("image_url", "")
+    if not isinstance(plant.get("synonyms"), list):
+        plant["synonyms"] = []
+    if not isinstance(plant.get("links"), dict):
+        plant["links"] = {}
+
+    try:
+        validated = PlantModel(**plant)
+        return validated.dict()
+    except ValidationError as e:
+        logger.error(f"Validation error processing plant data: {e.json()}")
+        raise TrefleAPIError("Received invalid plant data from API.")
+
+def _process_plant_data(raw_data: Dict) -> Dict:
+    """
+    Process the raw API response data and return a simplified, validated structure.
+    Handles both single plant and list of plants.
+    """
+    if "error" in raw_data:
+        raise TrefleAPIError(raw_data.get("error"))
+    data = raw_data.get("data")
+    if data is None:
+        logger.error("No 'data' key found in API response.")
+        raise TrefleAPIError("Malformed response from plant API.")
+
+    if isinstance(data, list):
+        processed_list = [_process_single_plant(plant) for plant in data]
+        return {
+            "data": processed_list,
+            "links": raw_data.get("links", {}),
+            "meta": raw_data.get("meta", {})
+        }
+    elif isinstance(data, dict):
+        processed_plant = _process_single_plant(data)
+        return {"data": processed_plant}
+    else:
+        logger.error("Unexpected data format in API response.")
+        raise TrefleAPIError("Unexpected data format received from plant API.")
+
+def list_plants(filters: Optional[Dict] = None, page: int = 1,
+                order: Optional[Dict] = None, range: Optional[Dict] = None) -> Dict:
+    """
+    List plants using the Trefle API with query parameter authentication.
+    Supports additional query parameters for filtering, ordering, and range filtering.
+    Processes the raw API response into a simplified, validated structure.
     
     Args:
-        filters (dict): Optional filter parameters
-        page (int): Page number for paginated results
+        filters (dict): Filter parameters (e.g., {"common_name": "rose"}).
+        page (int): Page number for pagination.
+        order (dict): Sort orders (e.g., {"year": "asc", "common_name": "desc"}).
+        range (dict): Range filters (e.g., {"year": "1800-1900"}).
         
     Returns:
-        dict: List of plant species or error message
+        dict: Simplified API response containing plant data.
     """
-    url = f"{TREFLE_BASE_URL}/species"
-    
-    # Initialize params with page number
+    url = f"{TREFLE_BASE_URL}/plants"
     params = {"page": page}
-    
-    # Add any filters to the params
     if filters and isinstance(filters, dict):
         params.update(filters)
-    
-    return _make_request(url, params)
+    if order and isinstance(order, dict):
+        order_str = ",".join([f"{k}:{v}" for k, v in order.items()])
+        params["order"] = order_str
+    if range and isinstance(range, dict):
+        range_str = ",".join([f"{k}:{v}" for k, v in range.items()])
+        params["range"] = range_str
 
-def retrieve_species(species_id_or_slug):
+    raw_response = _make_request_query_auth(url, params)
+    return _process_plant_data(raw_response)
+
+def retrieve_plants(species_id_or_slug: str) -> Dict:
     """
-    Retrieve detailed information about a specific plant species.
+    Retrieve a single plant's details from the Trefle API using query parameter authentication.
+    Processes the raw API response into a simplified, validated structure.
     
     Args:
-        species_id_or_slug: The ID or slug of the species to retrieve
+        species_id_or_slug (str): The unique identifier or slug of the plant.
         
     Returns:
-        dict: Species data or error message
+        dict: Simplified plant data.
     """
-    url = f"{TREFLE_BASE_URL}/species/{species_id_or_slug}"
-    return _make_request(url)
-
-def search_species(query, page=1, filters=None):
-    """
-    Search for plant species matching a query with optional filters.
-    
-    Args:
-        query (str): Search term
-        page (int): Page number for paginated results
-        filters (dict): Optional filter parameters
-        
-    Returns:
-        dict: Search results or error message
-    """
-    url = f"{TREFLE_BASE_URL}/species/search"
-    
-    # Initialize params with search query and page number
-    params = {"q": query, "page": page}
-    
-    # Add any filters to the params
-    if filters and isinstance(filters, dict):
-        params.update(filters)
-    
-    return _make_request(url, params)
-
-def get_plant_distributions(species_id_or_slug):
-    """
-    Get geographical distribution data for a plant species.
-    
-    Args:
-        species_id_or_slug: The ID or slug of the species
-        
-    Returns:
-        dict: Distribution data or error message
-    """
-    url = f"{TREFLE_BASE_URL}/species/{species_id_or_slug}/distributions"
-    return _make_request(url)
-
-def get_genus_data(genus_id_or_slug):
-    """
-    Get information about a specific plant genus.
-    
-    Args:
-        genus_id_or_slug: The ID or slug of the genus
-        
-    Returns:
-        dict: Genus data or error message
-    """
-    url = f"{TREFLE_BASE_URL}/genus/{genus_id_or_slug}"
-    return _make_request(url)
-
-def get_kingdom_data():
-    """
-    Get information about plant kingdoms.
-    
-    Returns:
-        dict: Kingdom data or error message
-    """
-    url = f"{TREFLE_BASE_URL}/kingdoms"
-    return _make_request(url)
+    url = f"{TREFLE_BASE_URL}/plants/{species_id_or_slug}"
+    raw_response = _make_request_query_auth(url)
+    return _process_plant_data(raw_response)
