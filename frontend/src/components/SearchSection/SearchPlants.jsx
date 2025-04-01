@@ -108,8 +108,9 @@ const PlantItem = ({ plant, index }) => {
     });
 
     return (
-        <div ref={ref} className='plant-item'>
+        <div ref={ref} className='plant-item' style={{ textAlign: 'center' }}>
             {plant.icon}
+            <div style={{ fontSize: '14px', marginTop: '5px' }}>{plant.name}</div>
         </div>
     );
 };
