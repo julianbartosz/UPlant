@@ -1,11 +1,11 @@
-# backend/root/user_management/test_db.py
-
+# backend/root/core/tests/test_db.py
 
 from django.db import IntegrityError
 from django.test import TestCase
-from user_management.models import User, Plants, Gardens, Garden_log
-from user_management.models import Forums, Replies, Likes
-
+from user_management.models import User
+from plants.models import Plants
+from gardens.models import Gardens, Garden_log
+from community.models import Forums, Replies, Likes
 
 # SETUP CLASSES:
 class CommonUsers(TestCase):

@@ -293,19 +293,19 @@ html {
     position: relative;
     min-height: 100%;
   }
-  
+
   body {
     min-height: 100vh;
   }
-  
+
   main {
     flex: 1 0 auto;
   }
-  
+
   .footer {
     background-color: var(--soft-white);
     border-top: 1px solid rgba(0,0,0,.1);
   }
-  
+
 /* Import Roboto font */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');

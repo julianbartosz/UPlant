@@ -1,3 +1,5 @@
+# backend/root/requirements.txt
+
 asgiref==3.8.1
 certifi==2025.1.31
 cffi==1.17.1

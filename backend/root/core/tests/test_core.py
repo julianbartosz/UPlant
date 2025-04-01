@@ -1,4 +1,4 @@
-# backend/root/core/tests.py
+# backend/root/core/tests/tests_core.py
 
 from django.test import TestCase, Client
 from django.urls import reverse, resolve

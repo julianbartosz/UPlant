@@ -3,15 +3,10 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.utils.translation import gettext_lazy as _
-from user_management.models import User, Replies
+from user_management.models import User
 
 #New Imports
-from datetime import datetime
 from django.core.exceptions import ValidationError
-from .models import Forums, Replies
-#NEw Imports END
-
-
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -62,7 +57,6 @@ class CustomPasswordChangeForm(forms.ModelForm):
             self.add_error('confirm_password', 'New password and Confirm new password do not match')
         return cleaned_data
     
- #New Forms
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
@@ -76,21 +70,3 @@ class ProfileForm(forms.ModelForm):
         if User.objects.filter(username=username).exists():
             raise ValidationError("This username is already taken. Please choose another.")
         return username
-    
-class ForumForm(forms.ModelForm):
-    class Meta:
-        model = Forums
-        fields = ['title', 'body']
-        widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter forum title'}),
-            'body': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter forum content'}),
-        }
-
-class ReplyForm(forms.ModelForm):
-    class Meta:
-        model = Replies
-        fields = ['body']
-        widgets = {
-            'body': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter your reply'}),
-        }
-#New Form END
