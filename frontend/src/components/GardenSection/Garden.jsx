@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useContext } from 'react';
+import React, { useRef, useEffect, useState, useContext, lazy } from 'react';
 import './Garden.css';
 import { useDrop } from 'react-dnd';
 import { FaPlus } from 'react-icons/fa';
@@ -6,20 +6,24 @@ import { useUser } from '../../contexts/ProtectedRoute';
 import { Tooltip } from 'react-tooltip';
 
 
-
 const Garden = () => {
 
     const accept = 'PLANT';
     const containerRef = useRef(null);
-    const [fontSize, setFontSize] = useState(40); // Default font size
+    const [fontSize, setFontSize] = useState(null); // Default font size
     const [selectedGardenIndex, setSelectedGardenIndex] = useState(0); // Track selected garden
-    const { gardens, handleAddGarden, handleDeleteGarden, handleUpdateGarden, adjustCellRowTop, adjustCellRowBottom } = useUser(); // Get gardens and functions from context
+    const { gardens, handleAddGarden, handleDeleteGarden, handleUpdateGarden, setGardens, adjustCellRowTop, adjustCellRowBottom } = useUser(); // Access user context
     const [selectedCells, setSelectedCells] = useState(new Set());
-
+    const gardensRef = useRef(gardens); // Store the gardens in a ref to prevent state la
     const selectedCellsRef = useRef(selectedCells); // Store the selected cells in a ref to prevent state lag
     const selectedGardenIndexRef = useRef(selectedGardenIndex); // Store the selected garden index in a ref to prevent state lag
 
     //  ref with state
+
+    useEffect(() => {
+        gardensRef.current = gardens;
+    }, [gardens]);
+
     useEffect(() => {
         selectedCellsRef.current = selectedCells;
     }, [selectedCells]);
@@ -46,6 +50,7 @@ const Garden = () => {
     };
 
     useEffect(() => {
+
         const updateFontSize = () => {
 
             if (containerRef.current) {
@@ -57,7 +62,7 @@ const Garden = () => {
                 const calculatedFontSize = Math.min(
                     containerWidth / gardens[selectedGardenIndex].x,
                     containerHeight / gardens[selectedGardenIndex].y
-                ) * 0.5;
+                ) * 0.3;
                 setFontSize(calculatedFontSize);
             }
         };
@@ -67,51 +72,11 @@ const Garden = () => {
         window.addEventListener('resize', updateFontSize);
 
         return () => window.removeEventListener('resize', updateFontSize);
-    }, [gardens, selectedGardenIndex]);
+
+    }, [selectedGardenIndex]);
+
 
     const DropTarget = (obj, i, j) => {
-        const [, drop] = useDrop(() => ({
-            accept,
-            drop: (item) => {
-
-                console.log('Selected cells before drop:', selectedCellsRef.current); // Log the selected cells
-                console.log('Dropped item:', item, 'into selected cells');
-
-                const newCells = [...gardens[selectedGardenIndexRef.current].cells]; // Deep copy the garden cells
-                
-                // Iterate through selected cells
-                selectedCellsRef.current.forEach(key => {
-                    console.log("Selected cell key:", key);
-                    const [row, col] = key.split('-').map(Number);
-                    console.log(`Selected cell: (${row}, ${col})`);
-                    
-                    // Ensure row and col are within grid boundaries
-                    if (row < gardens[selectedGardenIndexRef.current].y && col < gardens[selectedGardenIndexRef.current].x) {
-                        console.log("Putting item in cell", row, col);
-                        // Update the selected cell with the dropped item
-                        newCells[row][col] = item;
-                    } else {
-                        console.error(`Invalid drop position: (${row}, ${col})`);
-                    }
-                });
-
-                console.log("NEW CELLS", newCells);
-
-                // Update the garden with new cells
-                const updatedGarden = {
-                    ...gardens[selectedGardenIndexRef.current], // Copy current garden state
-                    cells: newCells // Assign new cells with updated values
-                };
-
-                console.log('Updated garden:', updatedGarden);
-
-                // Clear selected cells after drop
-                setSelectedCells(new Set());
-                handleUpdateGarden(updatedGarden);
-
-                console.log(gardens);
-            },
-        }));
 
         // Add click handler to toggle selection
         const isSelected = selectedCells.has(`${i}-${j}`);
@@ -121,7 +86,6 @@ const Garden = () => {
         return (
         <div
         key={`${i}-${j}`}
-        ref={drop}
         className={`square ${isSelected ? 'selected' : ''}`}
         style={{ fontSize: `${fontSize}px` }}
         onClick={cellClickHandler} // Add click handler here
@@ -153,57 +117,37 @@ const Garden = () => {
     
 
     const handleGridSizeChange = (direction, change, edge) => {
-        const newGarden = { ...gardens[selectedGardenIndex] }; // Copy current garden state
 
-        // Ensure dimensions are within bounds
-        if ((direction === 'x' && newGarden.x + change < 1) || (direction === 'y' && newGarden.y + change < 1)) {
-            alert("Grid size cannot be less than 1.");
-            return;
-        }
+        const newGarden = { ...gardens[selectedGardenIndexRef.current] }; // Copy current garden state
+        console.log("GARDEN AS IT WAS", newGarden);
 
+        // Modify grid size
         if (direction === 'x') {
-            if (edge === 'left') {
-                newGarden.cells.forEach(row => {
-                    if (change > 0) {
-                        row.unshift(null); // Add column to the left
-                    } else {
-                        row.shift(); // Remove column from the left
-                    }
-                });
-            } else if (edge === 'right') {
-                newGarden.cells.forEach(row => {
-                    if (change > 0) {
-                        row.push(null); // Add column to the right
-                    } else {
-                        row.pop(); // Remove column from the right
-                    }
-                });
-            }
             newGarden.x += change;
 
+            if (edge === 'left') {
+                newGarden.cells.forEach(row => change > 0 ? row.unshift(null) : row.shift());
+
+            } else if (edge === 'right') {
+                newGarden.cells.forEach(row => change > 0 ? row.push(null) : row.pop());
+            }
+
+            
         } else if (direction === 'y') {
             if (edge === 'top') {
-                if (change > 0) {
-                    newGarden.cells.unshift(Array(newGarden.x).fill(null)); // Add row to the top
-                } else {
-                    newGarden.cells.shift(); // Remove row from the top
-                }
+                change > 0 ? newGarden.cells.unshift(Array(newGarden.x).fill(null)) : newGarden.cells.shift();
             } else if (edge === 'bottom') {
-                if (change > 0) {
-                    newGarden.cells.push(Array(newGarden.x).fill(null)); // Add row to the bottom
-                } else {
-                    newGarden.cells.pop(); // Remove row from the bottom
-                }
+                change > 0 ? newGarden.cells.push(Array(newGarden.x).fill(null)) : newGarden.cells.pop();
             }
             newGarden.y += change;
         }
-
+        console.log("GARDEN AS IT IS NOW", newGarden);
+        
         // Update the garden with new dimensions
         handleUpdateGarden(newGarden);
-
     };
-    // useEffect(() => {
-    // Removed unused adjustGridSize function
+    
+
     // useEffect(() => {
     //     const updateFontSize = () => {
     //         if (containerRef.current) {
@@ -211,7 +155,7 @@ const Garden = () => {
     //             const containerHeight = containerRef.current.offsetHeight;
                 
     //             // Dynamically calculate font size
-    //             const calculatedFontSize = Math.min(containerWidth / gardens[selectedGardenIndex].x, containerHeight / gardens[selectedGardenIndex].y) * 0.5;
+    //             const calculatedFontSize = Math.min(containerWidth / gardens[selectedGardenIndex].x, containerHeight / gardens[selectedGardenIndex].y) * 0.2;
     //             setFontSize(calculatedFontSize);
     //         }
     //     };
@@ -226,34 +170,107 @@ const Garden = () => {
     
     const createGrid = () => {
         
-        return gardens[selectedGardenIndex].cells.map((row, i) => (
-            <div key={i} className="row">
-                {row.map((item, j) => (
-                    <div data-tooltip-id="my-tooltip" data-tooltip-content={item ? item.name : ""}>{DropTarget(item, i, j)}</div>
-                ))}
-            </div>
-        ));
-    };
+        return (
+       
+            gardens[selectedGardenIndex].cells.map((row, i) => (
+                <div key={i} className="row">
+                    {row.map((item, j) => (
+                        <div data-tooltip-id="my-tooltip" data-tooltip-content={item ? item.name : ""}>{DropTarget(item, i, j)}</div>
+                    ))}
+                </div>
+            ))
   
+        );
+    };
+    const handleDrop = (item) => {
+        setGardens((prevGardens) => {
+            const currentGarden = { ...prevGardens[selectedGardenIndexRef.current] };
+            console.log("GARDEN AS IT WAS", currentGarden);
 
+            console.log("DIMS", currentGarden.x, currentGarden.y);
+
+            if (!currentGarden) {
+                console.error("Garden not found at index:", selectedGardenIndexRef.current);
+                return prevGardens;
+            }
+
+            console.log('Selected cells before drop:', selectedCellsRef.current); // Log the selected cells
+            console.log('Dropped item:', item, 'into selected cells');
+
+            const newCells = [...currentGarden.cells]; // Copy the current cells
+
+            // Iterate through selected cells
+            selectedCellsRef.current.forEach(key => {
+                console.log("Selected cell key:", key);
+                const [row, col] = key.split('-').map(Number);
+                console.log(`Selected cell: (${row}, ${col})`);
+                
+                // Ensure row and col are within grid boundaries
+                if (row < currentGarden.y && col < currentGarden.x) {
+                    console.log("Putting item in cell", row, col);
+                    // Update the selected cell with the dropped item
+                    newCells[row][col] = item;
+                } else {
+                    console.error(`Invalid drop position: (${row}, ${col})`);
+                }
+            });
+
+            console.log("NEW CELLS", newCells);
+
+            // Update the garden with new cells
+            const updatedGarden = {
+                ...currentGarden, // Copy current garden state
+                cells: newCells // Assign new cells with updated values
+            };
+
+            console.log('Updated garden:', updatedGarden);
+
+            // Return updated gardens array
+            const updatedGardens = [...prevGardens];
+            updatedGardens[selectedGardenIndexRef.current] = updatedGarden;
+
+            return updatedGardens;
+        });
+
+        // Clear selected cells after drop
+        setSelectedCells(new Set());
+    };
+
+    
+    const [, drop] = useDrop(() => ({
+
+        accept,
+
+        drop: (item) => {
+
+            handleDrop(item);
+        },
+    }));
+  
     return (
-        <div className="container" ref={containerRef}>
+
+        <div className="container" ref={containerRef} >
 
             <div style={{ position: "absolute", top: 0, left: 0}}>
+
             <GardenBar handleAddGarden={handleAddGarden} gardens={gardens} selectedGardenIndex={selectedGardenIndex} setSelectedGardenIndex={setSelectedGardenIndex}/>
             </div>
 
-            <div className="garden" style={{ 
-                display: "grid",
-                gridTemplateRows: `repeat(${gardens[selectedGardenIndex].y}, 1fr)`,
-                gridTemplateColumns: `repeat(${gardens[selectedGardenIndex].x}, 1fr)`,
-            }}>
+            <div className="garden" ref={drop} style={{
+                            display: "grid",
+                            gridTemplateColumns: `repeat(${gardens[selectedGardenIndex].x}, 1fr)`, // Dynamic columns
+                            gridTemplateRows: `repeat(${gardens[selectedGardenIndex].y}, 1fr)`,  // Dynamic rows
+                            gap: "2px",
+                            border: "2px solid black",
+                            margin: "10px 0",
+                            height: "100%", // Ensure the grid takes full height of the container
+                        }}>
 
                 {createGrid()}
                 <Tooltip id="my-tooltip" />
                 <div style={{ position: "absolute", top: "0", left: "50%", transform: "translateX(-50%)", zIndex: 1,  gap: "10px"}}>
             {/* Top Center Button */}
-            <button className="add-remove-btn" onClick={() => adjustCellRowTop(gardens[selectedGardenIndexRef.current])}>+</button>
+            <button className="add-remove-btn" onClick={() => handleGridSizeChange('y', 1, "top")}>+</button>
             <button className="add-remove-btn" onClick={() => handleGridSizeChange('y', -1, "top")}>-</button>
         </div>
 
@@ -313,7 +330,7 @@ const GardenBar = ({ handleAddGarden, gardens, selectedGardenIndex, setSelectedG
                     <FaPlus style={{fontSize: "20px" }} />
                     </button>
                 </div>
-
+            
             {gardens.map((garden, index) => (
                 <div className='garden-bar-item' key={index}>
                     <button 

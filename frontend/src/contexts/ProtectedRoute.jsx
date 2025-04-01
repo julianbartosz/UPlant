@@ -30,6 +30,10 @@ export const UserProvider = ({ children }) => {
                 Array(5).fill(null),
                 Array(5).fill(null),
                 Array(5).fill(null),
+                Array(5).fill(null),
+                Array(5).fill(null),
+                Array(5).fill(null),
+                Array(5).fill(null),
             ];
             const cells2 = [
                 Array(5).fill(null),
@@ -48,7 +52,7 @@ export const UserProvider = ({ children }) => {
         
             // TODO: Retrieve Gardens
             let gardens = [
-                { name: 'Garden 1', x: 5, y: 5, cells: cells1 },
+                { name: 'Garden 1', x: 5, y: 9, cells: cells1 },
                 { name: 'Garden 2', x: 5, y: 5, cells: cells2 },
                 { name: 'Garden 3', x: 5, y: 5, cells: cells3 }
             ];
@@ -106,8 +110,8 @@ export const UserProvider = ({ children }) => {
         }
     };
 
-
-    const handleUpdateGarden = async (updatedGarden) => {
+    
+    const handleUpdateGarden = async (updatedGarden, sync=true) => {
         
         if (!updatedGarden) {
             alert("Invalid garden data. Please provide valid gardens.");
@@ -123,6 +127,10 @@ export const UserProvider = ({ children }) => {
                 garden.name === updatedGarden.name ? updatedGarden : garden
             )
         )
+
+        if (!sync) {
+            return;
+        }
 
 
         try {
@@ -283,6 +291,7 @@ export const UserProvider = ({ children }) => {
             handleRenameGarden, 
             handleUpdateUser,
             adjustCellRowTop,
+            setGardens
         
             }}>
             {children}
