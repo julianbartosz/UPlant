@@ -183,10 +183,17 @@ export const UserProvider = ({ children }) => {
     }
 
 
-    const handleDeleteGarden = async (gardenName) => {
+    const handleDeleteGarden = async (index) => {
+        const garden = gardens[index];
 
-        if (!gardenName || !gardens.some(garden => garden.name === gardenName)) {
-            alert("Invalid garden name. Please provide a valid name.");
+        if (!garden) {
+            alert("Invalid garden data. Please provide valid gardens.");
+            return;
+        }
+
+        const confirmDelete = window.confirm(`Are you sure you want to delete the garden: ${garden.name}?`);
+
+        if (!confirmDelete) {
             return;
         }
 
@@ -194,27 +201,28 @@ export const UserProvider = ({ children }) => {
         const previousGardens = [...gardens];
 
         // Optimistically update UI
-        const updatedGardens = gardens.filter(garden => garden.name !== gardenName);
-        setGardens(updatedGardens);
+        setGardens(prevGardens => prevGardens.filter((_, i) => i !== index));
 
         try {
-            const response = await fetch(`/api/gardens/${gardenName}`, {
+            const response = await fetch(`/api/gardens/${garden.name}`, {
                 method: 'DELETE',
                 headers: { 
                     'Content-Type': 'application/json',
                     'credentials': 'include' 
                 },
             });
-            if (!response.ok) {
-                throw new Error("Failed to delete garden");
-            }
-            console.log(`Garden ${gardenName} deleted successfully.`);
 
+            if (!response.ok) {
+                console.log("Response not ok");
+            }
+
+            console.log(`Garden "${garden.name}" deleted successfully.`);
         } catch (error) {
             console.error("Error deleting garden:", error);
             // setGardens(previousGardens); // Rollback UI
             alert("Failed to delete garden. Please try again.");
         }
+       
     };
 
     const handleUpdateUser = async (updatedUser) => {

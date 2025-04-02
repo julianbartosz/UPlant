@@ -7,6 +7,7 @@ The Grid dimensions are loaded dynamically to .garden.
 */
 
 .container {
+  
   width: 100%;      /* You can set a specific width, or it can be responsive */
   height: 100%;     /* You can set a specific height, or make it flexible */
   display: flex;    /* Use flexbox to center the garden */

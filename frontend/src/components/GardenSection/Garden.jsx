@@ -2,6 +2,10 @@ import React, { useRef, useEffect, useState, useContext, lazy } from 'react';
 import './Garden.css';
 import { useDrop } from 'react-dnd';
 import { FaPlus } from 'react-icons/fa';
+import { MdDeleteForever } from "react-icons/md";
+import { TbHttpDelete } from "react-icons/tb";
+
+import { TiDelete } from "react-icons/ti";
 import { useGardens } from '../../contexts/ProtectedRoute';
 import { Tooltip } from 'react-tooltip';
 
@@ -175,7 +179,7 @@ const Garden = () => {
     }));
   
     return (
-        <div className="container" ref={containerRef} style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <div className="container" ref={containerRef}>
             <div style={{ position: "absolute", top: 0, left: 0 }}>
                 <GardenBar selectedGardenIndex={selectedGardenIndex} setSelectedGardenIndex={setSelectedGardenIndex} />
             </div>
@@ -249,11 +253,29 @@ const Garden = () => {
                 
                 
             </div>
-            
+           
         </div>
     );
 };
 
+function DeleteButton({ onDelete }) {
+    return (
+      <button 
+        onClick={onDelete} 
+        style={{
+            margin: "0px",
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+        }}
+
+        
+      >
+        <TiDelete style={{ padding: "0px", marginTop: "0px",fontSize: "20px"}}/>
+        
+      </button>
+    );
+  }
 const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex }) => {
    
     const { gardens, handleAddGarden, handleDeleteGarden, handleRenameGarden } = useGardens();
@@ -280,6 +302,21 @@ const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex }) => {
                
             {gardens.map((garden, index) => (
                 <div className='garden-bar-item' key={index}>
+                     <DeleteButton 
+                        onDelete={() => {
+                            if (gardens.length <= 1) {
+                                alert("You cannot delete the last garden.");
+                                return;
+                            }
+                            handleDeleteGarden(index);
+                            if (selectedGardenIndex === index) {
+                                setSelectedGardenIndex(0);
+                            } else if (selectedGardenIndex > index) {
+                                setSelectedGardenIndex(selectedGardenIndex - 1);
+                            }
+                        }} 
+                    />
+                    
                     
                     <button 
                     onContextMenu={(e) => {
@@ -294,6 +331,7 @@ const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex }) => {
                     >
                         {garden.name}
                     </button>
+                    
                 </div>
             ))}
         </div>
