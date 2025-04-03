@@ -88,14 +88,6 @@ body {
     margin-bottom: 20px;
 }
 
-/* Form fields */
-#id_username, #id_password {
-    width: 100%;
-    padding: 10px;
-    margin-top: 8px;
-    box-sizing: border-box;
-}
-
 /* Submit button */
 .submit-row {
     text-align: center;
@@ -142,6 +134,7 @@ body {
     transition: all 0.3s ease;
 }
 
+
 .btn-primary:hover {
     background-color: #3d8b40;
 }
@@ -161,3 +154,38 @@ body {
     background-color: var(--sky-blue);
     color: white;
 }
+
+.password-hint {
+    display: none;  /* Initially hidden */
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 10px;
+    border-radius: 5px;
+    position: relative; /* Change from absolute to relative */
+    max-width: 100%;
+    font-size: 12px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;  /* Ensure spacing below input field */
+}
+
+
+/* Form group styling to ensure each label is above the input */
+.form-group {
+    margin-bottom: 15px; /* Add space between form groups */
+    display: flex;
+    flex-direction: column; /* Stack label and input vertically */
+}
+
+/* Label styling */
+.form-group label {
+    margin-bottom: 5px; /* Space between label and input */
+}
+
+/* Input fields to ensure they span the full width */
+#id_username, #id_email, #id_password1, #id_password2 {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+

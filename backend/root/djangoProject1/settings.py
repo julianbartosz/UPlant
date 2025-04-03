@@ -37,7 +37,21 @@ INSTALLED_APPS = [
     'community.apps.CommunityConfig',
     'django_extensions',
     'django_select2',
+    'rest_framework',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser'
+    ],
+    'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
+}
 
 AUTH_USER_MODEL = 'user_management.User'
 

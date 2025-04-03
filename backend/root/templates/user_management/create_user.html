@@ -1,33 +1,81 @@
-<!-- backend/root/templates/user_management/create_user.html -->
-
 {% extends 'basic_generic.html' %}
+{% load socialaccount %}
+{% load static %}
+
+{% block title %}Create Account{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="card shadow-sm">
-        <div class="card-header">
-            <h2>Create User</h2>
+<link rel="stylesheet" href="{% static 'admin/css/create_account.css' %}">
+
+<div id="container" class="login-container">
+    <div id="content">
+        <div id="header">
+            <h1>Create Account</h1>
         </div>
-        <div class="card-body">
-            <form method="post" class="form">
+
+        <div id="form-container">
+            <form method="post">
                 {% csrf_token %}
+                
                 <div class="form-group">
-                    {{ form.non_field_errors }}
+                    <label for="id_username">Username:</label>
+                    <input type="text" name="username" id="id_username" value="{{ form.username.value|default:'' }}" />
                 </div>
-                {% for field in form %}
-                    <div class="form-group">
-                        {{ field.label_tag }}
-                        {{ field }}
-                        {{ field.help_text }}
-                        {{ field.errors }}
+            
+                <div class="form-group">
+                    <label for="id_email">Email:</label>
+                    {{ form.email }}
+                </div>
+            
+                <div class="form-group">
+                    <label for="id_password1">Password:</label>
+                    {{ form.password1 }}
+                    <div id="password-hint" class="password-hint">
+                        <ul>
+                            <li>Your password must contain at least 8 characters.</li>
+                            <li>Your password can’t be entirely numeric.</li>
+                            <li>Your password can’t be too similar to your personal information.</li>
+                            <li>Your password can’t be a commonly used password.</li>
+                        </ul>
                     </div>
-                {% endfor %}
-                <div class="form-group text-center">
-                    <button type="submit" class="btn btn-primary">Create User</button>
-                    <a href="{% url 'user_management:user_list' %}" class="btn btn-secondary">Cancel</a>
                 </div>
+            
+                <div class="form-group">
+                    <label for="id_password2">Confirm Password:</label>
+                    {{ form.password2 }}
+                </div>
+            
+                <button type="submit" class="btn btn-primary">Create Account</button>
             </form>
+            
+            <div class="mt-3 text-center">
+                <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center">
+            <hr>
+            <p>Or sign up with:</p>
+            <a href="{% provider_login_url 'google' %}" class="btn btn-outline-dark">
+                <img src="{% static 'img/web_neutral_sq_na@2x.png' %}" alt="Google" height="18" class="me-2">
+                Google
+            </a>
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const passwordField = document.querySelector("#id_password1");
+        const passwordHint = document.querySelector("#password-hint");
+
+        passwordField.addEventListener("focus", function () {
+            passwordHint.style.display = "block";
+        });
+
+        passwordField.addEventListener("blur", function () {
+            passwordHint.style.display = "none";
+        });
+    });
+</script>
+
 {% endblock %}
