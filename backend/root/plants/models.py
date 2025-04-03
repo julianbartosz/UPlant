@@ -21,6 +21,15 @@ class Plant(models.Model):
     slug = models.SlugField(unique=True, help_text="Unique human-readable identifier")
     scientific_name = models.CharField(max_length=255)
 
+    STATUS_CHOICES = [
+        ('accepted', 'Accepted'),
+        ('unknown', 'Unknown'),
+    ]
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default='unknown',
+        help_text="Acceptance status of the plant name"
+    )
+    
     RANK_CHOICES = [
         ('species', 'Species'),
         ('ssp', 'Subspecies'),
@@ -243,3 +252,56 @@ class Plant(models.Model):
     
     def __str__(self):
         return f"{self.scientific_name} ({self.slug})"
+
+
+
+    # class Meta:
+    #     constraints = [
+    #         CheckConstraint(
+    #             check = Q(days_to_harvest__gte=0) or Q(days_to_harvest__isnull=True), 
+    #             name = 'check_days_pos',
+    #         ),
+
+    #         CheckConstraint(
+    #             check = (Q(ph_max__gte=0) and Q(ph_max__lte=14)) or Q(ph_max__isnull=True), 
+    #             name = 'check_ph_max',
+    #         ),
+
+    #         CheckConstraint(
+    #             check = (Q(ph_max__isnull=False) and Q(ph_min__gte=0) and Q(ph_min__lte=14) and Q(ph_min__lte=F('ph_max'))) or
+    #             (Q(ph_max__isnull=True) and Q(ph_min__gte=0) and Q(ph_min__lte=14)) or
+    #             Q(ph_min__isnull=True),
+    #             name = 'check_ph_min',
+    #         ),
+    #         # Note: I think this accounts for if ph_max is null but ph_min is not...
+    #         # To be honest, I don't understand clean methods yet, so I'm not sure if this
+    #         # is the preferred route to do this.
+
+    #         CheckConstraint(
+    #             check = Q(row_spacing_cm__gte=0) or Q(row_spacing_cm__isnull=True), 
+    #             name = 'check_row_pos',
+    #         ),
+
+    #         CheckConstraint(
+    #             check = Q(spread_cm__gte=0) or Q(spread_cm__isnull=True), 
+    #             name = 'check_spread_pos',
+    #         ),
+
+    #         CheckConstraint(
+    #             check = Q(min_precip_mm__gte=0) or Q(min_precip_mm__isnull=True), 
+    #             name = 'check_min_precip_pos',
+    #         ),
+
+    #         CheckConstraint(
+    #             check = (Q(min_precip_mm__isnull=False) and Q(max_precip_mm__gte=0) and Q(max_precip_mm__gte=F('min_precip_mm'))) or
+    #             (Q(min_precip_mm__isnull=True) and Q(max_precip_mm__gte=0)) or
+    #             Q(max_precip_mm__isnull=True),
+    #             name = 'check_max_precip_pos',
+    #         ),
+    #         # Note: I think this accounts for if min_precip is null but max_precip is not?
+
+    #         CheckConstraint(
+    #             check = Q(min_root_depth_cm__gte=0) or Q(min_root_depth_cm__isnull=True), 
+    #             name = 'check_root_depth_pos',
+    #         )
+    #     ]

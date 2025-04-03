@@ -15,7 +15,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 RUN mkdir -p /app/cert/
 
 # Copy SSL certificate
-COPY DigiCertGlobalRootCA.crt.pem /app/cert/DigiCertGlobalRootCA.crt.pem
+COPY cert/DigiCertGlobalRootCA.crt.pem /app/cert/
 
 # Copy the rest of the application code
 COPY . /app/

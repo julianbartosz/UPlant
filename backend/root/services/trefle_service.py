@@ -8,6 +8,7 @@ from django.core.cache import cache
 from requests.exceptions import RequestException, Timeout
 from pydantic import BaseModel, ValidationError
 from typing import List, Optional, Dict, Any
+import json
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -58,6 +59,12 @@ def _make_request_query_auth(url: str, params: Optional[Dict] = None) -> Dict:
     """
     if params is None:
         params = {}
+    
+    # Ensure all params are strings, not bytes
+    for key, value in params.items():
+        if isinstance(value, bytes):
+            params[key] = value.decode('utf-8')
+    
     # Add token authentication via query parameter
     params["token"] = TREFLE_API_KEY
 
@@ -66,15 +73,21 @@ def _make_request_query_auth(url: str, params: Optional[Dict] = None) -> Dict:
     cache_key = f"trefle_{url}_{sorted_params}"
     cached_data = cache.get(cache_key)
     if cached_data:
-        logger.debug(f"Returning cached data for {url} with params {params}")
+        logger.debug(f"Returning cached data for {url}")
         return cached_data
 
     try:
-        logger.debug(f"Making request to {url} with params {params}")
+        logger.debug(f"Making request to {url}")
         response = session.get(url, params=params, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         try:
-            data = response.json()
+            # Use response.text instead of direct json() to avoid potential bytes issues
+            if isinstance(response.content, bytes):
+                response_text = response.content.decode('utf-8')
+            else:
+                response_text = response.text
+                
+            data = json.loads(response_text)
         except ValueError as e:
             logger.error(f"JSON decoding failed for {url}: {str(e)}")
             raise TrefleAPIError("Failed to decode JSON response", status_code=response.status_code)
