@@ -37,6 +37,11 @@ class UserCreateView(CreateView):
     form_class = CustomUserCreationForm
     template_name = 'user_management/create_user.html'
     success_url = reverse_lazy('user_management:user_list')
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Your account has been created successfully!")
+        return response
+    
 
 
 class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):

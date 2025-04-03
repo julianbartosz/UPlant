@@ -70,6 +70,5 @@ class UserAdmin(BaseUserAdmin):
         else:
             return UserChangeForm
 
-
 admin.site.unregister(Group)
 admin.site.register(User, UserAdmin)
