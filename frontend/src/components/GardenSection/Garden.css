@@ -7,6 +7,7 @@ The Grid dimensions are loaded dynamically to .garden.
 */
 
 .container {
+  
   width: 100%;      /* You can set a specific width, or it can be responsive */
   height: 100%;     /* You can set a specific height, or make it flexible */
   display: flex;    /* Use flexbox to center the garden */
@@ -20,27 +21,72 @@ The Grid dimensions are loaded dynamically to .garden.
   padding: 30px;
   background-color: lightgreen;
   border-radius: 8px;
-
+  
   display: grid;
-  gap: 5px;  /* Space between the grid cells */
   
-  /* Ensure that the garden container is a square */
-  width: 50vw;
-  height: 50vw;
-  
-  position: relative;
+
 
   /* Avoid overflow */
-  max-width: 70%;  
-  max-height: 70%;  
+  width: 100%;
+  height: 100%;
+  
 }
 
-.row {
-    display: contents;  /* Ensure the row doesn't add extra spacing */
+.grid {
+    display: grid;
 }
   
-.square {
+.grid-remove-btn {
+  width: 40px;      /* Ensure the button is a circle */
+  height: 40px;     /* Ensure the button is a circle */
+  border-radius: 50%;  /* Circular buttons */
+  background-color: red;  /* Red color for the remove button */
+  color: white;
+  border: none;
+ 
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease;  /* Smooth transition for interactions */
+}
+
+.grid-remove-btn:hover {
+  background-color: darkred;
+  transform: scale(1.1);  /* Scale up the button when hovered */
+}
+
+.grid-remove-btn:active {
+  transform: scale(0.95);  /* Shrink the button on click */
+}
+
+.grid-remove-btn:focus {
+  outline: none;  /* Remove the outline for a cleaner look */
+}
+
+.grid-add-btn {
+  width: 40px;      /* Ensure the button is a circle */
+  height: 40px;     /* Ensure the button is a circle */
+  background-color: green;  /* Green color for the add button */
+  color: white;
+  border: none;
+  border-radius: 50%;  /* Circular buttons */
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease;  /* Smooth transition for interactions */
+}
+
+.grid-add-btn:hover {
   background-color: darkgreen;
+  transform: scale(1.1);  /* Scale up the button when hovered */
+}
+
+.grid-add-btn:active {
+  transform: scale(0.95);  /* Shrink the button on click */
+}
+
+.grid-add-btn:focus {
+  outline: none;  /* Remove the outline for a cleaner look */
+}
+/* Base square styles */
+.square {
+  background-color: darkgreen; /* default color */
   border: 1px solid black;
   width: 100%;  /* Make each square fill the grid cell */
   height: 100%; /* Ensure the height matches the width for a square shape */
@@ -48,6 +94,33 @@ The Grid dimensions are loaded dynamically to .garden.
   justify-content: center; /* Center the text horizontally */
   align-items: center;     /* Center the text vertically */
   overflow: hidden;        /* Prevent text from stretching the square */
+}
+
+.selected {
+  background-color: darkgreen; /* Keep the original background */
+  border: 1px solid black;
+  position: relative; /* Position the circle inside */
+}
+
+.selected::after {
+  content: '';
+  position: absolute;
+  width: 50%; /* Adjust the size of the circle */
+  height: 50%; /* Adjust the size of the circle */
+  border-radius: 50%; /* Makes it a circle */
+  background-color: #8B4513; /* Fertile soil brown */
+}
+
+.add-remove-btn {
+  padding: 12px;
+  font-size: 12px;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px; /* Make it circular */
+  cursor: pointer;
+}
+
+.square:hover {
+  border: 1px solid white;  /* This will show a red border when you hover */
 }
 
 .garden-bar {
