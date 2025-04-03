@@ -1,0 +1,30 @@
+{% extends 'basic_generic.html' %}
+
+{% block content %}
+<h2>Reply Thread</h2>
+
+<div>
+    <p><strong>{{ reply.user_id.username }}</strong>: {{ reply.body }}</p>
+    <small>Created on {{ reply.created_at|date:"F d, Y" }}</small>
+</div>
+
+<h3>Replies</h3>
+<ul>
+    {% for thread_reply in thread_replies %}
+        <li>
+            <p><strong>{{ thread_reply.user_id.username }}</strong>: {{ thread_reply.body }}</p>
+            <small>Created on {{ thread_reply.created_at|date:"F d, Y" }} | Likes: {{ thread_reply.like_count }} | Replies: {{ thread_reply.reply_count }}</small>
+            <a href="{% url 'user_management:reply_thread' reply_id=thread_reply.id %}">View Thread</a>
+        </li>
+    {% empty %}
+        <p>No replies yet.</p>
+    {% endfor %}
+</ul>
+
+<h3>Leave a Reply</h3>
+<form method="post" action="{% url 'user_management:forum_reply' forum_id=reply.forum_id.id parent_id=reply.id %}">
+    {% csrf_token %}
+    {{ reply_form.as_p }}
+    <button type="submit">Reply</button>
+</form>
+{% endblock %}

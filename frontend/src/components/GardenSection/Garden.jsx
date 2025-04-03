@@ -1,4 +1,6 @@
+
 import React, { useRef, useEffect, useState, useContext, lazy } from 'react';
+
 import './Garden.css';
 import { useDrop } from 'react-dnd';
 import { FaPlus } from 'react-icons/fa';

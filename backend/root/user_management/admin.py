@@ -1,3 +1,4 @@
+# backend/root/user_management/admin.py
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django import forms
@@ -5,8 +6,6 @@ from user_management.models import User
 from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib.auth.forms import AuthenticationForm
-
-from user_management.models import User, Plants, Gardens, Garden_log, Forums, Replies, Likes
 
 class AdminAuthenticationForm(AuthenticationForm):
     username = forms.EmailField(label="Email", widget=forms.TextInput(attrs={'autofocus': True}))
@@ -19,7 +18,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('email', 'username')
+        fields = ('email', 'username',)
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
@@ -61,7 +60,7 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('email', 'username', 'password1', 'password2')}
         ),
     )
-    search_fields = ('email', 'username')
+    search_fields = ('email', 'username',)
     ordering = ('email',)
     filter_horizontal = ()
 
@@ -72,11 +71,4 @@ class UserAdmin(BaseUserAdmin):
             return UserChangeForm
 
 admin.site.unregister(Group)
-
 admin.site.register(User, UserAdmin)
-admin.site.register(Plants)
-admin.site.register(Gardens)
-admin.site.register(Garden_log)
-admin.site.register(Forums)
-admin.site.register(Replies)
-admin.site.register(Likes)
