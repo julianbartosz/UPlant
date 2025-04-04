@@ -41,15 +41,53 @@ h2 {
     padding: 20px;
 }
 
-/* Home Background */
+/* With this updated section */
+.home-section {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
 .home-background {
-    background: url("{% static 'img/garden.jpg' %}") no-repeat center center;
+    /* Fix image path - use absolute path from static root */
+    background: #4CAF50 url("/static/img/garden.jpg") no-repeat center center; 
     background-size: cover;
-    align-items: center;
     min-height: 80vh;
-    min-width: 160vh;
-    padding: 80px;
-    text-align: justify-all;
+    width: 100%;
+    padding: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center container horizontally */
+}
+
+/* Make container adapt to screen size */
+.home-background .container {
+    width: 100%;
+    max-width: 1140px; /* Bootstrap default */
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.home-background .jumbotron {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    width: 100%; /* Ensure it stays within container */
+    max-width: 100%;
+    margin: 0; /* Remove margin that could cause overflow */
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Media queries for better responsiveness */
+@media (max-width: 768px) {
+    .home-background {
+        padding: 15px 0;
+        min-height: 60vh;
+    }
+    
+    .home-background .jumbotron {
+        padding: 20px 15px;
+    }
 }
 
 /* Header */
