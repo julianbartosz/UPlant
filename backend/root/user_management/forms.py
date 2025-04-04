@@ -5,11 +5,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.utils.translation import gettext_lazy as _
 from user_management.models import User
 import datetime
-
-#New Imports
 from django.core.exceptions import ValidationError
-
-# Add this import at the top
 import datetime
 
 class CustomUserCreationForm(UserCreationForm):
