@@ -4,24 +4,35 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.utils.translation import gettext_lazy as _
 from user_management.models import User
+import datetime
 
 #New Imports
 from django.core.exceptions import ValidationError
 
+# Add this import at the top
+import datetime
+
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
+    # Make zip_code optional in the form
+    zip_code = forms.CharField(max_length=5, required=False)
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'role', 'zip_code', 'password1', 'password2')
+        fields = ('email', 'username', 'zip_code', 'password1', 'password2')
+        # Remove 'role' if you're setting it as a hidden field or default
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["username"].initial = ""  # Ensure no default value
+        
+        # Add default role for new users
+        if not self.instance.pk:  # If this is a new user
+            self.instance.role = "User"
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        # Ensure created_at is set if needed (although it should be auto-set by the model)
+        # Ensure created_at is set if needed
         if not user.created_at:
             user.created_at = datetime.datetime.now()
         if commit:

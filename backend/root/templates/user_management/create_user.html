@@ -51,7 +51,21 @@
                     </div>
                     {% endif %}
                 </div>
-            
+
+                <div class="form-group">
+                    <label for="id_zip_code">ZIP Code:</label>
+                    {{ form.zip_code }}
+                    {% if form.zip_code.errors %}
+                    <div class="field-error">
+                        {% for error in form.zip_code.errors %}
+                        <p class="text-danger">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <input type="hidden" name="role" value="User" id="id_role">
+
                 <div class="form-group">
                     <label for="id_password1">Password:</label>
                     {{ form.password1 }}
