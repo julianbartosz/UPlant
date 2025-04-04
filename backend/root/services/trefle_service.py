@@ -9,8 +9,8 @@ from requests.exceptions import RequestException, Timeout
 from pydantic import BaseModel, ValidationError
 from typing import List, Optional, Dict, Any
 import json
+import time
 
-# Configure logging
 logger = logging.getLogger(__name__)
 
 # Constants
@@ -44,6 +44,7 @@ class PlantModel(BaseModel):
     genus_id: Optional[int] = None
     genus: Optional[str] = ""
     image_url: Optional[str] = ""
+    edible: bool = False # Default to False
     synonyms: List[str] = []
     links: Dict[str, Any] = {}
 
@@ -56,11 +57,12 @@ def _make_request_query_auth(url: str, params: Optional[Dict] = None) -> Dict:
     Make a request to the Trefle API using query parameter authentication.
     Adds the API token as a query parameter, uses a persistent session,
     handles errors (raising TrefleAPIError), ensures JSON decoding, and caches the response.
+    Implements simple retry logic on 429 Too Many Requests errors.
     """
     if params is None:
         params = {}
     
-    # Ensure all params are strings, not bytes
+    # Ensure all params are strings
     for key, value in params.items():
         if isinstance(value, bytes):
             params[key] = value.decode('utf-8')
@@ -76,41 +78,44 @@ def _make_request_query_auth(url: str, params: Optional[Dict] = None) -> Dict:
         logger.debug(f"Returning cached data for {url}")
         return cached_data
 
-    try:
-        logger.debug(f"Making request to {url}")
-        response = session.get(url, params=params, timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
+    max_retries = 5
+    retry_delay = 1  # start with 1 second delay
+
+    for attempt in range(max_retries):
         try:
-            # Use response.text instead of direct json() to avoid potential bytes issues
+            logger.debug(f"Making request to {url} with params {params} (Attempt {attempt+1})")
+            response = session.get(url, params=params, timeout=REQUEST_TIMEOUT)
+            response.raise_for_status()
             if isinstance(response.content, bytes):
                 response_text = response.content.decode('utf-8')
             else:
                 response_text = response.text
-                
             data = json.loads(response_text)
-        except ValueError as e:
-            logger.error(f"JSON decoding failed for {url}: {str(e)}")
-            raise TrefleAPIError("Failed to decode JSON response", status_code=response.status_code)
-        cache.set(cache_key, data, CACHE_TIMEOUT)
-        return data
-    except Timeout:
-        logger.error(f"Timeout error accessing {url} with params {params}")
-        raise TrefleAPIError("The request to the plant database timed out. Please try again later.")
-    except RequestException as e:
-        status_code = e.response.status_code if e.response else None
-        logger.error(f"RequestException for {url} with params {params}: {str(e)}")
-        if status_code == 401:
-            raise TrefleAPIError("Authentication error with the plant database. Please contact support.", status_code=401)
-        elif status_code == 404:
-            raise TrefleAPIError("The requested plant information could not be found.", status_code=404)
-        elif status_code == 429:
-            raise TrefleAPIError("Too many requests to the plant database. Please try again later.", status_code=429)
-        elif status_code and status_code >= 500:
-            raise TrefleAPIError("The plant database service is currently unavailable. Please try again later.", status_code=status_code)
-        raise TrefleAPIError("An error occurred while fetching plant data. Please try again later.", status_code=status_code)
-    except Exception as e:
-        logger.error(f"Unexpected error for {url} with params {params}: {str(e)}")
-        raise TrefleAPIError("An unexpected error occurred. Please try again later.")
+            cache.set(cache_key, data, CACHE_TIMEOUT)
+            return data
+        except Timeout:
+            logger.error(f"Timeout error accessing {url} with params {params}")
+            raise TrefleAPIError("The request to the plant database timed out. Please try again later.")
+        except RequestException as e:
+            status_code = e.response.status_code if e.response else None
+            logger.error(f"RequestException for {url} with params {params}: {str(e)}")
+            if status_code == 429:
+                # Too Many Requests: wait and retry
+                time.sleep(retry_delay)
+                retry_delay *= 2 # Exponential backoff
+                continue
+            elif status_code == 401:
+                raise TrefleAPIError("Authentication error with the plant database. Please contact support.", status_code=401)
+            elif status_code == 404:
+                raise TrefleAPIError("The requested plant information could not be found.", status_code=404)
+            elif status_code and status_code >= 500:
+                raise TrefleAPIError("The plant database service is currently unavailable. Please try again later.", status_code=status_code)
+            raise TrefleAPIError("An error occurred while fetching plant data. Please try again later.", status_code=status_code)
+        except Exception as e:
+            logger.error(f"Unexpected error for {url} with params {params}: {str(e)}")
+            raise TrefleAPIError("An unexpected error occurred. Please try again later.")
+    
+    raise TrefleAPIError("Exceeded maximum retries due to rate limiting.")
 
 def _process_single_plant(plant: Dict) -> Dict:
     """
@@ -122,12 +127,35 @@ def _process_single_plant(plant: Dict) -> Dict:
     plant.setdefault("slug", None)
     plant.setdefault("scientific_name", None)
     plant.setdefault("common_name", "")
-    plant.setdefault("status", "")
-    plant.setdefault("rank", "")
+    # IMPORTANT: Always make sure status is set to a valid value
+    if "status" not in plant or plant["status"] is None or plant["status"] == "":
+        plant["status"] = "unknown"
+    # Handle rank field required validation
+    if "rank" not in plant or plant["rank"] is None or plant["rank"] == "":
+        plant["rank"] = "species"  # Default rank
+    # Add default value for edible field (missing in API)
+    if "edible" not in plant or plant["edible"] is None:
+        plant["edible"] = False
     plant.setdefault("family_common_name", "")
-    plant.setdefault("family", "")
+
+    # Extract names from complex objects
+    if "family" in plant:
+        if isinstance(plant["family"], dict) and "name" in plant["family"]:
+            plant["family"] = plant["family"]["name"]
+        elif plant["family"] is None:
+            plant["family"] = ""
+    else:
+        plant.setdefault("family", "")
+
+    if "genus" in plant:
+        if isinstance(plant["genus"], dict) and "name" in plant["genus"]:
+            plant["genus"] = plant["genus"]["name"]
+        elif plant["genus"] is None:
+            plant["genus"] = ""
+    else:
+        plant.setdefault("genus", "")
+
     plant.setdefault("genus_id", None)
-    plant.setdefault("genus", "")
     plant.setdefault("image_url", "")
     if not isinstance(plant.get("synonyms"), list):
         plant["synonyms"] = []
@@ -140,7 +168,7 @@ def _process_single_plant(plant: Dict) -> Dict:
     except ValidationError as e:
         logger.error(f"Validation error processing plant data: {e.json()}")
         raise TrefleAPIError("Received invalid plant data from API.")
-
+    
 def _process_plant_data(raw_data: Dict) -> Dict:
     """
     Process the raw API response data and return a simplified, validated structure.

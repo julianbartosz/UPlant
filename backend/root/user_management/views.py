@@ -7,6 +7,8 @@ from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm, 
 from user_management.models import User
 from django.core.mail import send_mail
 from django.db.models import Q, Count
+from django.contrib import messages
+import datetime
 
 # DELETE IN PRODUCTION
 from django.http import HttpResponse
@@ -36,11 +38,20 @@ class UserCreateView(CreateView):
     model = User
     form_class = CustomUserCreationForm
     template_name = 'user_management/create_user.html'
-    success_url = reverse_lazy('user_management:user_list')
+    success_url = reverse_lazy('login')
+    
     def form_valid(self, form):
+        # Add debugging
+        print("Form is valid!")
         response = super().form_valid(form)
         messages.success(self.request, "Your account has been created successfully!")
         return response
+    
+    def form_invalid(self, form):
+        # Add debugging
+        print("Form is invalid!")
+        print(form.errors)
+        return super().form_invalid(form)
     
 
 

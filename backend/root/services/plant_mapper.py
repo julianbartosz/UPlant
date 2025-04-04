@@ -6,6 +6,12 @@ class MappingError(Exception):
     """Custom exception raised when API data cannot be mapped to a Plant."""
     pass
 
+def extract_string(value):
+    """If the input is a dict, return its 'name' key; otherwise return the value as is."""
+    if isinstance(value, dict):
+        return value.get("name")
+    return value
+
 def map_api_to_plant(api_data: dict) -> dict:
     """
     Map processed API data to a dictionary suitable for creating/updating a Django Plant instance.
@@ -17,7 +23,7 @@ def map_api_to_plant(api_data: dict) -> dict:
       
     For 'family' and 'genus', use a fallback:
       1. Check top-level fields.
-      2. If missing, check in the 'main_species' object.
+      2. If missing or if the value is a dict, check in the 'main_species' object.
 
     Additionally, map extra fields from the nested 'main_species' object:
       - duration, edible, edible_part
@@ -49,23 +55,28 @@ def map_api_to_plant(api_data: dict) -> dict:
         synonyms = api_data.get("synonyms", [])
         vegetable = api_data.get("vegetable", False)
         
-        # Fallback mechanism for family and genus
-        family = api_data.get("family")
-        genus = api_data.get("genus")
+        # Fallback mechanism for family and genus:
+        family = extract_string(api_data.get("family"))
+        genus = extract_string(api_data.get("genus"))
         status = api_data.get("status")
         main_species = api_data.get("main_species", {})
         if not family:
-            family = main_species.get("family")
+            family = extract_string(main_species.get("family"))
         if not genus:
-            genus = main_species.get("genus")
+            genus = extract_string(main_species.get("genus"))
         if not status:
             status = main_species.get("status")
+        # Make sure status is not null
+        if not api_data.get("status"):
+            api_data["status"] = "unknown"
         if not family or not genus:
             raise MappingError("Missing 'family', 'genus', or 'status' in both top-level and nested 'main_species' data.")
         
         # Additional fields from main_species
         duration = main_species.get("duration")
         edible = main_species.get("edible")
+        if edible is None:
+            edible = False
         edible_part = main_species.get("edible_part")
         
         growth = main_species.get("growth", {})
@@ -105,7 +116,6 @@ def map_api_to_plant(api_data: dict) -> dict:
         maximum_height = specifications.get("maximum_height", {}).get("cm")
         toxicity = specifications.get("toxicity")
         
-        # Mapping dictionary with all fields matching the Django Plant model
         plant_data = {
             "api_id": api_id,
             "common_name": common_name,

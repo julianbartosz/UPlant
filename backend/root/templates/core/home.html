@@ -1,5 +1,5 @@
 <!-- backend/root/templates/core/home.html -->
-
+ 
 {% extends 'basic_generic.html' %}
 
 {% load static %}
@@ -7,30 +7,34 @@
 {% block title %}Welcome to UPlant{% endblock %}
 
 {% block content %}
-<div class="container mt-5 home-background" style="background: url('{% static 'img/garden.jpg' %}') no-repeat center center; background-size: cover;">
-    <!-- Hero Section -->
-    <div class="jumbotron shadow-sm rounded" style="background-color: rgba(255, 255, 255, 0.8);">
-        <h1 class="display-4">Welcome to UPlant</h1>
-        <p class="lead"></p>
-        {% if user.is_authenticated %}
-            <p>Hello! Ready to garden?</p>
-            <!-- Temporary Buttons END-->
-            {% if user.role == 'Supervisor' %}
-                <a href="{% url 'user_management:user_list' %}" class="btn btn-primary btn-lg" role="button">My Garden</a>
-                <a href="{% url 'user_management:user_list' %}" class="btn btn-secondary btn-lg" role="button">Share Produce</a>
-                <a href="{% url 'user_management:user_list' %}" class="btn btn-secondary btn-lg" role="button">Start Discussion</a>
-            {% endif %}
-        {% else %}
-            <hr class="my-4">
-            <p>Sign in to access your dashboard and start managing or participating in gardening activities.</p>
-            <p class="lead">
-                <a href="{% url 'login' %}" class="btn btn-primary btn-lg" role="button">Login</a>
-            </p>
-        {% endif %}
-    </div>
+<!-- Remove the container div from basic_generic.html -->
+</div> <!-- Close the container from basic_generic.html -->
 
-    <!-- Info Section for Public -->
-    {% if not user.is_authenticated %}
-    {% endif %}
+<div class="home-section">
+    <div class="home-background">
+        <div class="container">
+            <div class="jumbotron shadow-sm rounded">
+                <h1 class="display-4">Welcome to UPlant</h1>
+                <p class="lead"></p>
+                {% if user.is_authenticated %}
+                    <p>Hello! Ready to garden?</p>
+                    <!-- Buttons -->
+                    {% if user.role == 'Supervisor' %}
+                        <a href="{% url 'user_management:user_list' %}" class="btn btn-primary btn-lg" role="button">My Garden</a>
+                        <a href="{% url 'user_management:user_list' %}" class="btn btn-secondary btn-lg" role="button">Share Produce</a>
+                        <a href="{% url 'user_management:user_list' %}" class="btn btn-secondary btn-lg" role="button">Start Discussion</a>
+                    {% endif %}
+                {% else %}
+                    <hr class="my-4">
+                    <p>Sign in to access your dashboard and start managing or participating in gardening activities.</p>
+                    <p class="lead">
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-lg" role="button">Login</a>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
+
+<div class="container py-4"> <!-- Reopen container for the rest of the content -->
 {% endblock %}

@@ -17,6 +17,23 @@ DEBUG = os.getenv('DEBUG') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
+CSRF_COOKIE_SECURE = False if DEBUG else True  # Only secure in production
+SESSION_COOKIE_SECURE = False if DEBUG else True  # Only secure in production
+CSRF_COOKIE_HTTPONLY = True  # Helps prevent XSS attacks
+CSRF_COOKIE_SAMESITE = None if DEBUG else 'Lax'  # More lenient in development
+SESSION_COOKIE_SAMESITE = None if DEBUG else 'Lax'  # More lenient in development
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost', 'https://localhost',
+    'http://127.0.0.1', 'https://127.0.0.1',
+    'http://localhost:80', 'https://localhost:443',
+    'http://localhost:8000', 'http://127.0.0.1:8000'
+]
+
+# More detailed CSRF debugging information
+if DEBUG:
+    CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -160,7 +177,7 @@ ACCOUNT_USERNAME_REQUIRED = False
 
 # Configure allauth settings
 SOCIALACCOUNT_AUTO_SIGNUP = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # For development; set to 'mandatory' in production
+ACCOUNT_EMAIL_VERIFICATION = 'optional' if DEBUG else 'mandatory'  # For development; set to 'mandatory' in production
 SOCIALACCOUNT_LOGIN_ON_GET = True  # Enables one-click login
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -180,8 +197,6 @@ SOCIALACCOUNT_PROVIDERS = {
 LOGIN_URL = 'account_login'
 LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
-
-
 
 # LOGGING
 import logging.config
