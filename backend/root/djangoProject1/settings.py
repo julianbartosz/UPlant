@@ -230,13 +230,8 @@ LOGGING = {
         },
         'django.core.mail': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
         },
     },
 }
-
-# Enable more detailed SMTP debugging
-if DEBUG:
-    import smtplib
-    smtplib.SMTP.debuglevel = 1

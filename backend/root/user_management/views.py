@@ -10,21 +10,6 @@ from django.db.models import Q, Count
 from django.contrib import messages
 import datetime
 
-# DELETE IN PRODUCTION
-from django.http import HttpResponse
-from django.core.mail import send_mail
-
-def test_email(request):
-    send_mail(
-        'Test Email from UPlant',
-        'This is a test email from UPlant.',
-        'UPlant <uplant.notifications@gmail.com>',
-        ['jbartosz@uwm.edu'],
-        fail_silently=False,
-    )
-    return HttpResponse("Test email sent. Check your inbox.")
-# DELETE IN PRODUCTION END
-
 class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = User
     template_name = 'user_management/user_confirm_delete.html'
