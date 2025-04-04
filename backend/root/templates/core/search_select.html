@@ -26,6 +26,7 @@
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
             display: flex;
             gap: 20px;
+            position: relative;  /* Added to position the back button */
         }
         .search-container {
             display: flex;
@@ -91,11 +92,27 @@
         .details h3 {
             color: #345E35;
         }
+        /* Back button styling */
+        .back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 5px 10px;
+            background-color: #345E35;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <!-- Back button -->
+    <button class="back-button" onclick="goBack()">← Back</button>
+    
     <div class="left-panel">
         <h2>Plant Catalog</h2>
         <div class="search-container">
@@ -116,6 +133,10 @@
 </div>
 
 <script>
+    function goBack() {
+        window.history.back();
+    }
+    
     function showDetails(name, description, imgSrc) { 
         // Pre-written code, I hope it works? Should be called when user clicks a plant in left panel
         document.getElementById('plantName').innerText = name;
