@@ -194,7 +194,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Configure URL paths for allauth
-LOGIN_URL = 'account_login'
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
 
