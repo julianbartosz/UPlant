@@ -16,7 +16,6 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('email', 'username', 'zip_code', 'password1', 'password2')
-        # Remove 'role' if you're setting it as a hidden field or default
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
