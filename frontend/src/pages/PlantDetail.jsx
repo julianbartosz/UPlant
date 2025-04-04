@@ -1,1 +1,0 @@
-// frontend/src/pages/PlantDetail.jsx

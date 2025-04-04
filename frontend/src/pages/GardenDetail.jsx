@@ -1,1 +1,0 @@
-// frontend/src/pages/GardenDetail.jsx

@@ -1,39 +1,36 @@
 // frontend/src/App.jsx
 
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Routes, Route } from 'react-router-dom';
-import './App.css'
-import Garden from './components/GardenSection/Garden'
-import NavBar from './components/NavBarSection/NavBar';
-import SearchPlants from './components/SearchSection/SearchPlants'
+import './App.css';
+import GardenDashboard from './pages/GardenDashboard';
+import ProtectedRoute from './contexts/ProtectedRoute.jsx';
+import UserProvider from './contexts/ProtectedRoute';
+import './styles/main.css';
+
 
 function App() {
-
-  // TODO: Retrieve user info and authentication token from login redirect
-  const username = "Johnny Appleseed";
-
+  
   return (
-    <div className='app' style={{ backgroundColor: 'white', width: '100vw', height: '100vh', position: 'relative' }}>
-      <NavBar username={username} />
-      <DndProvider backend={HTML5Backend}>
-        <div className="sidebar" style={{
-          position: 'fixed', top: '60px', left: 0, width: '200px', height: 'calc(100vh - 60px)',
-          background: 'linear-gradient(to right, rgb(152, 152, 152),rgb(65, 64, 64))', padding: '10px', zIndex: 5
-          , borderRadius: '0 10px 0 0'
-        }}>
-          <SearchPlants username={username} />
-        </div>
-        <div  style={{
-          position: 'fixed', top: '60px', left: '240px', width: 'calc(100vw - 200px)',
-          height: 'calc(100vh - 60px)', background: 'white',
-          display: 'flex', justifyContent: 'center', alignItems: 'center',
-        }}>
-          <Garden username={username} />
-        </div>
-      </DndProvider>
-    </div>
-  )
+    <UserProvider>
+    <DndProvider backend={HTML5Backend}>
+      <Router basename='/app'>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          {/* Make sure you have a route for /dashboard */}
+          <Route path="/dashboard" element={<GardenDashboard />} />
+          <Route path="/About" element={<div>About Page Content</div>} />
+          <Route path="/Catalog" element={<div>Catalog Page Content</div>} />
+          <Route path="/Signup" element={<div>Signup Page Content</div>} /> 
+          <Route path="/Login" element={<div>Template Route Content</div>} />
+          <Route path="/garden-dashboard" element={<ProtectedRoute><GardenDashboard/></ProtectedRoute>} />
+          <Route path="*" element={<div>Page not found</div>} />
+        </Routes>
+      </Router>
+    </DndProvider>
+    </UserProvider>
+  );
 }
 
 export default App;
