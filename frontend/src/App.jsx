@@ -6,6 +6,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import './App.css';
 import GardenDashboard from './pages/GardenDashboard';
 import ProtectedRoute from './contexts/ProtectedRoute.jsx';
+import Catalog from './pages/Catalog'; 
 import UserProvider from './contexts/ProtectedRoute';
 import './styles/main.css';
 
@@ -21,7 +22,7 @@ function App() {
           {/* Make sure you have a route for /dashboard */}
           <Route path="/dashboard" element={<GardenDashboard />} />
           <Route path="/About" element={<div>About Page Content</div>} />
-          <Route path="/Catalog" element={<div>Catalog Page Content</div>} />
+          <Route path="/Catalog" element={<ProtectedRoute><Catalog/></ProtectedRoute>} />
           <Route path="/Signup" element={<div>Signup Page Content</div>} /> 
           <Route path="/Login" element={<div>Template Route Content</div>} />
           <Route path="/garden-dashboard" element={<ProtectedRoute><GardenDashboard/></ProtectedRoute>} />

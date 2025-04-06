@@ -7,6 +7,7 @@ import { useDrop } from 'react-dnd';
 import { FaPlus } from 'react-icons/fa';
 import { MdDeleteForever } from "react-icons/md";
 import { TbHttpDelete } from "react-icons/tb";
+import plantFamilyIcons from '../../constants/icons'
 
 import { TiDelete } from "react-icons/ti";
 import { useGardens } from '../../contexts/ProtectedRoute';
@@ -135,10 +136,8 @@ const Garden = () => {
         className={`square ${isSelected ? 'selected' : ''}`}
         style={{ fontSize: `${fontSize}px` }}
         onClick={cellClickHandler} 
-        title={obj ? obj.name : "Empty Cell"} 
         >
-            
-        {obj ? obj.icon : ""}
+            {obj ? (plantFamilyIcons[obj.family] || plantFamilyIcons['default']) : ""}
         </div>
         )
     };
@@ -210,7 +209,7 @@ const Garden = () => {
             
             {gardens[selectedGardenIndex].cells.map((row, i) => (
                 row.map((item, j) => (
-                    <div data-tooltip-id="my-tooltip" data-tooltip-content={item ? item.name : ""}>{DropTarget(item, i, j)}</div>
+                    <div data-tooltip-id="my-tooltip" data-tooltip-content={item ? item['common_name'] : ""}>{DropTarget(item, i, j)}</div>
                 ))
             ))}
                     </div>
