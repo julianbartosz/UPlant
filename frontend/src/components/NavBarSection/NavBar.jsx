@@ -12,8 +12,7 @@ const NavBar = ({username}) => {
             zIndex: 10, justifyContent: 'space-between'
         }}>
             <div>
-                <button style={{ width: '180px', borderWidth: '1px',borderColor: 'black', background: 'lightgreen', marginLeft: '0px', color: 'black'}}>Browse Catalog</button>
-                <button style={{ borderWidth: '1px',borderColor: 'black', background:  'grey', marginLeft: '50px', color: 'black'}}>Community Portal</button>
+                <button onClick={() => { window.location.href = 'http://127.0.0.1:8000/login'; }} style={{ borderWidth: '1px',borderColor: 'black', background:  'grey', marginLeft: '50px', color: 'black'}}>Back</button>
             </div>
 
             <h1 style={{fontFamily:'Brush Script MT', color: 'black', fontSize: '50px',fontWeight: 'bold'}}>UPlant</h1>

@@ -5,7 +5,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import Garden from '../components/GardenSection/Garden'
 import NavBar from '../components/NavBarSection/NavBar';
 import SearchPlants from '../components/SearchSection/SearchPlants'
-import { useState } from 'react';
 import { useUser } from '../contexts/ProtectedRoute.jsx';
 
 function GardenDashboard() {
@@ -22,6 +21,7 @@ function GardenDashboard() {
   // TODO: Retrieve user info and authentication token from login redirect
 
   return (
+    
     <div className='app' style={{ backgroundColor: 'white', width: '100vw', height: '100vh', position: 'relative' }}>
       <NavBar user = {user}/>
       <DndProvider backend={HTML5Backend}>

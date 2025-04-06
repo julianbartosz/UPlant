@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import  NavBar  from '../components/NavBarSection/NavBar';
 import SearchPlants from '../components/SearchSection/SearchPlants';
 import { useUser } from '../contexts/ProtectedRoute.jsx';
 
@@ -13,7 +14,6 @@ function Catalog() {
         return <p>Loading user data...</p>;
     }
 
-
     const handlePlantClick = (plant) => {
         console.log('Plant clicked:', plant);
         setSelectedPlant(plant); // Update the selected plant state
@@ -22,6 +22,9 @@ function Catalog() {
     return (
         <>
             <DndProvider backend={HTML5Backend}>
+            <div className='app' style={{ backgroundColor: 'white', width: '100vw', height: '100vh', position: 'relative' }}>
+            <NavBar user = {user}/>
+                
                 <div
                     className="sidebar"
                     style={{
@@ -54,6 +57,7 @@ function Catalog() {
                         color: 'black', // Set text color to black
                     }}
                 >
+                    
                     {selectedPlant ? (
                         <div>
                             <h2>{selectedPlant.common_name}</h2>
@@ -71,6 +75,7 @@ function Catalog() {
                     ) : (
                         <p>Select a plant to see its details</p>
                     )}
+                </div>
                 </div>
             </DndProvider>
         </>

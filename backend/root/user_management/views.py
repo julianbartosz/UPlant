@@ -5,10 +5,8 @@ from django.views.generic import CreateView, UpdateView, ListView, DetailView, D
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm, CustomPasswordChangeForm
 from user_management.models import User
-from django.core.mail import send_mail
-from django.db.models import Q, Count
+from django.db.models import Q
 from django.contrib import messages
-import datetime
 
 class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = User

@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from corsheaders.defaults import default_headers
 
 # Load environment variables from .env file
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -55,6 +56,8 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_select2',
     'rest_framework',
+    'corsheaders',
+
 ]
 
 REST_FRAMEWORK = {
@@ -81,7 +84,22 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+      'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware', 
 ]
+
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'Authorization',  # Allow Authorization headers
+    'credentials',    # Allow credentials header
+]
+CORS_ALLOW_ALL_ORIGINS = True if DEBUG else False  # Allow all origins in development, restrict in production
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",  # Add your frontend origin here
+#     # other origins if needed
+# ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 ROOT_URLCONF = 'djangoProject1.urls'
@@ -199,7 +217,6 @@ LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
 
 # LOGGING
-import logging.config
 
 LOGGING = {
     'version': 1,
