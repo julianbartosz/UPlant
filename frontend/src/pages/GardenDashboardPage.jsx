@@ -2,10 +2,10 @@
 
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import Garden from '../components/GardenSection/Garden'
-import NavBar from '../components/NavBarSection/NavBar';
-import SearchPlants from '../components/SearchSection/SearchPlants'
+import { GardenSection, NavBarSection, PlantSearchSection } from '../components/sections/index.js';
+
 import { useUser } from '../contexts/ProtectedRoute.jsx';
+
 
 function GardenDashboard() {
 
@@ -22,8 +22,8 @@ function GardenDashboard() {
 
   return (
     
-    <div className='app' style={{ backgroundColor: 'white', width: '100vw', height: '100vh', position: 'relative' }}>
-      <NavBar user = {user}/>
+    <div style={{ backgroundColor: 'white', width: '100vw', height: '100vh', position: 'relative' }}>
+      <NavBarSection user = {user}/>
       <DndProvider backend={HTML5Backend}>
         <div className="sidebar" style={{
           position: 'fixed', top: '60px', left: 0, width: '200px', height: 'calc(100vh - 60px)',
@@ -31,7 +31,7 @@ function GardenDashboard() {
           , borderRadius: '0 10px 0 0'
         }}>
 
-          <SearchPlants />
+          <PlantSearchSection />
 
         </div>
         <div  style={{
@@ -39,7 +39,7 @@ function GardenDashboard() {
           height: 'calc(100vh - 60px)', background: 'white',
           display: 'flex', justifyContent: 'center', alignItems: 'center',
         }}>
-          <Garden user={user}/>
+          <GardenSection user={user}/>
         </div>
       </DndProvider>
     </div>

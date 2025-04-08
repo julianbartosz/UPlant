@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import  NavBar  from '../components/NavBarSection/NavBar';
-import SearchPlants from '../components/SearchSection/SearchPlants';
+import  { NavBarSection, PlantSearchSection }  from '../components/sections';
 import { useUser } from '../contexts/ProtectedRoute.jsx';
+import { getPlantById } from '../services/trefleService.js';
 
 function Catalog() {
     const userContext = useUser();
@@ -16,14 +16,17 @@ function Catalog() {
 
     const handlePlantClick = (plant) => {
         console.log('Plant clicked:', plant);
-        setSelectedPlant(plant); // Update the selected plant state
+        getPlantById(plant.id).then((plantData) => {
+            console.log('Plant data:', plantData);
+            setSelectedPlant(plantData); // Update the selected plant state
+        });
     };
 
     return (
         <>
             <DndProvider backend={HTML5Backend}>
             <div className='app' style={{ backgroundColor: 'white', width: '100vw', height: '100vh', position: 'relative' }}>
-            <NavBar user = {user}/>
+            <NavBarSection user = {user}/>
                 
                 <div
                     className="sidebar"
@@ -40,7 +43,7 @@ function Catalog() {
                         color: 'black', // Set text color to black
                     }}
                 >
-                    <SearchPlants draggable={false} onPlantClick={handlePlantClick} />
+                    <PlantSearchSection draggable={false} onPlantClick={handlePlantClick} />
                 </div>
                 <div
                     style={{

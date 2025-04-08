@@ -1,20 +1,15 @@
-// frontend/src/components/GardenSection/Garden.jsx
 
-import React, { useRef, useEffect, useState, useContext, lazy } from 'react';
-
-import './Garden.css';
+import React, { useRef, useEffect, useState } from 'react';
 import { useDrop } from 'react-dnd';
-import { FaPlus } from 'react-icons/fa';
-import { MdDeleteForever } from "react-icons/md";
-import { TbHttpDelete } from "react-icons/tb";
-import plantFamilyIcons from '../../constants/icons'
-
-import { TiDelete } from "react-icons/ti";
-import { useGardens } from '../../contexts/ProtectedRoute';
+import plantFamilyIcons from '../../../assets/constants/icons.js'
+import { useGardens } from '../../../contexts/ProtectedRoute.jsx';
 import { Tooltip } from 'react-tooltip';
+import GardenBar from './GardenBar.jsx';
+import { CircleButton  } from '../../buttons/index.js';
+import './styles/garden-section.css';
 
 
-const Garden = () => {
+const GardenSection = () => {
 
     const accept = 'PLANT';
 
@@ -118,7 +113,6 @@ const Garden = () => {
             } else {
                 newSet.add(key); 
             }
-        
             setSelectedCells(newSet);
         };
         
@@ -181,27 +175,22 @@ const Garden = () => {
     }));
   
     return (
-        <div className="container" ref={containerRef}>
-            <div style={{ position: "absolute", top: 0, left: 0 }}>
+        <div className="garden-container" ref={containerRef}>
+            <div className="garden-bar-container" >
                 <GardenBar selectedGardenIndex={selectedGardenIndex} setSelectedGardenIndex={setSelectedGardenIndex} />
             </div>
             <div 
-                className="garden" 
+                className="grid-container" 
                 ref={drop} 
                 style={{
-                    gap: "2px",
-                    border: "2px solid black",
-                    margin: "10px 0",
                     width: `${squareSize * gardens[selectedGardenIndex].x}px`, 
                     height: `${squareSize * gardens[selectedGardenIndex].y}px`,
-                    position: "relative",
                 }}
             >
                 <div 
                 className="grid" 
                 ref={drop} 
                 style={{
-                    display: "grid",
                     gridTemplateColumns: `repeat(${gardens[selectedGardenIndex].x}, ${squareSize}px)`, 
                     gridTemplateRows: `repeat(${gardens[selectedGardenIndex].y}, ${squareSize}px)`,
                 }}
@@ -216,8 +205,8 @@ const Garden = () => {
                 <Tooltip id="my-tooltip" style={{ zIndex: 9999 }}/>
                 <div style={{ position: "absolute", top: "-20px", left: "50%", transform: "translateX(-50%)", zIndex: -0.5 }}>
                     {/* Top Center Button */}
-                    <button className="grid-add-btn" onClick={() => mediateGridSizeChange('y', 1, "top")}></button>
-                    <button className="grid-remove-btn"  onClick={() => mediateGridSizeChange('y', -1, "top")}></button>
+                    <CircleButton className="grid-add-btn" onClick={() => mediateGridSizeChange('y', 1, "top")} />
+                    <CircleButton className="grid-remove-btn" onClick={() => mediateGridSizeChange('y', -1, "top")} />
                 </div>
                 <div style={{
                     position: "absolute",
@@ -225,12 +214,12 @@ const Garden = () => {
                     transform: "translateY(-50%)",
                     zIndex: 1,
                     display: "flex",
-                    flexDirection: "column", // Stack buttons vertically
+                    flexDirection: "column",
                     justifyContent: "center",
                 }}>
                     {/* Left Center Button */}
-                    <button className="grid-remove-btn" onClick={() => mediateGridSizeChange('x', -1, "left")}></button>
-                    <button className="grid-add-btn" onClick={() => mediateGridSizeChange('x', 1, "left")}></button>
+                    <CircleButton className="grid-remove-btn" onClick={() => mediateGridSizeChange('x', -1, "left")} />
+                    <CircleButton className="grid-add-btn" onClick={() => mediateGridSizeChange('x', 1, "left")} />
                 </div>
 
                 <div style={{
@@ -243,14 +232,14 @@ const Garden = () => {
                     justifyContent: "center",
                 }}>
                     {/* Right Center Button */}
-                    <button className="grid-remove-btn"onClick={() => mediateGridSizeChange('x', -1, "right")}></button>
-                    <button className="grid-add-btn"  onClick={() => mediateGridSizeChange('x', 1, "right")}></button>
+                    <CircleButton className="grid-remove-btn" onClick={() => mediateGridSizeChange('x', -1, "right")} />
+                    <CircleButton className="grid-add-btn" onClick={() => mediateGridSizeChange('x', 1, "right")} />
                 </div>
 
                 <div style={{ position: "absolute", bottom: "-20px", left: "50%", transform: "translateX(-50%)", zIndex: 1 }}>
                     {/* Bottom Center Button */}
-                    <button className="grid-add-btn" onClick={() => mediateGridSizeChange('y', 1, "bottom")}></button>
-                    <button className="grid-remove-btn"  onClick={() => mediateGridSizeChange('y', -1, "bottom")}></button>
+                    <CircleButton className="grid-add-btn" onClick={() => mediateGridSizeChange('y', 1, "bottom")} />
+                    <CircleButton className="grid-remove-btn" onClick={() => mediateGridSizeChange('y', -1, "bottom")} />
                 </div>
                 
                 
@@ -260,84 +249,5 @@ const Garden = () => {
     );
 };
 
-function DeleteButton({ onDelete }) {
-    return (
-      <button 
-        onClick={onDelete} 
-        style={{
-            margin: "0px",
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-        }}
 
-        
-      >
-        <TiDelete style={{ padding: "0px", marginTop: "0px",fontSize: "20px"}}/>
-        
-      </button>
-    );
-  }
-const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex }) => {
-   
-    const { gardens, handleAddGarden, handleDeleteGarden, handleRenameGarden } = useGardens();
-
-    const btnstyle = {
-        width: '120px',
-        fontSize: "14px",
-        borderColor: 'black'
-    };    
-
-    return (
-        <div className="garden-bar">
-            <div className='garden-bar-item' key={-1}>
-                <button 
-                    onClick={() => {
-                        handleAddGarden();
-                        setSelectedGardenIndex(gardens.length);
-                    }} 
-                    style={{borderRadius: "30px", height: "40px"}}
-                >
-                    <FaPlus style={{fontSize: "20px" }} />
-                </button>
-            </div>
-               
-            {gardens.map((garden, index) => (
-                <div className='garden-bar-item' key={index}>
-                     <DeleteButton 
-                        onDelete={() => {
-                            if (gardens.length <= 1) {
-                                alert("You cannot delete the last garden.");
-                                return;
-                            }
-                            handleDeleteGarden(index);
-                            if (selectedGardenIndex === index) {
-                                setSelectedGardenIndex(0);
-                            } else if (selectedGardenIndex > index) {
-                                setSelectedGardenIndex(selectedGardenIndex - 1);
-                            }
-                        }} 
-                    />
-                    
-                    
-                    <button 
-                    onContextMenu={(e) => {
-                        e.preventDefault(); // Prevent the default right-click menu
-                            handleRenameGarden(selectedGardenIndex);
-                        }}
-                        style={{ 
-                            ...btnstyle, 
-                            backgroundColor: selectedGardenIndex === index ? 'green' : 'lightgreen' 
-                        }}
-                        onClick={() => setSelectedGardenIndex(index)}
-                    >
-                        {garden.name}
-                    </button>
-                    
-                </div>
-            ))}
-        </div>
-    );
-};
-
-export default Garden;
+export default GardenSection;

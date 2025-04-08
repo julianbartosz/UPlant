@@ -1,41 +1,21 @@
-// frontend/src/services/trefleService.js
+import axios from 'axios';
 
-/**
- * Fetches the list of plants from the Django REST API endpoint.
- * @returns {Promise<Object>} The JSON response containing the list of plants, links, and metadata.
- */
-export async function listPlants() {
-    try {
-      // Fetch from the relative API endpoint
-      const response = await fetch('/api/v1/plants');
-      if (!response.ok) {
-        throw new Error(`Error fetching plant list: ${response.status}`);
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error in listPlants:", error);
-      throw error;
-    }
+const TREFLE_API_URL = 'https://trefle.io/api/v1/plants';
+const TREFLE_API_TOKEN = 'KbMe4aVuGQwIhB0NCKCYcDUPlt56qDTFsnQmEA6hQPU'; // Replace with your Trefle API token
+
+export const getPlantById = async (plantId) => {
+  try {
+    const response = await axios.get(`${TREFLE_API_URL}/${plantId}`, {
+      headers: {
+        Authorization: `Bearer ${TREFLE_API_TOKEN}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching plant data:', error);
+    throw error;
   }
-  
-  /**
-   * Fetches details for a specific plant using its id or slug.
-   * @param {string} id - The unique identifier or slug of the plant.
-   * @returns {Promise<Object>} The JSON response containing the plant details.
-   */
-  export async function retrievePlant(id) {
-    try {
-      // Build the endpoint URL dynamically using the plant id (or slug)
-      const response = await fetch(`/api/v1/plants/${id}`);
-      if (!response.ok) {
-        throw new Error(`Error fetching plant with id ${id}: ${response.status}`);
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error in retrievePlant:", error);
-      throw error;
-    }
-  }
-  
+};
+
+export default getPlantById;
+
