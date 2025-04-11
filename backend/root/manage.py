@@ -19,10 +19,21 @@ import django.db.models.fields
 django.db.models.fields.FieldDoesNotExist = django.core.exceptions.FieldDoesNotExist
 
 # Patch missing parse_header from django.http.multipartparser
-import cgi
+from email.parser import HeaderParser
 from django.http import multipartparser
+
+# Define the custom parse_header function using HeaderParser
+def parse_header_without_cgi(value):
+    parser = HeaderParser()
+    # Parse the content type header
+    header = parser.parsestr(f"Content-Type: {value}")
+    content_type = header.get_content_type()
+    params = dict(header.get_params()[1:])  # Get parameters (skip the main type)
+    return content_type, params
+
+# Patch missing parse_header in multipartparser
 if not hasattr(multipartparser, 'parse_header'):
-    multipartparser.parse_header = cgi.parse_header
+    multipartparser.parse_header = parse_header_without_cgi
 
 # Patch missing ugettext_lazy by aliasing it to gettext_lazy
 from django.utils.translation import gettext_lazy

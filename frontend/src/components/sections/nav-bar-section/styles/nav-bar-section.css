@@ -1,0 +1,46 @@
+/* frontend/src/components/sections/nav-bar-section/styles/nav-bar-section.css */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: white;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 10;
+    justify-content: space-between;
+}
+
+.navbar h1 {
+    font-family: 'Brush Script MT', cursive;
+    color: black;
+    font-size: 50px;
+    font-weight: bold;
+}
+
+.username-container {
+    color: black;
+    font-size: 20px;
+    margin-right: 50px;
+    border: 1px dotted gray;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+}
+
+.navbar .settings-icon {
+    color: black;
+    font-size: 50px;
+    cursor: pointer;
+    margin-right: 30px;
+}
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    width: 200px;
+    height: auto;
+    border: 2px solid black;
+}
