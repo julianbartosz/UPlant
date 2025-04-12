@@ -1,4 +1,4 @@
-.grid-add-btn {
+  .grid-add-btn {
     width: 40px;
     height: 40px;
     background-color: green;
@@ -122,4 +122,8 @@
   .circle-btn {
     border-radius: 50%;
     border: 3px solid black;
+<<<<<<< HEAD
   }
+=======
+  }
+>>>>>>> origin/catalog-bf

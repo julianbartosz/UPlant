@@ -1,5 +1,3 @@
-// frontend/src/services/trefleService.js
-
 import axios from 'axios';
 
 const TREFLE_API_URL = 'https://trefle.io/api/v1/plants';

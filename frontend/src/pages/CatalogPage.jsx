@@ -1,9 +1,7 @@
-// frontend/src/pages/Catalog.jsx
-
 import { useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import  { NavBarSection, PlantSearchSection }  from '../components/sections/index.js';
+import  { NavBarSection, PlantSearchSection }  from '../components/sections';
 import { useUser } from '../contexts/ProtectedRoute.jsx';
 import { getPlantById } from '../services/trefleService.js';
 

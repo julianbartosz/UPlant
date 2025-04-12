@@ -1,4 +1,3 @@
-// frontend/src/components/sections/garden-section/GardenSection.jsx
 
 import React, { useRef, useEffect, useState } from 'react';
 import { useDrop } from 'react-dnd';

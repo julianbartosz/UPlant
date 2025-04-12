@@ -1,5 +1,3 @@
-// frontend/src/components/sections/garden-section/GardenBar.jsx
-
 import React from 'react';
 import { useGardens } from '../../../contexts/ProtectedRoute';
 import { AddButton, DeleteButton, GardenButton } from '../../buttons';

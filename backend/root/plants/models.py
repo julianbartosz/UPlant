@@ -253,6 +253,17 @@ class Plant(models.Model):
     def __str__(self):
         return f"{self.scientific_name} ({self.slug})"
 
+# let users create custom plants with minimal Information like Image and watering Interval, etc. (fields that are not In the trefle API)
+# only let admins create plants with all the information / edit the trefle fields
+# at the same time let users edit the fields that are not in the Trefle API
+
+
+
+
+
+
+
+
 
 
     # class Meta:

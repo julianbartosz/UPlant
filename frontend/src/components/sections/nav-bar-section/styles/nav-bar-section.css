@@ -1,4 +1,3 @@
-/* frontend/src/components/sections/nav-bar-section/styles/nav-bar-section.css */
 .navbar {
     position: fixed;
     top: 0;
@@ -36,6 +35,7 @@
     cursor: pointer;
     margin-right: 30px;
 }
+<<<<<<< HEAD
 
 .navbar-logo {
     display: flex;
@@ -44,3 +44,5 @@
     height: auto;
     border: 2px solid black;
 }
+=======
+>>>>>>> origin/catalog-bf
