@@ -1,14 +1,12 @@
 import axios from 'axios';
 
-const TREFLE_API_URL = 'https://trefle.io/api/v1/plants';
-const TREFLE_API_TOKEN = 'KbMe4aVuGQwIhB0NCKCYcDUPlt56qDTFsnQmEA6hQPU'; // Replace with your Trefle API token
+const API_BASE_URL = '/api/v1'; // This should be configurable for different environments
 
 export const getPlantById = async (plantId) => {
   try {
-    const response = await axios.get(`${TREFLE_API_URL}/${plantId}`, {
-      headers: {
-        Authorization: `Bearer ${TREFLE_API_TOKEN}`,
-      },
+    // backend endpoint instead
+    const response = await axios.get(`${API_BASE_URL}/plants/${plantId}/`, {
+      withCredentials: true
     });
     return response.data;
   } catch (error) {
@@ -17,4 +15,23 @@ export const getPlantById = async (plantId) => {
   }
 };
 
-export default getPlantById;
+export const getPlants = async (searchParams = {}) => {
+  try {
+    // Build query string from searchParams
+    const queryString = Object.entries(searchParams)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+      .join('&');
+    
+    const url = `${API_BASE_URL}/plants/${queryString ? `?${queryString}` : ''}`;
+    const response = await axios.get(url, { withCredentials: true });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching plants list:', error);
+    throw error;
+  }
+};
+
+export default {
+  getPlantById,
+  getPlants
+};
