@@ -2,12 +2,12 @@
     padding: 20px;
     max-width: 800px;
     margin: 0 auto;
+    border-radius: 5px;
   }
-  
+
   .data-table {
     width: 100%;
     border-collapse: collapse;
-    back
     font-family: Arial, sans-serif;
   }
   
@@ -15,22 +15,15 @@
     border: 1px solid #ddd;
     padding: 12px;
     text-align: left;
+
   }
   
   .data-table th {
     background-color: #f4f4f4;
   }
-  
-  .remove-button {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    color: red;
-    transition: transform 0.2s;
+
+  .data-table-header {
+    color: black;
   }
-  
-  .remove-button:hover {
-    transform: scale(1.2);
-  }
+ 
   
