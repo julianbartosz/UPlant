@@ -1,48 +1,69 @@
-import React, { useState } from 'react';
+/**
+ * 
+ * @component
+ * @param {Object} props
+ * @param {Array} props.data
+ *   @param {string} props.data[].id 
+ *   @param {string} props.data[].name
+ *   @param {Array} props.data[].plants
+ *     @param {string} props.data[].plants[].id
+ *     @param {string} props.data[].plants[].name 
+ *   @param {string} props.data[].interval
+ * @param {Function} props.setData 
+ * @param {Object} [props.style={}] 
+ * 
+ */
+
+import React from 'react';
+import { DeleteButton, AddButton } from '../buttons';
 import './styles/data-table.css';
 
+const DataTable = ({ 
+        data,
+        setData,
+        style,
+    }) => {
 
-const DataTable = () => {
-    const initialData = [
-        { id: 1, name: 'Alice', role: 'Engineer', status: 'Active' },
-        { id: 2, name: 'Bob', role: 'Designer', status: 'Inactive' },
-        { id: 3, name: 'Charlie', role: 'Manager', status: 'Active' },
-      ];
-  const [data, setData] = useState(initialData);
+    DataTable.defaultProps = {
+        style: {},
+    };
+    
+    const handleRemove = (idToRemove) => {
+        setData((prev) => prev.filter((item) => item.id !== idToRemove));
+    };
 
-  const handleRemove = (idToRemove) => {
-    setData((prev) => prev.filter(item => item.id !== idToRemove));
-  };
-
-return (
-    <table className="data-table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {data.map(item => (
-                <tr key={item.id}>
-                    <td>{item.name}</td>
-                    <td>{item.role}</td>
-                    <td>{item.status}</td>
-                    <td>
-                        <button 
-                            onClick={() => handleRemove(item.id)} 
-                            title="Remove"
-                        >
-                            
-                        </button>
-                    </td>
-                </tr>
-            ))}
-        </tbody>
-    </table>
-);
+    return (
+        <div className="container" style={style}>
+            <table className="data-table">
+                <thead className="data-table-header">
+                    <tr>
+                        <th style={{ fontSize: 'small' }}>Name</th>
+                        <th style={{ fontSize: 'small' }}>Plants</th>
+                        <th style={{ fontSize: 'small' }}>Interval</th>
+                        <th style={{ textAlign: 'center', fontSize: 'small' }}>
+                            <AddButton />
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {data.map((item) => (
+                        <tr key={item.id}>
+                            <td style={{ fontSize: 'medium' }}>{item.name}</td>
+                            <td style={{ fontSize: 'small' }}>
+                                {item.plants.map((plant) => (
+                                    <div key={plant.id}>{plant.name}</div>
+                                ))}
+                            </td>
+                            <td style={{ textAlign: 'center', fontSize: 'medium' }}>{item.interval}</td>
+                            <td style={{ textAlign: 'center', fontSize: 'small' }}>
+                                <DeleteButton onClick={() => handleRemove(item.id)} />
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
 };
 
 export default DataTable;

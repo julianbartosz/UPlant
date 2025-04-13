@@ -94,7 +94,10 @@ export const UserProvider = ({ children }) => {
             let gardens = [
                 { name: 'Garden 1', x: 5, y: 10, cells: cells1 },
                 { name: 'Garden 2', x: 5, y: 5, cells: cells2 },
-                { name: 'Garden 3', x: 5, y: 5, cells: cells3 }
+                { name: 'Garden 3', x: 5, y: 5, cells: cells3 },  
+             
+                 
+                
             ];
 
             gardens = gardens.map(garden => {

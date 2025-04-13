@@ -11,7 +11,6 @@
 import React from 'react';
 import Select from 'react-select';
 import { AddButton } from '../buttons';
-import DataTable from './DataTable';
 import './styles/add-with-options.css';
 
 const AddWithOptions = ({ 
@@ -64,9 +63,6 @@ const AddWithOptions = ({
                 getOptionLabel={(option) => option[labelField]}
                 getOptionValue={(option) => option[uniqueField]}
             />
-      
-        
-      <DataTable />
 
         </div>
         
