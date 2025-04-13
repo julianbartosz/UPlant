@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     'django_select2',
     'rest_framework',
     'corsheaders',
-
 ]
 
 REST_FRAMEWORK = {
@@ -252,3 +251,22 @@ LOGGING = {
         },
     },
 }
+
+import sys
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',  # Use in-memory database for faster tests
+        }
+    }
+    
+     # Skip migrations when testing
+    class DisableMigrations:
+        def __contains__(self, item):
+            return True
+            
+        def __getitem__(self, item):
+            return None
+            
+    MIGRATION_MODULES = DisableMigrations()

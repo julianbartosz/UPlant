@@ -17,7 +17,7 @@ class PlantSerializer(serializers.Serializer):
     synonyms = serializers.ListField(
         child=serializers.CharField(), allow_empty=True, required=False
     )
-    # We'll expose a simplified links dictionary.
+    # Expose a simplified links dictionary.
     links = serializers.DictField(child=serializers.CharField(), required=False)
 
 class PlantListResponseSerializer(serializers.Serializer):

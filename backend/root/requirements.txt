@@ -9,6 +9,7 @@ Django==5.0.4
 django-allauth==65.4.1
 django-appconf==1.1.0
 django-crispy-forms==2.3
+django-cors-headers==4.0.0
 django-extensions==3.2.3
 django-select2==8.3.0
 django-user-management==18.0.0

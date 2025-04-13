@@ -1,48 +1,85 @@
 <!-- backend/root/templates/core/about.html -->
 
-{% extends 'basic_generic.html' %}
-
+{% extends "basic_generic.html" %}
 {% load static %}
 
-{% block title %}About Us - UPlant{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'admin/css/aboutus.css' %}">
 <div class="about-container">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-10">
-                <div class="card shadow">
-                    <div class="card-body text-center">
-                        <h2 class="about-title">About Us</h2>
-                        <p>At U-Plant, we are dedicated to [mission or goal]</p>
-                        
-                        <div class="team-section mt-4">
-                            <h3>Meet Our Team</h3>
-                            <div class="team-members">
-                                <div class="row justify-content-center mt-3">
-                                    <div class="col-md-3 col-sm-6">
-                                        <div class="team-member">
-                                            <img src="{% static 'img/placeholders/lebron.png' %}" alt="Team Member">
-                                            <p>Lebron James</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3 col-sm-6">
-                                        <div class="team-member">
-                                            <img src="{% static 'img/placeholders/obama.jpeg' %}" alt="Team Member">
-                                            <p>Barack Obama</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3 col-sm-6">
-                                        <div class="team-member">
-                                            <img src="{% static 'img/placeholders/jack.jpg' %}" alt="Team Member">
-                                            <p>Very cool guy</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <h2>About Us</h2>
+    <p class="mission">Mission Statement Here</p>
+
+    <!-- Team Photo -->
+    <div class="team-photo">
+        <img src="{% static 'Team Photo Here' %}" alt="Team Photo">
+        <p class="photo-caption">Left to right: </p>
+    </div>
+
+    <div class="team-members">
+        <!-- Team Member 1 (Odd) -->
+        <div class="team-member">
+            <div class="member-info">
+                <p class="name">Julian</p>
+                <p class="title">Dev</p>
+            </div>
+            <div class="member-description">
+                <p>Example Description</p>
+            </div>
+        </div>
+
+        <!-- Team Member 2 (Even - mirrored) -->
+        <div class="team-member mirrored">
+            <div class="member-description">
+                <p>Example Description</p>
+            </div>
+            <div class="member-info">
+                <p class="name">Jason</p>
+                <p class="title">Dev</p>
+            </div>
+        </div>
+
+        <!-- Team Member 3 -->
+        <div class="team-member">
+            <div class="member-info">
+                <p class="name">Laura</p>
+                <p class="title">Dev</p>
+            </div>
+            <div class="member-description">
+                <p>Example Description</p>
+            </div>
+        </div>
+
+        <!-- Team Member 4 -->
+        <div class="team-member mirrored">
+            <div class="member-description">
+                <p>Example Description</p>
+            </div>
+            <div class="member-info">
+                <p class="name">Beckett</p>
+                <p class="title">Dev</p>
+            </div>
+        </div>
+
+        <!-- Team Member 5 -->
+        <div class="team-member">
+            <div class="member-info">
+                <p class="name">Alex</p>
+                <p class="title">Dev</p>
+            </div>
+            <div class="member-description">
+                <p>Example Description</p>
+            </div>
+        </div>
+
+        <!-- Team Member 6 -->
+        <div class="team-member mirrored">
+            <div class="member-description">
+                <p>Example Description</p>
+            </div>
+            <div class="member-info">
+                <p class="name">Cainan</p>
+                <p class="title">Dev</p>
             </div>
         </div>
     </div>
