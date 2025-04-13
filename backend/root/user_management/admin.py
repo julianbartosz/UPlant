@@ -49,7 +49,6 @@ class UserCreationForm(forms.ModelForm):
             user.save()
         return user
 
-
 class UserChangeForm(forms.ModelForm):
     """Form for updating users in the admin interface"""
     password = ReadOnlyPasswordHashField(

@@ -267,23 +267,13 @@ LOGGING = {
 
 import sys
 if 'test' in sys.argv:
-    # Existing settings
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',
+            'NAME': ':memory:',  # Use in-memory database for faster tests
         }
     }
     
-    # Add these additional test optimizations:
-    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
-    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-    
-    # Skip signals during testing for cleaner tests
-    SKIP_SIGNAL_HANDLERS = True
-    # Disable default garden creation in tests
-    SKIP_DEFAULT_GARDEN_CREATION = True
-
      # Skip migrations when testing
     class DisableMigrations:
         def __contains__(self, item):
@@ -293,26 +283,3 @@ if 'test' in sys.argv:
             return None
             
     MIGRATION_MODULES = DisableMigrations()
-
-ENABLE_SEARCH_INDEXING = True
-MAX_SEARCH_RESULTS = 100
-SEARCH_CACHE_TIMEOUT = 3600  # 1 hour
-
-# ENABLE_ADVANCED_SEARCH = True
-# SEARCH_ENGINE = 'elasticsearch'
-# ELASTICSEARCH_HOSTS = ['http://localhost:9200']
-# ELASTICSEARCH_INDEX_PREFIX = 'uplant'
-# SEARCH_SETTINGS = {
-#     'elasticsearch': {
-#         'timeout': 30,
-#         'retry_on_timeout': True
-#     }
-# }
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-    }
-}
-
-SKIP_CACHE_INITIALIZATION = True
