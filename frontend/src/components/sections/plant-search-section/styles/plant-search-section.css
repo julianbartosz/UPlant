@@ -1,0 +1,80 @@
+.search-input {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    font-size: 12px; 
+}
+
+.search-input:focus {
+    outline: none;
+    border: 2px solid #156082; 
+    box-shadow: 0 0 5px rgba(21, 96, 130, 0.5);
+}
+
+.search-section-container {
+    width: 100%;
+    height: 100%;
+}
+
+.search-section-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+button.search-button {
+    width: 40%;
+    padding: 10px;
+    color: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    background-color: transparent;
+}
+
+button.search-button:active {
+    transform: scale(0.9);
+}
+
+button.search-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.plant-list {
+    width: 50%;
+    height: calc(100% - 40px);
+    overflow-y: auto;
+}
+
+.plant-item-container {
+    font-size: 21px;
+    flex: 1 0 50%;
+    box-sizing: border-box;
+    width: 100%; 
+}
+
+.plant-item {
+    padding: 10px;
+    border: 1px solid #083448;
+    background: linear-gradient(to bottom, #156082, rgb(83, 118, 83));
+    text-align: center;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    flex: 1 1 100%; /* Ensures the item fills horizontally */
+    box-sizing: border-box;
+}
+
+.scrollable-section {
+    width: 98%;     
+    height: calc(100vh - 150px);        
+    overflow-y: scroll;   
+    border: 1px solid #ccc; 
+    background: linear-gradient(to bottom, #d3d3d3, #a9a9a9);
+    border-radius: 3px;
+}
+
+  .plant-common-name {
+    font-size: 14px;
+    margin-top: 5px;
+}

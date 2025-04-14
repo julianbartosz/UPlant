@@ -34,15 +34,13 @@ class UserCreationForm(forms.ModelForm):
             user.save()
         return user
 
-
 class UserChangeForm(forms.ModelForm):
     password = ReadOnlyPasswordHashField(label="Password",
         help_text=("You can change the password using <a href=\"../password/\">this form</a>."))
 
     class Meta:
         model = User
-        fields = ("email", "username", "password", "is_superuser")
-
+        fields = ("email", "username", "password", "is_superuser", "groups", "user_permissions")
 
 class UserAdmin(BaseUserAdmin):
     form = UserChangeForm

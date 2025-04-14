@@ -94,7 +94,10 @@ export const UserProvider = ({ children }) => {
             let gardens = [
                 { name: 'Garden 1', x: 5, y: 10, cells: cells1 },
                 { name: 'Garden 2', x: 5, y: 5, cells: cells2 },
-                { name: 'Garden 3', x: 5, y: 5, cells: cells3 }
+                { name: 'Garden 3', x: 5, y: 5, cells: cells3 },  
+             
+                 
+                
             ];
 
             gardens = gardens.map(garden => {
@@ -118,6 +121,7 @@ export const UserProvider = ({ children }) => {
     
 
     const handleRenameGarden = async (index) => {
+        handlePlantSearch(109482);
 
         const garden = gardens[index];
 
@@ -339,6 +343,31 @@ export const UserProvider = ({ children }) => {
             alert("Failed to save garden. Please try again.");
         }
     };
+
+    const handlePlantSearch = async (term) => {
+        console.log(`Searching for plants with term: ${term}`);
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/v1/plants`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'credentials': 'include'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch plants");
+            }
+
+            const plants = await response.json();
+            console.log(plants['data']);
+        } catch (error) {
+            console.error("Error fetching plants:", error);
+            alert("Failed to fetch plants. Please try again.");
+        }
+        return plants['data'];
+        
+    };
     
     return (
         <UserContext.Provider value=
@@ -346,6 +375,7 @@ export const UserProvider = ({ children }) => {
             user, 
             gardens, 
             handleAddGarden, 
+            handlePlantSearch,
             handleUpdateGarden, 
             handleDeleteGarden, 
             handleRenameGarden, 

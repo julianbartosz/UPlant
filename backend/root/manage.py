@@ -19,11 +19,12 @@ import django.db.models.fields
 django.db.models.fields.FieldDoesNotExist = django.core.exceptions.FieldDoesNotExist
 
 # Patch missing parse_header from django.http.multipartparser
-import cgi
+from email.utils import parseaddr
 from django.http import multipartparser
-if not hasattr(multipartparser, 'parse_header'):
-    multipartparser.parse_header = cgi.parse_header
 
+# Using email.utils' parseaddr for header parsing
+if not hasattr(multipartparser, 'parse_header'):
+    multipartparser.parse_header = parseaddr
 # Patch missing ugettext_lazy by aliasing it to gettext_lazy
 from django.utils.translation import gettext_lazy
 import django.utils.translation
