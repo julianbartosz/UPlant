@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaCog } from 'react-icons/fa';
 import { BackButton } from '../../buttons/index.js';
+import logoImage from '../../../assets/images/logo.png';
 import './styles/nav-bar-section.css'; // Adjust the path as necessary
 
 const NavBarSection = ({ username }) => {
@@ -8,7 +9,13 @@ const NavBarSection = ({ username }) => {
         <div className="navbar">
            
                 <BackButton />
-            <h1>UPlant</h1>
+            <div className="logo-container">
+                <img 
+                    src={logoImage} 
+                    alt="UPlant Logo" 
+                    className="nav-logo"
+                />
+            </div>
 
             <div style={{ display: 'flex', alignItems: 'center' }}>
                 <div className="username-container">

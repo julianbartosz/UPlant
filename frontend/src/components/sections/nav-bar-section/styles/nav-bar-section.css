@@ -12,11 +12,16 @@
     justify-content: space-between;
 }
 
-.navbar h1 {
-    font-family: 'Brush Script MT', cursive;
-    color: black;
-    font-size: 50px;
-    font-weight: bold;
+.logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-logo {
+    height: 40px; /* Adjust as needed */
+    width: auto;
+    object-fit: contain;
 }
 
 .username-container {
