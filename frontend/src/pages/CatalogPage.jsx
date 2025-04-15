@@ -18,7 +18,7 @@ function Catalog() {
         console.log('Plant clicked:', plant);
         getPlantById(plant.id).then((plantData) => {
             console.log('Plant data:', plantData);
-            setSelectedPlant(plantData); // Update the selected plant state
+            setSelectedPlant(plantData);
         });
     };
 
