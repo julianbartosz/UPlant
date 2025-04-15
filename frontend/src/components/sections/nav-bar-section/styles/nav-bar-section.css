@@ -22,10 +22,11 @@
 .username-container {
     color: black;
     font-size: 20px;
-    margin-right: 50px;
+    margin-right: 20px;
     border: 1px dotted gray;
     padding: 0 10px;
     display: flex;
+    height: 60px;
     align-items: center;
 }
 
@@ -33,7 +34,8 @@
     color: black;
     font-size: 50px;
     cursor: pointer;
-    margin-right: 30px;
+    margin-right: 20px;
+    align-self: center;
 }
 
 

@@ -4,9 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import GardenDashboard from './pages/GardenDashboardPage.jsx';
-import ProtectedRoute from './contexts/ProtectedRoute.jsx';
 import Catalog from './pages/CatalogPage.jsx'; 
-import UserProvider from './contexts/ProtectedRoute';
+import UserProvider from './contexts/UserProvider.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import './styles/app.css';
 
@@ -21,8 +20,8 @@ function App() {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/home" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<GardenDashboard />} />
-          <Route path="/catalog" element={<ProtectedRoute><Catalog/></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><SettingsPage/></ProtectedRoute>} />
+          <Route path="/catalog" element={<Catalog/>} />
+          <Route path="/settings" element={<SettingsPage/>} />
           <Route path="*" element={<div>Page not found</div>} />
 
         </Routes>

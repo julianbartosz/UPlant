@@ -1,108 +1,110 @@
-import { useEffect, useState } from 'react';
 
-
+import { useContext } from 'react';
+import { UserContext } from '../contexts/UserProvider';
 
 const useNotifications = () => {
+    
+    const context = useContext(UserContext);
 
-    const [notifications, setNotifications] = useState(null);
-
-    useEffect(() => {
-        // Fetch notifications from an API or other source
-        const fetchedNotifications = [[
-            {
-                id: 1,
-                name: 'Alice',
-                plants: [
-                    { id: 101, name: 'Fern' },
-                    { id: 102, name: 'Cactus' },
-                ],
-                interval: 7,
-            },
-            {
-                id: 2,
-                name: 'Bob',
-                plants: [
-                    { id: 103, name: 'Bamboo' },
-                ],
-                interval: 14,
-            },
-            {
-                id: 3,
-                name: 'Charlie',
-                plants: [
-                    { id: 104, name: 'Palm' },
-                    { id: 105, name: 'Orchid' },
-                ],
-                interval: 69,
-            },
-            {
-                id: 4,
-                name: 'David',
-                plants: [
-                    { id: 106, name: 'Rose' },
-                ],
-                interval: 21,
-            },
-            {
-                id: 5,
-                name: 'Eve',
-                plants: [
-                    { id: 107, name: 'Tulip' },
-                ],
-                interval: 30,
-            },
-            
-        ], [
-            {
-                id: 6,
-                name: 'Frank',
-                plants: [
-                    { id: 108, name: 'Daisy' },
-                ],
-                interval: 14,
-            },
-            {
-                id: 7,
-                name: 'Grace',
-                plants: [
-                    { id: 109, name: 'Lily' },
-                ],
-                interval: 7,
-            },
-            {
-                id: 8,
-                name: 'Heidi',
-                plants: [
-                    { id: 110, name: 'Sunflower' },
-                ],
-                interval: 14,
-            },
-            {
-                id: 9,
-                name: 'Ivan',
-                plants: [
-                    { id: 111, name: 'Daffodil' },
-                ],
-                interval: 30,
-            },
-            {
-                id: 10,
-                name: 'Judy',
-                plants: [
-                    { id: 112, name: 'Marigold' },
-                ],
-                interval: 21,
-            }],[]];
-
-        setNotifications(fetchedNotifications);
+    if (!context) {
+        throw new Error("useNotifications must be used within a UserProvider");
     }
-    , []);
 
-    const addNotification = (notification) => {
-        setNotifications((prev) => [...prev, notification]);
+    const { notifications, setNotifications, notificationsLoading, notificationsError } = context;
+
+   
+    console.log("Notifications:", notifications);
+
+    const mediateAddNotification = async (gardenIndex, notification) => {
+        if (gardenIndex < 0 || gardenIndex >= notifications.length) {
+            alert("Invalid gardenIndex. Please provide a valid index.");
+            return;
+        }
+
+        const updatedNotifications = notifications.map((garden, index) => 
+            index === gardenIndex ? [...garden, notification] : garden
+        );
+
+        setNotifications(updatedNotifications);
+
+        try {
+            const response = await fetch(`/api/notifications`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'credentials': 'include'
+                },
+                body: JSON.stringify({ gardenIndex, notification }),
+            });
+
+            if (!response.ok) {
+                console.error("Add notification failed", response);
+            }
+
+            console.log(`Notification added successfully.`);
+        } catch (error) {
+            if (import.meta.env.VITE__USE_DUMMY_FETCH !== 'true') {
+                console.error("Using dummy fetch, no rollback needed.")
+            } else {
+                console.error("Error adding notification:", error);
+                setNotifications(notifications); // Rollback to previous state
+                
+            }
+        }
     };
 
-    return { notifications, addNotification };
+    const mediateDeleteNotification = async (gardenIndex, notificationIndex) => {
+        if (
+            gardenIndex < 0 || 
+            gardenIndex >= notifications.length || 
+            notificationIndex < 0 || 
+            notificationIndex >= notifications[gardenIndex].length
+        ) {
+            alert("Invalid gardenIndex or notificationIndex. Please provide valid indices.");
+            return;
+        }
+
+        const updatedNotifications = notifications.map((garden, index) => 
+            index === gardenIndex ? garden.filter((_, i) => i !== notificationIndex) : garden
+        );
+
+        setNotifications(updatedNotifications);
+
+        try {
+            const response = await fetch(`/api/notifications`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'credentials': 'include'
+                },
+                body: JSON.stringify({ gardenIndex, notificationIndex }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to delete notification");
+            }
+
+            console.log(`Notification deleted successfully.`);
+        } catch (error) {
+            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+                console.error("Using dummy fetch, no rollback needed.");
+                return;
+            }
+            console.error("Error deleting notification:", error);
+            setNotifications(notifications); // Rollback to previous state
+        }
+
+
+    };
+
+    return {
+        notifications,
+        setNotifications,
+        notificationsLoading,
+        notificationsError,
+        mediateAddNotification,
+        mediateDeleteNotification,
+    };
 };
 
 export default useNotifications;

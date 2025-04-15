@@ -1,5 +1,5 @@
 import React from 'react';
-import { useGardens } from '../../../contexts/ProtectedRoute';
+import { useGardens } from '../../../hooks/useGardens';
 import { AddButton, DeleteButton, GardenButton } from '../../buttons';
 import './styles/garden-bar.css';
 

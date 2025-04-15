@@ -2,7 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useDrop } from 'react-dnd';
 import plantFamilyIcons from '../../../assets/constants/icons.js'
-import { useGardens } from '../../../contexts/ProtectedRoute.jsx';
+import { useGardens } from '../../../hooks/useGardens.jsx';
 import { Tooltip } from 'react-tooltip';
 import GardenBar from './GardenBar.jsx';
 import { CircleButton  } from '../../buttons/index.js';
@@ -18,7 +18,7 @@ const GardenSection = () => {
 
     const { 
         gardens, 
-        handleUpdateGarden, 
+        mediateUpdateGarden,
         setGardens 
     } = useGardens(); 
 
@@ -100,7 +100,7 @@ const GardenSection = () => {
             }
         }
         
-        handleUpdateGarden(newGarden, false);
+        mediateUpdateGarden(newGarden, false);
     };
 
 
@@ -272,8 +272,6 @@ const GardenSection = () => {
                     notifications={notifications}
                     selectedGardenIndex={selectedGardenIndex}
                 />
-
-         
             
             </div>
            
