@@ -43,11 +43,12 @@ const NotificationsSection = ({ notifications, selectedGardenIndex }) => {
             {!toggleLegend && (
               
                 toggleForm ? (
-                    <NotificationForm onBack={() => setToggleForm(false)} />
+                    <NotificationForm onBack={() => setToggleForm(false)} selectedGardenIndex={selectedGardenIndex} />
                 ) : (
                     
                     <DataTable
                         data={notifications[selectedGardenIndex]}
+                        selectedGardenIndex={selectedGardenIndex}
                         onAdd={() => setToggleForm(true)}
                         setData={() => {}}
                     />

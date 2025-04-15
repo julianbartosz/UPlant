@@ -5,7 +5,7 @@ const SettingsPage = ({ username = 'Default'}) => {
 
     return (
         <div>
-            <NavBarSection title="Settings" username={username} buttonOptions={['back']} />
+            <NavBarSection title="Settings" username={username} buttonOptions={['back']} onBack={() => { window.location.href = '/app/dashboard'; }} />
             <SettingsForm />
         </div>
     );

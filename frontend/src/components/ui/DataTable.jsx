@@ -11,7 +11,7 @@
  *   @param {string} props.data[].name
  *   @param {Array} props.data[].plants
  *     @param {string} props.data[].plants[].id
- *     @param {string} props.data[].plants[].name
+ *     @param {string} props.data[].plants[].common_name
  *   @param {string} props.data[].interval 
  * @param {Function} props.setData 
  * @param {Object} [props.style={}]
@@ -20,18 +20,19 @@
 
 import React from 'react';
 import { DeleteButton, AddButton } from '../buttons';
+import useNotifications from '../../hooks/useNotifications';
 import './styles/data-table.css';
 
 const DataTable = ({ 
         data =[{ id: 1, name: 'Beckett', plants: [{ id: 101, name: 'Fern' }, { id: 102, name: 'Cactus' }], interval: 7 }, { id: 2, name: 'Bob', plants: [{ id: 103, name: 'Bamboo' }], interval: 14 }, { id: 3, name: 'Charlie', plants: [{ id: 104, name: 'Palm' }, { id: 105, name: 'Orchid' }], interval: 30 }, { id: 4, name: 'David', plants: [{ id: 106, name: 'Rose' }], interval: 21 }],
         setData,
+        selectedGardenIndex = 0,    
         style = {},
         onAdd,
     }) => {
-
-    const handleRemove = (idToRemove) => {
-        setData((prev) => prev.filter((item) => item.id !== idToRemove));
-    };
+     
+        const { mediateDeleteNotification } = useNotifications();
+    
 
     return (
         <div className="container" style={style}>
@@ -47,17 +48,17 @@ const DataTable = ({
                     </tr>
                 </thead>
                 <tbody>
-                    {data.map((item) => (
+                    {data.map((item, index) => (
                         <tr key={item.id}>
                             <td style={{ fontSize: 'medium' }}>{item.name}</td>
                             <td style={{ fontSize: 'small' }}>
                                 {item.plants.map((plant) => (
-                                    <div key={plant.id}>{plant.name}</div>
+                                    <div key={plant.id}>{plant.common_name}</div>
                                 ))}
                             </td>
                             <td style={{ textAlign: 'center', fontSize: 'medium' }}>{item.interval}</td>
                             <td style={{ textAlign: 'center', fontSize: 'small' }}>
-                                <DeleteButton onClick={() => handleRemove(item.id)} />
+                                <DeleteButton onClick={() => mediateDeleteNotification(selectedGardenIndex, index)} />
                             </td>
                         </tr>
                     ))}

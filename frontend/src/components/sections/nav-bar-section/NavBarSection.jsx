@@ -4,7 +4,7 @@ import { BackButton } from '../../buttons/index.js';
 import logoImage from '../../../assets/images/logo.png';
 import './styles/nav-bar-section.css'; // Adjust the path as necessary
 
-const NavBarSection = ({ username='Default', title = 'Default', buttonOptions = ['back', 'settings' ] }) => {
+const NavBarSection = ({ username='Default', title = 'Default', buttonOptions = ['back', 'settings' ], onBack=() => {} }) => {
     return (
         <div className="navbar">
            

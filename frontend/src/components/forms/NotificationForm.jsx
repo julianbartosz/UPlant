@@ -1,14 +1,40 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import useNotifications from '../../hooks/useNotifications';
 import AddWithOptions from '../ui/AddWithOptions';
 import { GenericButton } from '../buttons';
 
-const NotificationForm = ({onBack}) => {
+
+const NotificationForm = ({onBack, selectedGardenIndex}) => {
 
     const [selectedPlants, setSelectedPlants] = React.useState(new Set());
+
+    const [newNotification, setNewNotification] = React.useState(null);
+
+    const { mediateAddNotification } = useNotifications();
 
     const handlePlantSelection = (selected) => { 
         console.log("Selected plants:", selected);
         setSelectedPlants(new Set(selected));
+    };
+
+    const handleSubmit = () => {
+        const nameInput = document.getElementById('name');
+        const intervalInput = document.getElementById('interval');
+        const name = nameInput?.value || '';
+
+        const notification = {
+            name: name,
+            description: `Notification for ${name}`,
+            interval: parseInt(intervalInput?.value, 10) || -1,
+            plants: Array.from(selectedPlants).map((plant) => ({
+                common_name: plant.common_name,
+                id: plant.id,
+            })),
+        };
+
+        console.log("Notification to be added:", notification);
+
+        mediateAddNotification(selectedGardenIndex, notification);
     };
 
     return (
@@ -27,7 +53,7 @@ const NotificationForm = ({onBack}) => {
                 >
                     Affected Plants:
                 </label>
-                <AddWithOptions handleSelection={handlePlantSelection}/> {/* Updated to handleSelection */}
+                <AddWithOptions handleSelection={handlePlantSelection}/>
                 <div style={{ marginTop: '15px',marginBottom: '10px', display: 'flex', flexDirection: 'column' }}>
 
                 <label
@@ -81,7 +107,7 @@ const NotificationForm = ({onBack}) => {
                         />
                     </div>
                 </div>
-                <GenericButton label="Submit" />
+                <GenericButton label="Submit" onClick={() => {handleSubmit();}} />
             </div>
         </div>
     );
