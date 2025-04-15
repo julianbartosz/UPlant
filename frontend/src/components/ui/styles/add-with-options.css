@@ -2,9 +2,11 @@
 .add-with-options {
     display: flex;
     align-items: center;
+    justify-content: center;
     width: auto;
     gap: 10px; 
 }
+
 @keyframes shake {
     0% { transform: translateX(0); }
     20% { transform: translateX(-5px); }
