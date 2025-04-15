@@ -1,12 +1,15 @@
 import SettingsForm from '../components/forms/SettingsForm';
+import NavBarSection from '../components/sections/nav-bar-section/NavBarSection';
 
-const SettingsPage = () => {
+const SettingsPage = ({ username = 'Default'}) => {
+
     return (
         <div>
-            <h1>Settings</h1>
+            <NavBarSection title="Settings" username={username} buttonOptions={['back']} />
             <SettingsForm />
         </div>
     );
+
 };
 
 export default SettingsPage;
