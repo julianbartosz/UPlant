@@ -3,18 +3,16 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 const UserContext = createContext(null);
 
 export const useUser = () => {
-    // Get the context value
+    
     const context = useContext(UserContext);
     
-    // If context is null (component not wrapped in UserProvider), 
-    // return an object with null values to avoid destructuring errors
     if (!context) {
         console.error("useUser must be used within a UserProvider");
         return { user: null, handleUpdateUser: () => {} };
     }
     
-    // Context exists, safe to destructure
     const { user, handleUpdateUser } = context;
+
     return { user, handleUpdateUser };
 };
 export const useGardens = () => {

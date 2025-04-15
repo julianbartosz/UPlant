@@ -1,20 +1,25 @@
 import React from 'react';
 import { FaCog } from 'react-icons/fa';
 import { BackButton } from '../../buttons/index.js';
-import './styles/nav-bar-section.css'; // Adjust the path as necessary
+import './styles/nav-bar-section.css';
 
-const NavBarSection = ({ username }) => {
+const NavBarSection = ({ username='Default', title = 'Default', buttonOptions = ['back', 'settings' ] }) => {
     return (
         <div className="navbar">
-           
-                <BackButton />
-            <h1>UPlant</h1>
+            <div style = {{ width: '200px' }}>
+            {buttonOptions.includes('back') && <BackButton />}
+            </div>
+            <div style={{ textAlign: 'center', flex: 1 }}>
+                <h1>{title}</h1>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '200px' }}>
+                {username && (
+                    <div className="username-container">
+                        {username}
+                    </div>
+                )}
+                {buttonOptions.includes('settings') && <FaCog className="settings-icon" />}
 
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-                <div className="username-container">
-                    {username}
-                </div>
-                <FaCog className="settings-icon" />
             </div>
         </div>
     );
