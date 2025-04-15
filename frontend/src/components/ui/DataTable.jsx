@@ -1,17 +1,21 @@
 /**
+ * DataTable Component
+ * 
+ * This component renders a table displaying a list of notifications, their associated plants, and time intervals.
+ * It allows adding new entries and removing existing ones.
  * 
  * @component
  * @param {Object} props
  * @param {Array} props.data
- *   @param {string} props.data[].id 
+ *   @param {string} props.data[].id
  *   @param {string} props.data[].name
  *   @param {Array} props.data[].plants
  *     @param {string} props.data[].plants[].id
- *     @param {string} props.data[].plants[].name 
- *   @param {string} props.data[].interval
+ *     @param {string} props.data[].plants[].name
+ *   @param {string} props.data[].interval 
  * @param {Function} props.setData 
- * @param {Object} [props.style={}] 
- * 
+ * @param {Object} [props.style={}]
+ * @param {Function} props.onAdd 
  */
 
 import React from 'react';
@@ -19,15 +23,12 @@ import { DeleteButton, AddButton } from '../buttons';
 import './styles/data-table.css';
 
 const DataTable = ({ 
-        data,
+        data =[{ id: 1, name: 'Beckett', plants: [{ id: 101, name: 'Fern' }, { id: 102, name: 'Cactus' }], interval: 7 }, { id: 2, name: 'Bob', plants: [{ id: 103, name: 'Bamboo' }], interval: 14 }, { id: 3, name: 'Charlie', plants: [{ id: 104, name: 'Palm' }, { id: 105, name: 'Orchid' }], interval: 30 }, { id: 4, name: 'David', plants: [{ id: 106, name: 'Rose' }], interval: 21 }],
         setData,
-        style,
+        style = {},
+        onAdd,
     }) => {
 
-    DataTable.defaultProps = {
-        style: {},
-    };
-    
     const handleRemove = (idToRemove) => {
         setData((prev) => prev.filter((item) => item.id !== idToRemove));
     };
@@ -41,7 +42,7 @@ const DataTable = ({
                         <th style={{ fontSize: 'small' }}>Plants</th>
                         <th style={{ fontSize: 'small' }}>Interval</th>
                         <th style={{ textAlign: 'center', fontSize: 'small' }}>
-                            <AddButton />
+                            <AddButton onClick={onAdd} />
                         </th>
                     </tr>
                 </thead>
