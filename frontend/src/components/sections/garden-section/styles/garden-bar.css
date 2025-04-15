@@ -5,12 +5,13 @@
     margin: 30px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     margin-top: 10px;
 } 
+
   .garden-bar-item {
     margin: 0 10px;
     color: inherit;
     margin-top: 30px;
   }
+
   

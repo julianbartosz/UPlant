@@ -16,6 +16,7 @@
     height: 100%;
 }
 
+
 .search-section-header {
     display: flex;
     flex-direction: row;
@@ -58,7 +59,7 @@ button.search-button:hover {
 .plant-item {
     padding: 10px;
     border: 1px solid #083448;
-    background: linear-gradient(to bottom, #156082, rgb(83, 118, 83));
+    background: linear-gradient(to bottom,rgb(83, 118, 83), #156082);
     text-align: center;
     transition: background-color 0.2s ease, opacity 0.2s ease;
     flex: 1 1 100%; /* Ensures the item fills horizontally */

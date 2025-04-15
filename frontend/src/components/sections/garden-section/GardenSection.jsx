@@ -6,6 +6,9 @@ import { useGardens } from '../../../contexts/ProtectedRoute.jsx';
 import { Tooltip } from 'react-tooltip';
 import GardenBar from './GardenBar.jsx';
 import { CircleButton  } from '../../buttons/index.js';
+import useNotifications from '../../../hooks/useNotifications.jsx';
+import NotificationsSection from '../notifications-section/NotificationsSection.jsx';
+
 import './styles/garden-section.css';
 
 
@@ -40,7 +43,7 @@ const GardenSection = () => {
             if (containerRef.current) {
                 const { width, height } = containerRef.current.getBoundingClientRect();
                 const maxDimension = Math.max(gardens[selectedGardenIndex].x, gardens[selectedGardenIndex].y);
-                const newSquareSize = Math.min(width * 0.6, height * 0.6) / maxDimension;
+                const newSquareSize = Math.min(width * 0.5, height * 0.5) / maxDimension;
                 console.log("Old square size:", squareSize);
                 setFontSize(newSquareSize * 0.3);
                 setSquareSize(newSquareSize);
@@ -173,18 +176,34 @@ const GardenSection = () => {
             });
         },
     }));
+
+    const { notifications } = useNotifications();
+    const [toggleForm, setToggleForm] = React.useState(false);
+
+    if (!notifications) {
+        return <div>Loading...</div>;
+    }
   
     return (
         <div className="garden-container" ref={containerRef}>
-            <div className="garden-bar-container" >
+            <div className="garden-bar-container"> 
                 <GardenBar selectedGardenIndex={selectedGardenIndex} setSelectedGardenIndex={setSelectedGardenIndex} />
             </div>
+
+
+        
+
+
+
+            <div className="garden-grid-container">
+
             <div 
                 className="grid-container" 
                 ref={drop} 
                 style={{
                     width: `${squareSize * gardens[selectedGardenIndex].x}px`, 
                     height: `${squareSize * gardens[selectedGardenIndex].y}px`,
+                    marginRight: '40px'
                 }}
             >
                 <div 
@@ -195,6 +214,8 @@ const GardenSection = () => {
                     gridTemplateRows: `repeat(${gardens[selectedGardenIndex].y}, ${squareSize}px)`,
                 }}
             >
+                
+            
             
             {gardens[selectedGardenIndex].cells.map((row, i) => (
                 row.map((item, j) => (
@@ -243,6 +264,17 @@ const GardenSection = () => {
                 </div>
                 
                 
+            </div>
+            
+            </div>
+            <div className="garden-notification-container">
+                <NotificationsSection
+                    notifications={notifications}
+                    selectedGardenIndex={selectedGardenIndex}
+                />
+
+         
+            
             </div>
            
         </div>
