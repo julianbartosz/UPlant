@@ -10,10 +10,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='user',
-            name='phone',
-        ),
+        # migrations.RemoveField(
+        #     model_name='user',
+        #     name='phone',
+        # ),
         migrations.AlterField(
             model_name='user',
             name='role',

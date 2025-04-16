@@ -126,7 +126,7 @@ class Plant(models.Model):
         help_text="Average plant spread (cm)"
     )
 
-    # Fields for plant care guide, which may be filled by API data or users:
+    # Fields for plant care guide, which will be filled by API data cleaning or users:
     detailed_description = models.TextField(
         null=True, blank=True, 
         help_text="Full description and care guide for the plant"
@@ -135,8 +135,8 @@ class Plant(models.Model):
         null=True, blank=True, 
         help_text="Care instructions (watering, fertilization, pruning, etc.)"
     )
-    watering_interval = models.PositiveIntegerField(
-        null=True, blank=True, 
+    water_interval = models.PositiveIntegerField(
+        null=False, blank=False, default=7,
         help_text="Recommended days between watering"
     )
     sunlight_requirements = models.CharField(
@@ -253,7 +253,7 @@ class Plant(models.Model):
     def __str__(self):
         return f"{self.scientific_name} ({self.slug})"
 
-# let users create custom plants with minimal Information like Image and watering Interval, etc. (fields that are not In the trefle API)
+# let users create custom plants with minimal Information like Care Instructions, watering Interval, bloom months, etc. (fields that are not In the trefle API) to add to their dashboard.
 # only let admins create plants with all the information / edit the trefle fields
 # at the same time let users edit the fields that are not in the Trefle API
 

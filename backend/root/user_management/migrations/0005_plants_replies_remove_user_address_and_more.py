@@ -39,14 +39,14 @@ class Migration(migrations.Migration):
                 ('is_deleted', models.BooleanField(default=False)),
             ],
         ),
-        migrations.RemoveField(
-            model_name='user',
-            name='address',
-        ),
-        migrations.RemoveField(
-            model_name='user',
-            name='epantherid',
-        ),
+        # migrations.RemoveField(
+        #     model_name='user',
+        #     name='address',
+        # ),
+        # migrations.RemoveField(
+        #     model_name='user',
+        #     name='epantherid',
+        # ),
         migrations.AddField(
             model_name='user',
             name='created_at',

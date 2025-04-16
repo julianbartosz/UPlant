@@ -1,3 +1,5 @@
+# backend/root/services/tests/test_trefle_service.py
+
 from django.test import TestCase
 from unittest.mock import patch, MagicMock
 from services.trefle_service import list_plants, TrefleAPIError

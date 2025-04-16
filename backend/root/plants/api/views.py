@@ -60,16 +60,17 @@ class RetrievePlantAPIView(APIView):
     def get(self, request, id, format=None):
         try:
             trefle_response = retrieve_plants(id)
-            # Expect trefle_response to include a "data" key with the plant object.
             plant_data = trefle_response.get('data')
             if not plant_data:
-                return Response(
-                    {"error": "Plant not found."},
-                    status=status.HTTP_404_NOT_FOUND
-                )
+                return Response({"error": "Plant not found."}, status=status.HTTP_404_NOT_FOUND)
+                
             serializer = PlantSerializer(data=plant_data)
             if serializer.is_valid():
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                # Wrap the data to match list endpoint format
+                return Response({
+                    "data": serializer.data,
+                    "links": plant_data.get('links', {})
+                }, status=status.HTTP_200_OK)
             else:
                 logger.error("RetrievePlantAPIView serialization error: %s", serializer.errors)
                 return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

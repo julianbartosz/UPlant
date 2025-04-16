@@ -1,4 +1,5 @@
 # backend/root/user_management/admin.py
+
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django import forms
