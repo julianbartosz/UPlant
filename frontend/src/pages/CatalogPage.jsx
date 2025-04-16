@@ -2,15 +2,14 @@ import { useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import  { NavBarSection, PlantSearchSection }  from '../components/sections';
-import { useUser } from '../contexts/ProtectedRoute.jsx';
+import { useUser } from '../hooks/useUser';
 import { getPlantById } from '../services/trefleService.js';
 
 function Catalog() {
-    const userContext = useUser();
-    const user = userContext?.user; // Use optional chaining
-    const [selectedPlant, setSelectedPlant] = useState(null); // State to store the selected plant
 
-    if (!user) {
+    const { username, selectedPlant, setSelectedPlant } = useUser();
+    
+    if (!username) {
         return <p>Loading user data...</p>;
     }
 
@@ -18,7 +17,7 @@ function Catalog() {
         console.log('Plant clicked:', plant);
         getPlantById(plant.id).then((plantData) => {
             console.log('Plant data:', plantData);
-            setSelectedPlant(plantData); // Update the selected plant state
+            setSelectedPlant(plantData);
         });
     };
 
@@ -26,7 +25,7 @@ function Catalog() {
         <>
             <DndProvider backend={HTML5Backend}>
             <div className='app' style={{ backgroundColor: 'white', width: '100vw', height: '100vh', position: 'relative' }}>
-            <NavBarSection user = {user}/>
+            <NavBarSection title="Catalog" username = {username} onBack={ () => { window.location.href = 'http://localhost:8000/' } }/>
                 
                 <div
                     className="sidebar"

@@ -70,6 +70,7 @@
     display: flex;
     align-items: left;
     margin: auto;
+    outline: 2px solid black;
   }
 
   .add-garden-btn:focus {
