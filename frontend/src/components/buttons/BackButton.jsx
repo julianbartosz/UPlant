@@ -7,6 +7,7 @@ function BackButton({ onClick }) {
         <TextButton
             text="← Back"
             className="back-btn"
+            style={{borderRadius: '5px'}}
             onLeftClick={onClick}
             onRightClick={(e) => {
                 e.preventDefault();

@@ -24,19 +24,18 @@ import useNotifications from '../../hooks/useNotifications';
 import './styles/data-table.css';
 
 const DataTable = ({ 
-        data =[{ id: 1, name: 'Beckett', plants: [{ id: 101, name: 'Fern' }, { id: 102, name: 'Cactus' }], interval: 7 }, { id: 2, name: 'Bob', plants: [{ id: 103, name: 'Bamboo' }], interval: 14 }, { id: 3, name: 'Charlie', plants: [{ id: 104, name: 'Palm' }, { id: 105, name: 'Orchid' }], interval: 30 }, { id: 4, name: 'David', plants: [{ id: 106, name: 'Rose' }], interval: 21 }],
-        setData,
+        data =[],
         selectedGardenIndex = 0,    
-        style = {},
         onAdd,
+        fontSize
     }) => {
      
         const { mediateDeleteNotification } = useNotifications();
     
 
     return (
-        <div className="container" style={style}>
-            <table className="data-table">
+        <div className="container">
+            <table className="data-table" style={{ fontSize: fontSize }}>
                 <thead className="data-table-header">
                     <tr>
                         <th style={{ fontSize: 'small' }}>Name</th>
@@ -50,14 +49,14 @@ const DataTable = ({
                 <tbody>
                     {data.map((item, index) => (
                         <tr key={item.id}>
-                            <td style={{ fontSize: 'medium' }}>{item.name}</td>
-                            <td style={{ fontSize: 'small' }}>
+                            <td>{item.name}</td>
+                            <td>
                                 {item.plants.map((plant) => (
                                     <div key={plant.id}>{plant.common_name}</div>
                                 ))}
                             </td>
-                            <td style={{ textAlign: 'center', fontSize: 'medium' }}>{item.interval}</td>
-                            <td style={{ textAlign: 'center', fontSize: 'small' }}>
+                            <td style={{ textAlign: 'center' }}>{item.interval}</td>
+                            <td style={{ textAlign: 'center' }}>
                                 <DeleteButton onClick={() => mediateDeleteNotification(selectedGardenIndex, index)} />
                             </td>
                         </tr>

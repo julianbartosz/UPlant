@@ -17,6 +17,8 @@ import React, { useState } from 'react';
 import CryptoJS from 'crypto-js';
 import { GenericButton } from '../buttons';
 
+import './styles/settings-form.css';
+
 const SettingsForm = () => {
 
     const [password, setPassword] = useState('');

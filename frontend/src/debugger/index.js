@@ -1,0 +1,1 @@
+export { default as DummyFetch } from './dummy-fetch';

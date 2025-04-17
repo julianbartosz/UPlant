@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import plantFamilyIcons from '../../../assets/constants/icons'; 
-import './styles/plant-search-section.css';
+import { ICONS } from '../../constants';
+import usePlants from '../../hooks/usePlants';
+import { GiGardeningShears } from "react-icons/gi"
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+import './styles/plant-search-side-bar.css';
 
-const PlantSearchSection = ({ draggable = true, onPlantClick = () => {} }) => {
+const PlantSearchSideBar = ({ draggable = true, shears = true, onPlantClick = () => {}}) => {
+
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredPlants, setFilteredPlants] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -89,83 +91,96 @@ const PlantSearchSection = ({ draggable = true, onPlantClick = () => {} }) => {
                     {isLoading ? '⌛' : '🔍'}
                 </button> 
             </div>
-            
-            {error && (
-                <div className="error-message">
-                    {error}
-                </div>
-            )}
-            
-            {isLoading ? (
-                <div className="loading-indicator">Loading plants...</div>
-            ) : (
-                <PlantList 
-                    plants={filteredPlants} 
-                    draggable={draggable} 
-                    onPlantClick={onPlantClick}
-                />
-            )}
+            <ScrollableSection
+            plants={plantsList} 
+            draggable={draggable} 
+            shears={shears}
+            onPlantClick={onPlantClick}
+            />
         </div>
     );
 };
 
-const PlantList = ({ plants, draggable, onPlantClick }) => {
-    if (!Array.isArray(plants) || plants.length === 0) {
-        return <div className="no-results">No plants found. Try a different search term.</div>;
-    }
-    
+
+const ScrollableSection = ({ plants, draggable, shears, onPlantClick,  }) => {
+
     return (
-        <div className="scrollable-section">
-            {plants.map((plant) => (
-                <div
-                    className="plant-item-container"
-                    key={plant.id}
-                >
-                    <PlantItem
-                        plant={plant}
-                        draggable={draggable} 
-                        onPlantClick={onPlantClick} 
-                    />
-                </div>
-            ))}
+      <div className="scrollable-section">
+        {shears && (
+        <div className="item-container" key={-1}>
+            <ShearItem
+              draggable={draggable}
+              onPlantClick={onPlantClick}
+            />
         </div>
+      )}
+        {Array.isArray(plants) && plants.length > 0 ? (
+          plants.map((plant) => (
+            <div
+              className="item-container"
+              key={plant.id}
+            >
+              <PlantItem
+                plant={plant}
+                draggable={draggable} 
+                onPlantClick={ onPlantClick } 
+              />
+            </div>
+          ))
+        ) : (
+          ""
+        )}
+      </div>
     );
-};
+  };
   
-const PlantItem = ({ plant, draggable, onPlantClick }) => {
+  const PlantItem = ({ plant, draggable, onPlantClick }) => {
     const [{ isDragging }, drag] = useDrag({
-        type: 'PLANT',
-        item: plant,
-        collect: (monitor) => ({
-            isDragging: monitor.isDragging(),
-        }),
+      type: 'PLANT',
+      item: plant,
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
     });
     
-    // Handle null/undefined plant gracefully
-    if (!plant) return null;
-    
-    // Get plant icon based on family or use default
-    const plantIcon = plant.family ? 
-        (plantFamilyIcons[plant.family] || plantFamilyIcons['default']) : 
-        plantFamilyIcons['default'];
+    return (
+      <div
+        ref={draggable ? drag : null}
+        className="plant-item"
+        style={{
+          opacity: isDragging ? 0.5 : 1,    
+          cursor: draggable ? 'move' : 'pointer', 
+        }}
+        onClick={() => {}} 
+      >
+        {plant ? (ICONS[plant.family] || ICONS['default']) : ''}
+        <div className="plant-common-name">{plant['common_name']}</div>
+      </div>
+    );
+  };
+
+  const ShearItem = ({ draggable, onPlantClick }) => {
+    const [{ isDragging }, drag] = useDrag({
+      type: 'SHEAR',
+      item: { type: 'SHEAR'},
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    });
     
     return (
-        <div
-            ref={draggable ? drag : null}
-            className="plant-item"
-            style={{
-                opacity: isDragging ? 0.5 : 1,    
-                cursor: draggable ? 'move' : 'pointer', 
-            }}
-            onClick={() => onPlantClick(plant)} 
-        >
-            <div className="plant-icon">{plantIcon}</div>
-            <div className="plant-info">
-                <div className="plant-common-name">{plant.common_name || 'Unknown'}</div>
-                <div className="plant-scientific-name">{plant.scientific_name}</div>
-            </div>
-        </div>
+      <div
+        ref={draggable ? drag : null}
+        className="remove-plant-item"
+        style={{
+          opacity: isDragging ? 0.5 : 1,    
+          cursor: draggable ? 'move' : 'pointer', 
+        }}
+        onClick={() => {}} 
+      >
+        <GiGardeningShears color='black'/>
+      </div>
     );
-};
+  };
   
-export default PlantSearchSection;
+export default PlantSearchSideBar;

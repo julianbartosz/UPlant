@@ -1,10 +1,9 @@
 import React from 'react';
 import { FaCog } from 'react-icons/fa';
-import { BackButton } from '../../buttons/index.js';
-import logoImage from '../../../assets/images/logo.png';
-import './styles/nav-bar-section.css'; // Adjust the path as necessary
+import { BackButton } from '../buttons/index.js';
+import './styles/nav-bar.css';
 
-const NavBarSection = ({ username='Default', title = 'Default', buttonOptions = ['back', 'settings' ], onBack=() => {} }) => {
+const NavBar = ({ username='Default', title = 'Default', buttonOptions = ['back', 'settings' ], onBack=() => {} }) => {
     return (
         <div className="navbar">
            
@@ -27,4 +26,4 @@ const NavBarSection = ({ username='Default', title = 'Default', buttonOptions = 
     );
 };
 
-export default NavBarSection;
+export default NavBar;
