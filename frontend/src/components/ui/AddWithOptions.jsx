@@ -17,7 +17,7 @@ import './styles/add-with-options.css';
 
 const AddWithOptions = ({ 
     handleSelection=() => {},
-    options=[{id: 0, common_name: "Plant1"}, {id: 1, common_name: "Plant2"}], 
+    options=[], 
     labelField="common_name", 
     uniqueField="id"
 }) => {
@@ -56,7 +56,7 @@ const handleSelectChange = (selected) => {
                 options={options.filter(option => !Array.from(selectedOptions).some(selected => selected[uniqueField] === option[uniqueField]))}
                 value={Array.from(selectedOptions)}
                 onChange={handleSelectChange}
-                placeholder={ "Select options ..." }
+                placeholder={ "" }
                 getOptionLabel={(option) => option[labelField]}
                 getOptionValue={(option) => option[uniqueField]}
             />

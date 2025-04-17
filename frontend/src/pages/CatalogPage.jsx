@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import  { NavBarSection, PlantSearchSection }  from '../components/sections';
+import  { NavBar, PlantSearchSideBar }  from '../components/layout';
 import { useUser } from '../hooks/useUser';
 import { getPlantById } from '../services/trefleService.js';
 
@@ -25,7 +25,7 @@ function Catalog() {
         <>
             <DndProvider backend={HTML5Backend}>
             <div className='app' style={{ backgroundColor: 'white', width: '100vw', height: '100vh', position: 'relative' }}>
-            <NavBarSection title="Catalog" username = {username} onBack={ () => { window.location.href = 'http://localhost:8000/' } }/>
+            <NavBar title="Catalog" username = {username} onBack={ () => { window.location.href = 'http://localhost:8000/' } }/>
                 
                 <div
                     className="sidebar"
@@ -42,7 +42,7 @@ function Catalog() {
                         color: 'black', // Set text color to black
                     }}
                 >
-                    <PlantSearchSection draggable={false} onPlantClick={handlePlantClick} />
+                    <PlantSearchSideBar draggable={false} onPlantClick={handlePlantClick} />
                 </div>
                 <div
                     style={{

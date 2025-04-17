@@ -1,4 +1,14 @@
-const plantFamilyIcons = {
+/**
+ * A mapping of plant families to their corresponding icons.
+ * This object provides a quick way to associate plant families with representative emojis.
+ * Each key represents the name of a plant family, and the value is an emoji that symbolizes it.
+ * 
+ * @file icons.js
+ * @constant
+ * @type {Object.<string, string>}
+*/
+
+const ICONS = {
     Asteraceae: '🌼', // Daisy family
     Rosaceae: '🌹', // Rose family
     Fabaceae: '🌿', // Legume family
@@ -163,7 +173,7 @@ const plantFamilyIcons = {
     Moraceae: '🌳', // Mulberry family
     Urticaceae: '🌿', // Nettle family
     Cannabaceae: '🌿', // Hemp family
-    default: '❓' // Default icon for unknown or unlisted families
+    default: '❓' // Default icon for unknown
 };
 
-export default plantFamilyIcons;
+export default ICONS;

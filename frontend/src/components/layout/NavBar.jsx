@@ -1,9 +1,9 @@
 import React from 'react';
 import { FaCog } from 'react-icons/fa';
-import { BackButton } from '../../buttons/index.js';
-import './styles/nav-bar-section.css';
+import { BackButton } from '../buttons/index.js';
+import './styles/nav-bar.css';
 
-const NavBarSection = ({ username='Default', title = 'Default', buttonOptions = ['back', 'settings' ], onBack=() => {} }) => {
+const NavBar = ({ username='Default', title = 'Default', buttonOptions = ['back', 'settings' ], onBack=() => {} }) => {
     return (
         <div className="navbar">
             <div style = {{ width: '500px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
@@ -28,4 +28,4 @@ const NavBarSection = ({ username='Default', title = 'Default', buttonOptions = 
     );
 };
 
-export default NavBarSection;
+export default NavBar;
