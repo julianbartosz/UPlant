@@ -397,6 +397,11 @@ class Plant(models.Model):
     def __str__(self):
         return f"{self.scientific_name} ({self.slug})"
     class Meta:
+        indexes = [
+            models.Index(fields=['common_name'], name='idx_plant_common_name'),
+            models.Index(fields=['created_by'], name='idx_plant_created_by'),
+        ]
+        
         constraints = [
             models.CheckConstraint(
                 check=models.Q(water_interval__gt=0),
