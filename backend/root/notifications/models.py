@@ -7,18 +7,20 @@ from gardens.models import GardenLog
 from django.utils import timezone
 from datetime import timedelta
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 class NotifTypes(models.TextChoices):
     PR = "Prune"
     FE = "Fertilize"
     HA = "Harvest"
+    WA = "Water"
     OT = "Other"
 
 class Notification(models.Model):
     garden = models.ForeignKey('gardens.Garden', on_delete=models.CASCADE)
-    name = models.CharField(max_length=25)
+    name = models.CharField(max_length=255, help_text="Name of the notification")
     type = models.CharField(max_length=9, choices=NotifTypes.choices)
-    subtype = models.CharField(_('notification subtype'), max_length=25, blank=True,
+    subtype = models.CharField(('notification subtype'), max_length=25, blank=True,
                             help_text="Additional categorization for custom notifications")
     interval = models.PositiveIntegerField()
     # Instead of a direct plant FK, many-to-many:
@@ -97,8 +99,10 @@ class NotificationInstance(models.Model):
     
     @property
     def is_overdue(self):
+        if self.next_due is None:
+            return False  # Not overdue if no due date set
         return timezone.now() > self.next_due
-    
+
     def is_harvest_ready(self):
         """Check if plants associated with this notification are ready for harvest"""
         # Only apply to harvest notifications

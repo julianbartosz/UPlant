@@ -2,12 +2,52 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import NotificationViewSet, NotificationInstanceViewSet
 
+from user_management.api.views import (
+    # User account endpoints
+    UserDetailView, UserProfileView,
+    
+    # Password management
+    PasswordChangeView, PasswordResetRequestView, PasswordResetConfirmView,
+    
+    # Email management
+    EmailVerificationView, ResendVerificationEmailView, EmailChangeRequestView,
+    SetPrimaryEmailView,
+    
+    # Social account management
+    SocialAccountDisconnectView,
+    
+    # Admin endpoints
+    AdminUserViewSet
+)
+
+# Create a router for ViewSets
 router = DefaultRouter()
-router.register(r'notifications', NotificationViewSet, basename='notification')
-router.register(r'notification-instances', NotificationInstanceViewSet, basename='notification-instance')
+router.register(r'admin/users', AdminUserViewSet, basename='admin-user')
 
+# URL patterns for API endpoints
 urlpatterns = [
+    # User profile endpoints
+    path('me/', UserDetailView.as_view(), name='user-detail'),
+    path('me/profile/', UserProfileView.as_view(), name='user-profile'),
+    
+    # Password management endpoints
+    path('password/change/', PasswordChangeView.as_view(), name='password-change'),
+    path('password/reset/', PasswordResetRequestView.as_view(), name='password-reset'),
+    path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    
+    # Email management endpoints
+    path('email/verify/<str:key>/', EmailVerificationView.as_view(), name='email-verification'),
+    path('email/resend-verification/', ResendVerificationEmailView.as_view(), name='resend-verification'),
+    path('email/change/', EmailChangeRequestView.as_view(), name='email-change'),
+    path('email/set-primary/', SetPrimaryEmailView.as_view(), name='set-primary-email'),
+    
+    # Social account endpoints
+    path('social/disconnect/', SocialAccountDisconnectView.as_view(), name='disconnect-social'),
+    
+    # Include router URLs for ViewSets
     path('', include(router.urls)),
 ]
+
+# Named URL patterns for this app
+app_name = 'user_api'

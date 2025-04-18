@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'plants.apps.PlantsConfig',
     'gardens.apps.GardensConfig',
     'community.apps.CommunityConfig',
+    'notifications.apps.NotificationsConfig',
     'django_extensions',
     'django_select2',
     'rest_framework',
@@ -88,13 +89,15 @@ MIDDLEWARE = [
 
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
-    'Authorization',  # Allow Authorization headers
-    'credentials',    # Allow credentials header
+    'Authorization',
+    'credentials',
 ]
 CORS_ALLOW_ALL_ORIGINS = True if DEBUG else False  # Allow all origins in development, restrict in production
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+FRONTEND_URL = 'http://localhost:5173'
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -180,8 +183,9 @@ SITE_ID = 1
 
 # Authentication backends including allauth
 AUTHENTICATION_BACKENDS = (
-    'user_management.backends.EmailBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
+    'user_management.backends.EmailModelBackend',
+    'user_management.backends.SocialEmailFallbackBackend',
+    'allauth.account.auth_backends.AuthenticationBackend'
 )
 
 ACCOUNT_LOGIN_METHOD = 'email'
@@ -214,7 +218,6 @@ LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
 
 # LOGGING
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -255,7 +258,7 @@ if 'test' in sys.argv:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',  # Use in-memory database for faster tests
+            'NAME': ':memory:',  # Using in-memory database
         }
     }
 
@@ -268,3 +271,24 @@ if 'test' in sys.argv:
             return None
             
     MIGRATION_MODULES = DisableMigrations()
+
+# ENABLE_SEARCH_INDEXING = True
+
+# ENABLE_ADVANCED_SEARCH = True
+# SEARCH_ENGINE = 'elasticsearch'
+# ELASTICSEARCH_HOSTS = ['http://localhost:9200']
+# ELASTICSEARCH_INDEX_PREFIX = 'uplant'
+# SEARCH_SETTINGS = {
+#     'elasticsearch': {
+#         'timeout': 30,
+#         'retry_on_timeout': True
+#     }
+# }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
+SKIP_CACHE_INITIALIZATION = True
