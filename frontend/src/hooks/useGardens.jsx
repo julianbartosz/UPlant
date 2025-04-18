@@ -10,7 +10,7 @@ export const useGardens = () => {
         throw new Error("useGardens must be used within a UserProvider");
     }
 
-    const { gardens, setGardens, gardensLoading, gardensError } = context;
+    const { gardens, setGardens, gardensLoading, gardensError, setNotifications } = context;
 
     // const mediateGridSizeChange = (index, newDims) => {
     //     const garden = gardens[index];
@@ -206,12 +206,15 @@ export const useGardens = () => {
         }
        
     };
+    const mediateAddGarden = async (setIndex) => {
+        if (gardens.length >= 6) {
+            alert("You cannot add more than 6 gardens. Or without premium at least.");
+            return;
+        }
 
-    const mediateAddGarden = async () => {
+        const x = parseInt(prompt("Enter the width (x) of the garden (max 10):"), 10);
+        const y = parseInt(prompt("Enter the height (y) of the garden (max 10):"), 10);
 
-        const x = parseInt(prompt("Enter the width (x) of the garden:"), 10);
-        const y = parseInt(prompt("Enter the height (y) of the garden:"), 10);
-        
         let name = prompt("Enter the name of the garden:");
 
         if (name && name.length > 10) {
@@ -219,13 +222,13 @@ export const useGardens = () => {
             return;
         }
 
-        if (isNaN(x) || isNaN(y) || x <= 0 || y <= 0 || !name) {
-            alert("Invalid input. Please provide valid dimensions and a name.");
+        if (isNaN(x) || isNaN(y) || x <= 0 || y <= 0 || x > 10 || y > 10 || !name) {
+            alert("Invalid input. Please provide valid dimensions (1-10) and a name.");
             return;
         }
 
         const cells = Array.from({ length: y }, () => Array(x).fill(null));
-        const newGarden = { name, x, y, cells };
+        const newGarden = { name: name, x: x, y: y, cells: cells };
 
         if (!newGarden || !newGarden.name || newGarden.x <= 0 || newGarden.y <= 0) {
             alert("Invalid garden data. Please provide a valid name and dimensions.");
@@ -242,6 +245,8 @@ export const useGardens = () => {
     
         // Optimistically update UI
         setGardens(prevGardens => [...prevGardens, newGarden]);
+        setNotifications(prevNotifications => [...prevNotifications, []]);
+        setIndex(gardens.length);
         
         try {
             const response = await fetch('/api/gardens', {

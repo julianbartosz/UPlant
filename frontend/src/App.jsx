@@ -8,6 +8,7 @@ import Catalog from './pages/CatalogPage.jsx';
 import UserProvider from './contexts/UserProvider.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import LoadingAnimation from './components/layout/LoadingAnimation.jsx';
+import NotificationsPage from './pages/NotificationsPage.jsx';
 import './styles/app.css';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/catalog" element={<Catalog/>} />
           <Route path="/settings" element={<SettingsPage/>} />
+          <Route path="/notifications" element={<NotificationsPage/>} />
           <Route path="*" element={<div>Page not found</div>} />
 
         </Routes>

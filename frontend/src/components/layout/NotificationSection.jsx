@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import ToggleSwitch from '../ui/ToggleSwitch';
 import NotificationForm from '../forms/NotificationForm';
 import DataTable from '../ui/DataTable';
 import Legend from '../ui/Legend';
@@ -40,7 +39,7 @@ const NotificationSection = ({ plantOptions, contentSize, notifications, selecte
             </div> */}
             {!toggleLegend && (
               
-                toggleForm ? (
+                toggleForm && (notifications[selectedGardenIndex].length < 10) ? (
                     <NotificationForm setToggleForm={setToggleForm}plantOptions={plantOptions} onBack={() => setToggleForm(false)} selectedGardenIndex={selectedGardenIndex} />
                 ) : (
                     
