@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import ToggleSwitch from '../../ui/ToggleSwitch';
-import NotificationForm from '../../forms/NotificationForm';
-import DataTable from '../../ui/DataTable';
-import Legend from '../../ui/Legend';
-import { use } from 'react';
+import NotificationForm from '../forms/NotificationForm';
+import DataTable from '../ui/DataTable';
+import Legend from '../ui/Legend';
 
-const NotificationsSection = ({ notifications, selectedGardenIndex }) => {
+const NotificationSection = ({ plantOptions, contentSize, notifications, selectedGardenIndex }) => {
 
     if (!notifications) {
         return <div>Loading Notifications ...</div>;
@@ -21,7 +19,7 @@ const NotificationsSection = ({ notifications, selectedGardenIndex }) => {
     const handleToggleForm = () => {
         setToggleForm(!toggleForm);
     };
-
+    
     useEffect(() => {
         if (toggleLegend && toggleForm) {
             setToggleForm(false);
@@ -29,8 +27,8 @@ const NotificationsSection = ({ notifications, selectedGardenIndex }) => {
     }, [toggleLegend]);
 
     return (
-        <div className='notifications-section'>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', alignSelf: 'end'}}>
+            {/* <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
             <ToggleSwitch
                 id="toggle-notification-form"
                 label="Add Notification"
@@ -38,12 +36,11 @@ const NotificationsSection = ({ notifications, selectedGardenIndex }) => {
                 onToggle={handleToggleLegend}
                 style={{ marginBottom: '20px' }}
             />
-            </div>
-            <div>
+            </div> */}
             {!toggleLegend && (
               
-                toggleForm ? (
-                    <NotificationForm onBack={() => setToggleForm(false)} selectedGardenIndex={selectedGardenIndex} />
+                toggleForm && (notifications[selectedGardenIndex].length < 10) ? (
+                    <NotificationForm setToggleForm={setToggleForm}plantOptions={plantOptions} onBack={() => setToggleForm(false)} selectedGardenIndex={selectedGardenIndex} />
                 ) : (
                     
                     <DataTable
@@ -51,10 +48,10 @@ const NotificationsSection = ({ notifications, selectedGardenIndex }) => {
                         selectedGardenIndex={selectedGardenIndex}
                         onAdd={() => setToggleForm(true)}
                         setData={() => {}}
+                        fontSize={contentSize / 50}
                     />
                 )
             )}
-            </div>
             {toggleLegend && (
                 <Legend
                     items={notifications[selectedGardenIndex].map(notification => ({
@@ -67,4 +64,4 @@ const NotificationsSection = ({ notifications, selectedGardenIndex }) => {
     );
 };
 
-export default NotificationsSection;
+export default NotificationSection;

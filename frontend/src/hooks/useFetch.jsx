@@ -14,7 +14,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { DummyFetch } from "../debug";
+import { DummyFetch } from "../debugger";
 
 const useFetch = (url) => {
 

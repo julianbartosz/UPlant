@@ -1,21 +1,22 @@
 import React from 'react';
-import { useGardens } from '../../../hooks/useGardens';
-import { AddButton, DeleteButton, GardenButton } from '../../buttons';
+import { useGardens } from '../../hooks/useGardens';
+import { AddButton, DeleteButton, GardenButton } from '../buttons';
 import './styles/garden-bar.css';
 
 const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex, dynamic=true, style={} }) => {
    
-    const { gardens, handleAddGarden, handleDeleteGarden, handleRenameGarden } = useGardens();
-    
-    if (!gardens) return (<div>Loading ...</div>); 
-    
+    const { gardens, mediateAddGarden, mediateDeleteGarden, mediateRenameGarden } = useGardens();
+
+    if (!gardens) {
+        return <div className="garden-bar" style={style}>No gardens available.</div>;
+    }
+
     return (
         <div className="garden-bar" style={style}>
             {dynamic && (
                 <div className='garden-bar-item' key={-1}>
-                    <AddButton onAdd={() =>  {
-                        handleAddGarden();
-                        setSelectedGardenIndex(gardens.length);
+                    <AddButton onClick={() =>  {
+                        mediateAddGarden(setSelectedGardenIndex);
                     }} />
                 </div>
             )}
@@ -24,12 +25,14 @@ const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex, dynamic=true, 
                 <div className='garden-bar-item' key={index}>
                     {dynamic && (
                         <DeleteButton 
-                            onDelete={() => {
+                            onClick={() => {
+
+                                console.log("Deleting garden...");
                                 if (gardens.length <= 1) {
                                     alert("You cannot delete the last garden.");
                                     return;
                                 }
-                                handleDeleteGarden(index);
+                                mediateDeleteGarden(index);
                                 if (selectedGardenIndex === index) {
                                     setSelectedGardenIndex(0);
                                 } else if (selectedGardenIndex > index) {
@@ -46,6 +49,7 @@ const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex, dynamic=true, 
                         }} 
                         onLeftClick={() => {
                             setSelectedGardenIndex(index)
+
                         }} 
                         text={garden.name}
                         style={{ borderRadius: '4px', color: "black", backgroundColor: selectedGardenIndex === index ? 'green' : 'lightgreen' }}

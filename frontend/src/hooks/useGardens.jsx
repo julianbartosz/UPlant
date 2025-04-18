@@ -10,8 +10,55 @@ export const useGardens = () => {
         throw new Error("useGardens must be used within a UserProvider");
     }
 
-    const { gardens, setGardens, gardensLoading, gardensError } = context;
+    const { gardens, setGardens, gardensLoading, gardensError, setNotifications } = context;
 
+    // const mediateGridSizeChange = (index, newDims) => {
+    //     const garden = gardens[index];
+
+    //     if (!garden) {
+    //         alert("Invalid garden data. Please provide valid gardens.");
+    //         return;
+    //     }
+
+    //     const { x: newWidth, y: newHeight } = newDims;
+
+    //     if (newWidth <= 0 || newHeight <= 0) {
+    //         alert("Invalid dimensions. Please provide positive values for width and height.");
+    //         return;
+    //     }
+
+    //     // Check if reducing dimensions would remove cells with plants
+    //     if (newWidth < garden.x || newHeight < garden.y) {
+    //         for (let row = newHeight; row < garden.y; row++) {
+    //         for (let col = 0; col < garden.x; col++) {
+    //             if (garden.cells[row]?.[col]) {
+    //             alert("Cannot reduce height. Plants are present in the rows being removed.");
+    //             return;
+    //             }
+    //         }
+    //         }
+
+    //         for (let col = newWidth; col < garden.x; col++) {
+    //         for (let row = 0; row < garden.y; row++) {
+    //             if (garden.cells[row]?.[col]) {
+    //             alert("Cannot reduce width. Plants are present in the columns being removed.");
+    //             return;
+    //             }
+    //         }
+    //         }
+    //     }
+
+    //     // Adjust the garden dimensions
+    //     const updatedCells = Array.from({ length: newHeight }, (_, row) =>
+    //         Array.from({ length: newWidth }, (_, col) => garden.cells[row]?.[col] || null)
+    //     );
+
+    //     const updatedGarden = { ...garden, x: newWidth, y: newHeight, cells: updatedCells };
+
+    //     mediateUpdateGarden(updatedGarden);
+
+    // }
+        
     const mediateRenameGarden = async (index) => {
         const garden = gardens[index];
 
@@ -114,6 +161,7 @@ export const useGardens = () => {
 
 
     const mediateDeleteGarden = async (index) => {
+        console.log("Deleting garden...");
         const garden = gardens[index];
 
         if (!garden) {
@@ -158,20 +206,29 @@ export const useGardens = () => {
         }
        
     };
+    const mediateAddGarden = async (setIndex) => {
+        if (gardens.length >= 6) {
+            alert("You cannot add more than 6 gardens. Or without premium at least.");
+            return;
+        }
 
-    const mediateAddGarden = async () => {
+        const x = parseInt(prompt("Enter the width (x) of the garden (max 10):"), 10);
+        const y = parseInt(prompt("Enter the height (y) of the garden (max 10):"), 10);
 
-        const x = parseInt(prompt("Enter the width (x) of the garden:"), 10);
-        const y = parseInt(prompt("Enter the height (y) of the garden:"), 10);
-        const name = prompt("Enter the name of the garden:");
+        let name = prompt("Enter the name of the garden:");
 
-        if (isNaN(x) || isNaN(y) || x <= 0 || y <= 0 || !name) {
-            alert("Invalid input. Please provide valid dimensions and a name.");
+        if (name && name.length > 10) {
+            alert("Garden name cannot be more than 10 characters. Please try again.");
+            return;
+        }
+
+        if (isNaN(x) || isNaN(y) || x <= 0 || y <= 0 || x > 10 || y > 10 || !name) {
+            alert("Invalid input. Please provide valid dimensions (1-10) and a name.");
             return;
         }
 
         const cells = Array.from({ length: y }, () => Array(x).fill(null));
-        const newGarden = { name, x, y, cells };
+        const newGarden = { name: name, x: x, y: y, cells: cells };
 
         if (!newGarden || !newGarden.name || newGarden.x <= 0 || newGarden.y <= 0) {
             alert("Invalid garden data. Please provide a valid name and dimensions.");
@@ -188,6 +245,8 @@ export const useGardens = () => {
     
         // Optimistically update UI
         setGardens(prevGardens => [...prevGardens, newGarden]);
+        setNotifications(prevNotifications => [...prevNotifications, []]);
+        setIndex(gardens.length);
         
         try {
             const response = await fetch('/api/gardens', {
@@ -223,6 +282,8 @@ export const useGardens = () => {
         }
     };
 
+
+
     return {
         gardens,
         setGardens,
@@ -231,6 +292,8 @@ export const useGardens = () => {
         mediateRenameGarden,
         mediateUpdateGarden,
         mediateDeleteGarden,
-        mediateAddGarden
+        mediateAddGarden,
     };
 };
+
+export default useGardens;
