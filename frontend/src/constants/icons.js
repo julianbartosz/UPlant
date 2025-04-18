@@ -1,179 +1,136 @@
 /**
  * A mapping of plant families to their corresponding icons.
- * This object provides a quick way to associate plant families with representative emojis.
+ * This object provides a fun and quirky way to associate plant families with representative emojis.
  * Each key represents the name of a plant family, and the value is an emoji that symbolizes it.
  * 
  * @file icons.js
  * @constant
  * @type {Object.<string, string>}
-*/
+ */
 
 const ICONS = {
-    Asteraceae: '🌼', // Daisy family
-    Rosaceae: '🌹', // Rose family
-    Fabaceae: '🌿', // Legume family
-    Poaceae: '🌾', // Grass family
-    Lamiaceae: '🌱', // Mint family
-    Apiaceae: '🥕', // Carrot family
-    Brassicaceae: '🥦', // Mustard family
-    Solanaceae: '🍅', // Nightshade family
-    Cucurbitaceae: '🍈', // Gourd family
-    Rutaceae: '🍋', // Citrus family
-    Malvaceae: '🌺', // Mallow family
-    Amaryllidaceae: '🌷', // Amaryllis family
-    Orchidaceae: '🌸', // Orchid family
-    Pinaceae: '🌲', // Pine family
-    Fagaceae: '🌳', // Beech family
-    Betulaceae: '🌿', // Birch family
-    Salicaceae: '🍃', // Willow family
-    Euphorbiaceae: '🌵', // Spurge family
-    Cactaceae: '🌵', // Cactus family
-    Lauraceae: '🍂', // Laurel family
-    Myrtaceae: '🌿', // Myrtle family
-    Araceae: '🍀', // Arum family
-    Cyperaceae: '🌾', // Sedge family
-    Juncaceae: '🌾', // Rush family
-    Ranunculaceae: '🌼', // Buttercup family
-    Caryophyllaceae: '🌸', // Pink family
-    Polygonaceae: '🍃', // Knotweed family
-    Chenopodiaceae: '🌿', // Goosefoot family
-    Amaranthaceae: '🌿', // Amaranth family
-    Arecaceae: '🌴', // Palm family
-    Bromeliaceae: '🍍', // Bromeliad family
-    Zingiberaceae: '🌿', // Ginger family
-    Musaceae: '🍌', // Banana family
-    Sapindaceae: '🍁', // Soapberry family
-    Aceraceae: '🍁', // Maple family
-    Ulmaceae: '🌳', // Elm family
-    Moraceae: '🌳', // Mulberry family
-    Anacardiaceae: '🌿', // Cashew family
-    Proteaceae: '🌸', // Protea family
-    Ericaceae: '🌸', // Heath family
-    Rubiaceae: '🌿', // Coffee family
-    Oleaceae: '🌿', // Olive family
-    Caprifoliaceae: '🌸', // Honeysuckle family
-    Plantaginaceae: '🌿', // Plantain family
-    Scrophulariaceae: '🌸', // Figwort family
-    Boraginaceae: '🌸', // Borage family
-    Verbenaceae: '🌿', // Verbena family
-    Acanthaceae: '🌿', // Acanthus family
-    Gesneriaceae: '🌸', // Gesneriad family
-    Campanulaceae: '🌸', // Bellflower family
-    Dipsacaceae: '🌸', // Teasel family
-    Valerianaceae: '🌸', // Valerian family
-    Araliaceae: '🌿', // Ivy family
-    Cornaceae: '🌸', // Dogwood family
-    Alismataceae: '🌿', // Water-plantain family
-    Hydrocharitaceae: '🌿', // Frog's-bit family
-    Nymphaeaceae: '🌸', // Water-lily family
-    Magnoliaceae: '🌸', // Magnolia family
-    Papaveraceae: '🌸', // Poppy family
-    Crassulaceae: '🌿', // Stonecrop family
-    Saxifragaceae: '🌸', // Saxifrage family
-    Vitaceae: '🍇', // Grape family
-    Bignoniaceae: '🌸', // Trumpet creeper family
-    Lythraceae: '🌸', // Loosestrife family
-    Onagraceae: '🌸', // Evening primrose family
-    Geraniaceae: '🌸', // Geranium family
-    Oxalidaceae: '🍀', // Wood sorrel family
-    Celastraceae: '🌿', // Bittersweet family
-    Rhamnaceae: '🌿', // Buckthorn family
-    Vitaceae: '🍇', // Grape family
-    Eupteleaceae: '🌿', // Euptelea family
-    Hamamelidaceae: '🌸', // Witch-hazel family
-    Platanaceae: '🌳', // Plane tree family
-    Nelumbonaceae: '🌸', // Lotus family
-    Proteaceae: '🌸', // Protea family
-    Santalaceae: '🌿', // Sandalwood family
-    Buxaceae: '🌿', // Boxwood family
-    Berberidaceae: '🌸', // Barberry family
-    Ranunculaceae: '🌼', // Buttercup family
-    Menispermaceae: '🌿', // Moonseed family
-    Magnoliaceae: '🌸', // Magnolia family
-    Annonaceae: '🌸', // Custard apple family
-    Myristicaceae: '🌿', // Nutmeg family
-    Lauraceae: '🍂', // Laurel family
-    Piperaceae: '🌿', // Pepper family
-    Aristolochiaceae: '🌿', // Birthwort family
-    Polygonaceae: '🍃', // Knotweed family
-    Plumbaginaceae: '🌸', // Leadwort family
-    Caryophyllaceae: '🌸', // Pink family
-    Amaranthaceae: '🌿', // Amaranth family
-    Chenopodiaceae: '🌿', // Goosefoot family
-    Droseraceae: '🌸', // Sundew family
-    Nepenthaceae: '🌿', // Tropical pitcher plant family
-    Passifloraceae: '🌸', // Passionflower family
-    Cucurbitaceae: '🍈', // Gourd family
-    Begoniaceae: '🌸', // Begonia family
-    Fagaceae: '🌳', // Beech family
-    Betulaceae: '🌿', // Birch family
-    Juglandaceae: '🌳', // Walnut family
-    Casuarinaceae: '🌿', // She-oak family
-    Moraceae: '🌳', // Mulberry family
-    Urticaceae: '🌿', // Nettle family
-    Ulmaceae: '🌳', // Elm family
-    Cannabaceae: '🌿', // Hemp family
-    Rosaceae: '🌹', // Rose family
-    Fabaceae: '🌿', // Legume family
-    Mimosaceae: '🌿', // Mimosa family
-    Caesalpiniaceae: '🌿', // Caesalpinia family
-    Sapindaceae: '🍁', // Soapberry family
-    Anacardiaceae: '🌿', // Cashew family
-    Rutaceae: '🍋', // Citrus family
-    Meliaceae: '🌿', // Mahogany family
-    Simaroubaceae: '🌿', // Quassia family
-    Burseraceae: '🌿', // Frankincense family
-    Sapotaceae: '🌿', // Sapodilla family
-    Ebenaceae: '🌿', // Ebony family
-    Styracaceae: '🌸', // Storax family
-    Oleaceae: '🌿', // Olive family
-    Loganiaceae: '🌸', // Logania family
-    Gentianaceae: '🌸', // Gentian family
-    Apocynaceae: '🌸', // Dogbane family
-    Asclepiadaceae: '🌸', // Milkweed family
-    Convolvulaceae: '🌸', // Morning glory family
-    Solanaceae: '🍅', // Nightshade family
-    Boraginaceae: '🌸', // Borage family
-    Verbenaceae: '🌿', // Verbena family
-    Lamiaceae: '🌱', // Mint family
-    Plantaginaceae: '🌿', // Plantain family
-    Scrophulariaceae: '🌸', // Figwort family
-    Orobanchaceae: '🌸', // Broomrape family
-    Acanthaceae: '🌿', // Acanthus family
-    Gesneriaceae: '🌸', // Gesneriad family
-    Bignoniaceae: '🌸', // Trumpet creeper family
-    Pedaliaceae: '🌿', // Sesame family
-    Martyniaceae: '🌿', // Unicorn plant family
-    Lentibulariaceae: '🌸', // Bladderwort family
-    Asteraceae: '🌼', // Daisy family
-    Campanulaceae: '🌸', // Bellflower family
-    Goodeniaceae: '🌸', // Goodenia family
-    Menyanthaceae: '🌸', // Buckbean family
-    Rubiaceae: '🌿', // Coffee family
-    Caprifoliaceae: '🌸', // Honeysuckle family
-    Adoxaceae: '🌸', // Moschatel family
-    Dipsacaceae: '🌸', // Teasel family
-    Valerianaceae: '🌸', // Valerian family
-    Cucurbitaceae: '🍈', // Gourd family
-    Begoniaceae: '🌸', // Begonia family
-    Crassulaceae: '🌿', // Stonecrop family
-    Saxifragaceae: '🌸', // Saxifrage family
-    Grossulariaceae: '🌸', // Gooseberry family
-    Rosaceae: '🌹', // Rose family
-    Fabaceae: '🌿', // Legume family
-    Polygalaceae: '🌸', // Milkwort family
-    Rutaceae: '🍋', // Citrus family
-    Simaroubaceae: '🌿', // Quassia family
-    Meliaceae: '🌿', // Mahogany family
-    Euphorbiaceae: '🌵', // Spurge family
-    Rhamnaceae: '🌿', // Buckthorn family
-    Vitaceae: '🍇', // Grape family
-    Elaeagnaceae: '🌿', // Oleaster family
-    Ulmaceae: '🌳', // Elm family
-    Moraceae: '🌳', // Mulberry family
-    Urticaceae: '🌿', // Nettle family
-    Cannabaceae: '🌿', // Hemp family
-    default: '❓' // Default icon for unknown
+    Asteraceae: '🌻', // Daisy family - "Sunflowers are just daisies with big dreams."
+    Rosaceae: '🌹', // Rose family - "Stop and smell the roses... or else!"
+    Fabaceae: '🥜', // Legume family - "Peas be with you."
+    Poaceae: '🎋', // Grass family - "Bamboo is just grass that hit the gym."
+    Lamiaceae: '🍃', // Mint family - "Stay cool, it's mint to be."
+    Apiaceae: '🥗', // Carrot family - "Lettuce celebrate this family!"
+    Brassicaceae: '🥬', // Mustard family - "Kale yeah!"
+    Solanaceae: '🍆', // Nightshade family - "Eggplants: the night owls of veggies."
+    Cucurbitaceae: '🎃', // Gourd family - "Pumpkin spice and everything nice."
+    Rutaceae: '🍊', // Citrus family - "Orange you glad this family exists?"
+    Malvaceae: '🍫', // Mallow family - "Marshmallows are their sweet legacy."
+    Amaryllidaceae: '🧄', // Amaryllis family - "Garlic: the vampire's kryptonite."
+    Orchidaceae: '🦋', // Orchid family - "Orchids: flowers that moonlight as butterflies."
+    Pinaceae: '🎄', // Pine family - "Christmas trees: the OG influencers."
+    Fagaceae: '🌰', // Beech family - "Nuts about this family!"
+    Betulaceae: '🍂', // Birch family - "Fall leaves brought to you by Betulaceae."
+    Salicaceae: '🛶', // Willow family - "Willow trees: nature's kayaks."
+    Euphorbiaceae: '🧪', // Spurge family - "Careful, they might be plotting something toxic."
+    Cactaceae: '🌵', // Cactus family - "Cactus: the introverts of the plant world."
+    Lauraceae: '🥑', // Laurel family - "Avocados: guac stars of this family."
+    Myrtaceae: '🧼', // Myrtle family - "Smells fresh, like a bar of soap."
+    Araceae: '🪴', // Arum family - "Houseplants that know how to party."
+    Cyperaceae: '🦩', // Sedge family - "Flamingos love this family. Coincidence?"
+    Juncaceae: '🧵', // Rush family - "Rush to weave some baskets!"
+    Ranunculaceae: '🐸', // Buttercup family - "Frogs love buttercups. It's science."
+    Caryophyllaceae: '💄', // Pink family - "Pretty in pink, always."
+    Polygonaceae: '📐', // Knotweed family - "Geometry nerds of the plant world."
+    Chenopodiaceae: '🥬', // Goosefoot family - "Spinach: the Popeye-approved member."
+    Amaranthaceae: '🌈', // Amaranth family - "Rainbow quinoa, anyone?"
+    Arecaceae: '🌴', // Palm family - "Palm trees: the chillest plants ever."
+    Bromeliaceae: '🍍', // Bromeliad family - "Pineapples: spiky on the outside, sweet on the inside."
+    Zingiberaceae: '🫚', // Ginger family - "Ginger: the spice of life."
+    Musaceae: '🍌', // Banana family - "Bananas: the comedians of the fruit world."
+    Sapindaceae: '🍁', // Soapberry family - "Maple syrup: the sticky MVP."
+    Aceraceae: '🍁', // Maple family - "Canada approves this family."
+    Ulmaceae: '🏰', // Elm family - "Elms: the medieval castles of trees."
+    Moraceae: '🍇', // Mulberry family - "Mulberries: the underdog of berries."
+    Anacardiaceae: '🥭', // Cashew family - "Mangoes and cashews: a dynamic duo."
+    Proteaceae: '🦚', // Protea family - "Proteas: the peacocks of flowers."
+    Ericaceae: '🫐', // Heath family - "Blueberries: the sweet little rebels."
+    Rubiaceae: '☕', // Coffee family - "Powered by caffeine."
+    Oleaceae: '🫒', // Olive family - "Olives: the martini's best friend."
+    Caprifoliaceae: '🍯', // Honeysuckle family - "Sweet as honey."
+    Plantaginaceae: '🏃', // Plantain family - "Plantains: bananas that run marathons."
+    Scrophulariaceae: '🧙', // Figwort family - "Figworts: the wizards of the plant kingdom."
+    Boraginaceae: '🖋️', // Borage family - "Borage: the calligrapher's favorite."
+    Verbenaceae: '🪄', // Verbena family - "Magical and mysterious."
+    Acanthaceae: '🐟', // Acanthus family - "Fish love hiding in these plants."
+    Gesneriaceae: '🎤', // Gesneriad family - "Singing their way into your heart."
+    Campanulaceae: '🔔', // Bellflower family - "Ring the bell for this family!"
+    Dipsacaceae: '🪒', // Teasel family - "Teasels: nature's combs."
+    Valerianaceae: '💤', // Valerian family - "Valerian: the plant that naps."
+    Araliaceae: '🕷️', // Ivy family - "Creeping into your nightmares."
+    Cornaceae: '🍒', // Dogwood family - "Dogwoods: cherries' cool cousins."
+    Alismataceae: '🛶', // Water-plantain family - "Perfect for a canoe trip."
+    Hydrocharitaceae: '🐟', // Frog's-bit family - "Aquatic plants with froggy vibes."
+    Nymphaeaceae: '🌸', // Water-lily family - "Water lilies: the Monet muses."
+    Magnoliaceae: '🌺', // Magnolia family - "Magnolias: the southern belles."
+    Papaveraceae: '🌺', // Poppy family - "Poppies: the dreamers of the plant world."
+    Crassulaceae: '🪨', // Stonecrop family - "Succulents: the rock stars."
+    Saxifragaceae: '❄️', // Saxifrage family - "Cool as ice."
+    Vitaceae: '🍷', // Grape family - "Wine not?"
+    Bignoniaceae: '🎺', // Trumpet creeper family - "Blowing their own trumpet."
+    Lythraceae: '🕯️', // Loosestrife family - "Lighting up the wetlands."
+    Onagraceae: '🌅', // Evening primrose family - "Primroses: the sunset lovers."
+    Geraniaceae: '🌺', // Geranium family - "Geraniums: the garden's cheerleaders."
+    Oxalidaceae: '☘️', // Wood sorrel family - "Lucky charms!"
+    Celastraceae: '🧗', // Bittersweet family - "Climbing to new heights."
+    Rhamnaceae: '🪢', // Buckthorn family - "Tying knots in nature."
+    Elaeagnaceae: '🌾', // Oleaster family - "Silver linings in every leaf."
+    Cannabaceae: '🌿', // Hemp family - "High on life."
+    Droseraceae: '🪰', // Sundew family - "Bug-eating champions."
+    Nepenthaceae: '🪤', // Tropical pitcher plant family - "Nature's fly traps."
+    Passifloraceae: '💫', // Passionflower family - "Out of this world."
+    Begoniaceae: '🎨', // Begonia family - "Painting the garden with color."
+    Juglandaceae: '🥜', // Walnut family - "Cracking the nutty mysteries."
+    Casuarinaceae: '🎋', // She-oak family - "Whispering in the wind."
+    Urticaceae: '🩹', // Nettle family - "Ouch! Handle with care."
+    Adoxaceae: '🎻', // Moschatel family - "Playing the symphony of spring."
+    Goodeniaceae: '🌊', // Goodenia family - "Riding the waves of beauty."
+    Menyanthaceae: '🦢', // Buckbean family - "Graceful as a swan."
+    Polygalaceae: '🧙‍♂️', // Milkwort family - "Magical milk makers."
+    Simaroubaceae: '🪵', // Quassia family - "Wood you believe it?"
+    Pittosporaceae: '🍬', // Pittosporum family - "Sticky seeds, sweet vibes."
+    Phyllanthaceae: '🧃', // Leaf-flower family - "Juicy secrets in every leaf."
+    Balsaminaceae: '💥', // Balsam family - "Exploding seeds like drama queens."
+    Cleomaceae: '🎭', // Spider flower family - "Masked performers of the garden."
+    Tropaeolaceae: '🥗', // Nasturtium family - "Salads never looked so good."
+    Linaceae: '📜', // Flax family - "Paper-thin but tough as nails."
+    Altingiaceae: '🍁', // Sweetgum family - "Spiky balls, sweet scent."
+    Platanaceae: '🌳', // Plane tree family - "Bark that peels with style."
+    Hamamelidaceae: '🧙‍♀️', // Witch hazel family - "Witchy blossoms in winter."
+    Nyssaceae: '📸', // Tupelo family - "Photogenic trees for swamp shoots."
+    Tamaricaceae: '🏜️', // Tamarisk family - "Thriving in the dry drama."
+    Frankeniaceae: '🧂', // Frankenia family - "Salty souls of the shoreline."
+    Polemoniaceae: '🎨', // Phlox family - "Color palette professionals."
+    Hydrangeaceae: '🎭', // Hydrangea family - "Color-changing garden stars."
+    Santalaceae: '💸', // Sandalwood family - "Smells like luxury."
+    Buxaceae: '✂️', // Boxwood family - "Topiary artists' favorite."
+    Theaceae: '🍵', // Tea family - "Steeped in tradition."
+    Lecythidaceae: '🎇', // Brazil nut family - "Nuts with fireworks inside."
+    Tiliaceae: '🍯', // Linden family - "Buzzing with bee-love."
+    Dillenniaceae: '🎁', // Dillenia family - "Tough shells, sweet surprises."
+    Clusiaceae: '🧴', // Garcinia family - "Butter, balm, and beauty."
+    Pandanaceae: '🍰', // Pandan family - "Flavor of tropical dreams."
+    Dichapetalaceae: '☠️', // Dichapetalum family - "Pretty but deadly."
+    Gunneraceae: '🎩', // Gunnera family - "Oversized leaves, Victorian drama."
+    Myristicaceae: '🫚', // Nutmeg family - "Spicing things up since forever."
+    Annonaceae: '🍮', // Custard apple family - "Dessert disguised as fruit."
+    Monimiaceae: '🌫️', // Monimia family - "Mysterious as morning fog."
+    Calycanthaceae: '🧴', // Sweetshrub family - "Fragrance in full bloom."
+    Hydrophyllaceae: '💧', // Waterleaf family - "Thirsty for attention."
+    Tectariaceae: '🌀', // Fern family - "Coiling into the fern dimension."
+    Blechnaceae: '🌿', // Chain fern family - "Ferns with serious structure."
+    Dennstaedtiaceae: '🦖', // Bracken family - "Dinosaurs' favorite snack?"
+    Osmundaceae: '🛁', // Royal fern family - "Royal soak in the wetlands."
+    Equisetaceae: '📏', // Horsetail family - "Measuring up to ancient times."
+    Liliaceae: '🌷', // Lily family - "Elegant and timeless."
+    Tulipaceae: '🌷', // Tulip family - "Spring's favorite bloom."
+    Pteridaceae: '🌿', // Fern family - "Ferns: the ancient green."
+    default: '❓' // Default icon for unknown - "Who knows? Not me!"
+
 };
 
 export default ICONS;

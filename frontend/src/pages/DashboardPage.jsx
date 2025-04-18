@@ -41,9 +41,6 @@ function DashboardPage() {
         gardens, 
         setGardens,
         mediateUpdateGarden,
-        mediateRenameGarden,
-        mediateAddGarden,
-        mediateDeleteGarden,
         gardensLoading,
         gardensError
         
@@ -314,7 +311,7 @@ function DashboardPage() {
 return (
     <>
     <div style={{ backgroundColor: 'white', width: '100vw', height: '100vh', position: 'relative' }}>
-    <NavBar title="Dashboard" username={username} onBack={ () => { window.location.href = 'http://localhost:8000/' } } />
+    <NavBar title="Dashboard" buttonOptions={['back', 'settings', 'bell']} username={username} onBack={ () => { window.location.href = 'http://localhost:8000/' } } />
       
 
         <div className="sidebar" style={{

@@ -10,14 +10,13 @@ const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex, dynamic=true, 
     if (!gardens) {
         return <div className="garden-bar" style={style}>No gardens available.</div>;
     }
-  
+
     return (
         <div className="garden-bar" style={style}>
             {dynamic && (
                 <div className='garden-bar-item' key={-1}>
                     <AddButton onClick={() =>  {
-                        mediateAddGarden();
-                        setSelectedGardenIndex(gardens.length);
+                        mediateAddGarden(setSelectedGardenIndex);
                     }} />
                 </div>
             )}
