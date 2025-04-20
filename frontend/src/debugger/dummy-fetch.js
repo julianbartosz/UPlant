@@ -9,10 +9,10 @@
  * @throws {Object}
  * 
  * Mock Data Endpoints:
- * - `import.meta.env.VITE__GARDENS_API_URL`: Returns a list of gardens with their dimensions and cell structures.
- * - `import.meta.env.VITE__PLANTS_API_URL`: Returns a list of plants with their common names, IDs, and families.
- * - `import.meta.env.VITE__NOTIFICATIONS_API_URL`: Returns a list of grouped notifications with details about reminders and associated plants.
- * - `import.meta.env.VITE__USERNAME_API_URL`: Returns a mock username.
+ * - `import.meta.env.VITE_GARDENS_API_URL`: Returns a list of gardens with their dimensions and cell structures.
+ * - `import.meta.env.VITE_PLANTS_API_URL`: Returns a list of plants with their common names, IDs, and families.
+ * - `import.meta.env.VITE_NOTIFICATIONS_API_URL`: Returns a list of grouped notificationsList with details about reminders and associated plants.
+ * - `import.meta.env.VITE_USERNAME_API_URL`: Returns a mock username.
  */
 
 const DummyFetch = async (url) => {
@@ -21,7 +21,7 @@ const DummyFetch = async (url) => {
 
     switch (url) {
 
-        case import.meta.env.VITE__GARDENS_API_URL:
+        case import.meta.env.VITE_GARDENS_API_URL:
             return {
 
                 data: [
@@ -29,7 +29,7 @@ const DummyFetch = async (url) => {
                 ]
             };
 
-        case import.meta.env.VITE__PLANTS_API_URL:
+        case import.meta.env.VITE_PLANTS_API_URL:
             return { 
                 data: [
                     { common_name: 'Rose', id: 4, family: 'Rosaceae' },
@@ -51,8 +51,8 @@ const DummyFetch = async (url) => {
                 ] 
             };
 
-        case import.meta.env.VITE__NOTIFICATIONS_API_URL:
-            console.log("Fetching notifications from dummy data");
+        case import.meta.env.VITE_NOTIFICATIONS_API_URL:
+            console.log("Fetching notificationsList from dummy data");
             return { 
                 data: [
                     [
@@ -84,7 +84,7 @@ const DummyFetch = async (url) => {
                 ] 
             };
 
-        case import.meta.env.VITE__USERNAME_API_URL:
+        case import.meta.env.VITE_USERNAME_API_URL:
             return { data: 'Johnny Appleseed' };
             
         default:

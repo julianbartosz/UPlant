@@ -2,7 +2,7 @@
 
 /**
  * A collection of unique, non-background-conflicting colors intended for use in
- * legends and notifications.
+ * legends and notificationsList.
  *
  * @file colors.js
  * @constant

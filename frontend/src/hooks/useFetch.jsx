@@ -22,7 +22,7 @@ const useFetch = (url) => {
         throw new Error("URL is required");
     }
 
-    const allowedEndpoints = import.meta.env.VITE__ALLOWED_ENDPOINTS?.split(',') || [];
+    const allowedEndpoints = import.meta.env.VITE_ALLOWED_ENDPOINTS?.split(',') || [];
     const isValidEndpoint = allowedEndpoints.some(endpoint => url.startsWith(endpoint));
 
     if (!isValidEndpoint) {
@@ -31,13 +31,13 @@ const useFetch = (url) => {
 
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
 
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.log("Using dummy fetch");
                 console.log("Dummy fetch URL:", url);
                 const dummyData = await DummyFetch(url);

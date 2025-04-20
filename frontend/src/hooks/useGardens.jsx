@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
 import { useContext } from 'react';
 import { UserContext }  from '../contexts/UserProvider';
+import { MAXSIZE_GARDEN } from '../constants';
 
 export const useGardens = () => {
 
@@ -12,52 +12,67 @@ export const useGardens = () => {
 
     const { gardens, setGardens, gardensLoading, gardensError, setNotifications } = context;
 
-    // const mediateGridSizeChange = (index, newDims) => {
-    //     const garden = gardens[index];
+    const mediateGridSizeChange = (axis, change, edge, gardenName) => {
+        const gardenIndex = gardens.findIndex(garden => garden.name === gardenName);
+        const newGarden = { ...gardens[gardenIndex] };
 
-    //     if (!garden) {
-    //         alert("Invalid garden data. Please provide valid gardens.");
-    //         return;
-    //     }
+        if (axis === 'x') {
+            if (newGarden.x + change > MAXSIZE_GARDEN) {
+                alert(`Cannot resize: Maximum garden width of ${MAXSIZE_GARDEN} reached.`);
+                return;
+            }
 
-    //     const { x: newWidth, y: newHeight } = newDims;
+            if (newGarden.x + change < 1) {
+                alert('Cannot resize: Garden width cannot be smaller than 1.');
+                return;
+            }
 
-    //     if (newWidth <= 0 || newHeight <= 0) {
-    //         alert("Invalid dimensions. Please provide positive values for width and height.");
-    //         return;
-    //     }
+            if (change < 0) {
+                const columnIndex = edge === 'left' ? 0 : newGarden.x - 1;
+                const hasPlant = newGarden.cells.some(row => row[columnIndex] !== null);
+                if (hasPlant) {
+                    alert('Cannot resize: Plants would be deleted.');
+                    return;
+                }
+            }
 
-    //     // Check if reducing dimensions would remove cells with plants
-    //     if (newWidth < garden.x || newHeight < garden.y) {
-    //         for (let row = newHeight; row < garden.y; row++) {
-    //         for (let col = 0; col < garden.x; col++) {
-    //             if (garden.cells[row]?.[col]) {
-    //             alert("Cannot reduce height. Plants are present in the rows being removed.");
-    //             return;
-    //             }
-    //         }
-    //         }
+            newGarden.x += change;
+            if (edge === 'left') {
+                newGarden.cells.forEach(row => change > 0 ? row.unshift(null) : row.shift());
+            } else if (edge === 'right') {
+                newGarden.cells.forEach(row => change > 0 ? row.push(null) : row.pop());
+            }
 
-    //         for (let col = newWidth; col < garden.x; col++) {
-    //         for (let row = 0; row < garden.y; row++) {
-    //             if (garden.cells[row]?.[col]) {
-    //             alert("Cannot reduce width. Plants are present in the columns being removed.");
-    //             return;
-    //             }
-    //         }
-    //         }
-    //     }
+        } else if (axis === 'y') {
+            if (newGarden.y + change > MAXSIZE_GARDEN) {
+                alert(`Cannot resize: Maximum garden height of ${MAXSIZE_GARDEN} reached.`);
+                return;
+            }
 
-    //     // Adjust the garden dimensions
-    //     const updatedCells = Array.from({ length: newHeight }, (_, row) =>
-    //         Array.from({ length: newWidth }, (_, col) => garden.cells[row]?.[col] || null)
-    //     );
+            if (newGarden.y + change < 1) {
+                alert('Cannot resize: Garden height cannot be smaller than 1.');
+                return;
+            }
 
-    //     const updatedGarden = { ...garden, x: newWidth, y: newHeight, cells: updatedCells };
+            if (change < 0) {
+                const rowIndex = edge === 'top' ? 0 : newGarden.y - 1;
+                const hasPlant = newGarden.cells[rowIndex].some(cell => cell !== null);
+                if (hasPlant) {
+                    alert('Cannot resize: Plants would be deleted.');
+                    return;
+                }
+            }
 
-    //     mediateUpdateGarden(updatedGarden);
+            newGarden.y += change;
+            if (edge === 'top') {
+                change > 0 ? newGarden.cells.unshift(Array(newGarden.x).fill(null)) : newGarden.cells.shift();
+            } else if (edge === 'bottom') {
+                change > 0 ? newGarden.cells.push(Array(newGarden.x).fill(null)) : newGarden.cells.pop();
+            }
+        }
 
-    // }
+        mediateUpdateGarden(newGarden, false);
+    };
         
     const mediateRenameGarden = async (index) => {
         const garden = gardens[index];
@@ -96,12 +111,12 @@ export const useGardens = () => {
 
             console.log(`Garden renamed to ${newGardenName} successfully.`);
         } catch (error) {
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }
             console.error("Error renaming garden:", error);
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }
@@ -132,10 +147,9 @@ export const useGardens = () => {
             return;
         }
 
-
         try {
-            const response = await fetch('/api/gardens', {
-                method: 'PUT',
+            const response = await fetch(import.meta.env.VITE_GARDENS_API_URL, {
+                method: 'PATCH',
                 headers: { 
                     'Content-Type': 'application/json',
                     'credentials': 'include' 
@@ -148,7 +162,7 @@ export const useGardens = () => {
             }
 
         } catch (error) {
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }
@@ -182,12 +196,13 @@ export const useGardens = () => {
         setGardens(prevGardens => prevGardens.filter((_, i) => i !== index));
 
         try {
-            const response = await fetch(`/api/gardens/${garden.name}`, {
+            const response = await fetch(`${import.meta.env.VITE_GARDENS_API_URL}/${garden.id}`, {
                 method: 'DELETE',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'credentials': 'include' 
+
                 },
+                'credentials': 'include' 
             });
 
             if (!response.ok) {
@@ -196,7 +211,7 @@ export const useGardens = () => {
 
             console.log(`Garden "${garden.name}" deleted successfully.`);
         } catch (error) {
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }
@@ -207,6 +222,12 @@ export const useGardens = () => {
        
     };
     const mediateAddGarden = async (setIndex) => {
+
+        // const newGarden = {
+        //     name: "My New Garden", // Name of the garden
+        //     size_x: 10,            // Width of the garden grid
+        //     size_y: 5              // Height of the garden grid
+        // };
         if (gardens.length >= 6) {
             alert("You cannot add more than 6 gardens. Or without premium at least.");
             return;
@@ -228,7 +249,8 @@ export const useGardens = () => {
         }
 
         const cells = Array.from({ length: y }, () => Array(x).fill(null));
-        const newGarden = { name: name, x: x, y: y, cells: cells };
+        const newGarden = { name: name, size_x: x, size_y: y, cells: cells };
+        const newGardenReq = { name: name, size_x: x, size_y: y};
 
         if (!newGarden || !newGarden.name || newGarden.x <= 0 || newGarden.y <= 0) {
             alert("Invalid garden data. Please provide a valid name and dimensions.");
@@ -240,6 +262,8 @@ export const useGardens = () => {
             return;
         }
 
+        
+
         // Store the previous state in case we need to rollback
         const previousGardens = [...gardens];
     
@@ -247,17 +271,18 @@ export const useGardens = () => {
         setGardens(prevGardens => [...prevGardens, newGarden]);
         setNotifications(prevNotifications => [...prevNotifications, []]);
         setIndex(gardens.length);
+
+        const url = 'https://your-api-url.com/api/gardens/'; // Replace with your actual API URL
         
         try {
-            const response = await fetch('/api/gardens', {
+            const response = await fetch(url, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'credentials': 'include' 
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}` // Include the user's token for authentication
                 },
-                body: JSON.stringify(newGarden),
-            });
-    
+                body: JSON.stringify(requestBody),
+              });
             if (!response.ok) {
                 throw new Error("Failed to save garden");
             }
@@ -272,7 +297,7 @@ export const useGardens = () => {
             );
     
         } catch (error) {
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }
@@ -281,8 +306,6 @@ export const useGardens = () => {
             alert("Failed to save garden. Please try again.");
         }
     };
-
-
 
     return {
         gardens,
@@ -293,6 +316,7 @@ export const useGardens = () => {
         mediateUpdateGarden,
         mediateDeleteGarden,
         mediateAddGarden,
+        mediateGridSizeChange,
     };
 };
 
