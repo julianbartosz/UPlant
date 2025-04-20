@@ -1,11 +1,16 @@
-.search-section-container {
-    width: 100%;
-    height: 100%;
+.search-container {
     display: flex;
     flex-direction: column;
+    position: fixed;
+    top: 60px;
+    width: 200px;
+    height: calc(100vh - 60px);
+    background: linear-gradient(to right, rgb(152, 152, 152), rgb(65, 64, 64));
+    padding: 10px;
+    border-radius: 0 10px 0 0;
 }
 
-.search-section-header {
+.search-header {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -90,7 +95,7 @@ button.search-button:active {
 .remove-plant-item {
     padding: 10px;
     border: 1px solid #083448;
-    background: linear-gradient(to bottom, white, red);
+    background: linear-gradient(to bottom, rgb(255, 166, 0), rgb(255, 0, 0));
     text-align: center;
     transition: background-color 0.2s ease, opacity 0.2s ease;
     flex: 1 1 100%;

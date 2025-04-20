@@ -4,14 +4,15 @@ import './styles/btn-styles.css';
 import { useState, useEffect } from 'react';
 
 function GardenButton({ text, style, onRightClick, onLeftClick }) {
-    const [fontSize, setFontSize] = useState(16); // Default font size
+    const [fontSize, setFontSize] = useState(16);
 
     useEffect(() => {
+        
         const adjustFontSize = () => {
             const buttonWidth = 120;
             const padding = 16;
             const context = document.createElement('canvas').getContext('2d');
-            let currentFontSize = 16; // always start fresh
+            let currentFontSize = 16;
             context.font = `${currentFontSize}px Arial`;
     
             while (context.measureText(text).width > (buttonWidth - padding) && currentFontSize > 10) {
@@ -23,7 +24,7 @@ function GardenButton({ text, style, onRightClick, onLeftClick }) {
         };
     
         adjustFontSize();
-    }, [text]); // only depend on text
+    }, [text]);
     
     return (
         <TextButton

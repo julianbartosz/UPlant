@@ -10,31 +10,40 @@ const useNotifications = () => {
         throw new Error("useNotifications must be used within a UserProvider");
     }
 
-    const { notifications, setNotifications, notificationsLoading, notificationsError } = context;
+    const { notificationsList, setNotifications, notificationsListLoading, notificationsListError } = context;
 
    
-    console.log("Notifications:", notifications);
+    console.log("Notifications:", notificationsList);
+
 
     const mediateAddNotification = async (gardenIndex, notification) => {
-        if (gardenIndex < 0 || gardenIndex >= notifications.length) {
+
+        // {
+        //     "garden": 1,          // ID of the specific garden
+        //     "name": "Water plants",
+        //     "type": "OT",         // Notification type (e.g., WA = Water)
+        //     "subtype": "Morning", // Optional: Subtype (only required for "Other" type)
+        //     "interval": 7         // Interval in days
+        //   }
+        if (gardenIndex < 0 || gardenIndex >= notificationsList.length) {
             alert("Invalid gardenIndex. Please provide a valid index.");
             return;
         }
 
-        const updatedNotifications = notifications.map((garden, index) => 
+        const updatedNotifications = notificationsList.map((garden, index) => 
             index === gardenIndex ? [...garden, notification] : garden
         );
 
         setNotifications(updatedNotifications);
 
         try {
-            const response = await fetch(`/api/notifications`, {
+            const response = await fetch(import.meta.env.VITE_NOTIFICATIONS_API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'credentials': 'include'
                 },
-                body: JSON.stringify({ gardenIndex, notification }),
+                body: JSON.stringify(notification),
             });
 
             if (!response.ok) {
@@ -43,11 +52,11 @@ const useNotifications = () => {
 
             console.log(`Notification added successfully.`);
         } catch (error) {
-            if (import.meta.env.VITE__USE_DUMMY_FETCH !== 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH !== 'true') {
                 console.error("Using dummy fetch, no rollback needed.")
             } else {
                 console.error("Error adding notification:", error);
-                setNotifications(notifications); // Rollback to previous state
+                setNotifications(notificationsList); // Rollback to previous state
                 
             }
         }
@@ -56,28 +65,29 @@ const useNotifications = () => {
     const mediateDeleteNotification = async (gardenIndex, notificationIndex) => {
         if (
             gardenIndex < 0 || 
-            gardenIndex >= notifications.length || 
+            gardenIndex >= notificationsList.length || 
             notificationIndex < 0 || 
-            notificationIndex >= notifications[gardenIndex].length
+            notificationIndex >= notificationsList[gardenIndex].length
         ) {
             alert("Invalid gardenIndex or notificationIndex. Please provide valid indices.");
             return;
         }
 
-        const updatedNotifications = notifications.map((garden, index) => 
+        const notificationId = notificationsList[gardenIndex][notificationIndex].id;
+
+        const updatedNotifications = notificationsList.map((garden, index) => 
             index === gardenIndex ? garden.filter((_, i) => i !== notificationIndex) : garden
         );
 
         setNotifications(updatedNotifications);
 
         try {
-            const response = await fetch(`/api/notifications`, {
+            const response = await fetch(`${import.meta.env.VITE_NOTIFICATIONS_API_URL}/${notificationId}/`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
-                    'credentials': 'include'
                 },
-                body: JSON.stringify({ gardenIndex, notificationIndex }),
+                credentials: 'include',
             });
 
             if (!response.ok) {
@@ -86,22 +96,20 @@ const useNotifications = () => {
 
             console.log(`Notification deleted successfully.`);
         } catch (error) {
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }
             console.error("Error deleting notification:", error);
-            setNotifications(notifications); // Rollback to previous state
+            setNotifications(notificationsList); // Rollback to previous state
         }
-
-
     };
 
     return {
-        notifications,
+        notificationsList,
         setNotifications,
-        notificationsLoading,
-        notificationsError,
+        notificationsListLoading,
+        notificationsListError,
         mediateAddNotification,
         mediateDeleteNotification,
     };

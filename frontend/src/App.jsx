@@ -1,35 +1,26 @@
 // frontend/src/App.jsx
-
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import DashboardPage from './pages/DashboardPage.jsx';
-import Catalog from './pages/CatalogPage.jsx'; 
-import UserProvider from './contexts/UserProvider.jsx';
-import SettingsPage from './pages/SettingsPage.jsx';
-import LoadingAnimation from './components/layout/LoadingAnimation.jsx';
-import NotificationsPage from './pages/NotificationsPage.jsx';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { DashboardPage, CatalogPage, SettingsPage, NotificationsPage } from './pages';
+import { LoadingAnimation } from './components/layout';
+import UserProvider from './contexts/UserProvider';
 import './styles/app.css';
 
 function App() {
 
   return (
     <UserProvider>
-    <DndProvider backend={HTML5Backend}>
       <Router basename='/app'>
         <Routes>
-          
+
           <Route path="/" element={<LoadingAnimation redirect="/dashboard"/>} />
-          <Route path="/home" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/catalog" element={<Catalog/>} />
+          <Route path="/catalog" element={<CatalogPage/>} />
           <Route path="/settings" element={<SettingsPage/>} />
           <Route path="/notifications" element={<NotificationsPage/>} />
-          <Route path="*" element={<div>Page not found</div>} />
+          <Route path="*" element={<div className='centered-message'>Oops! Looks like you've wandered off the garden path.</div>} />
 
         </Routes>
       </Router>
-    </DndProvider>
     </UserProvider>
   );
 }

@@ -1,7 +1,5 @@
 /**
- * DataTable Component
- * 
- * This component renders a table displaying a list of notifications, their associated plants, and time intervals.
+ * This component renders a table displaying a list of notificationsList, their associated plants, and time intervals.
  * It allows adding new entries and removing existing ones.
  * 
  * @component
@@ -16,9 +14,9 @@
  * @param {Function} props.setData 
  * @param {Object} [props.style={}]
  * @param {Function} props.onAdd 
+ * @returns {JSX.Element}
  */
 
-import React from 'react';
 import { DeleteButton, AddButton } from '../buttons';
 import useNotifications from '../../hooks/useNotifications';
 import './styles/data-table.css';
@@ -30,11 +28,9 @@ const DataTable = ({
         fontSize
     }) => {
      
-        const { mediateDeleteNotification } = useNotifications();
-    
+    const { mediateDeleteNotification } = useNotifications();
 
     return (
-        <div className="container">
             <table className="data-table" style={{ fontSize: fontSize }}>
                 <thead className="data-table-header">
                     <tr>
@@ -63,7 +59,6 @@ const DataTable = ({
                     ))}
                 </tbody>
             </table>
-        </div>
     );
 };
 

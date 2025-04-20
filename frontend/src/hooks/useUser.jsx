@@ -33,7 +33,7 @@ export const useUser = () => {
             setUsername((prevUser) => ({ ...prevUser, username: newUsername }));
             console.log("Username updated successfully.");
         } catch (error) {
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }
@@ -94,7 +94,7 @@ export const useUser = () => {
             console.log("Account deleted successfully.");
         } catch (error) {
             console.error("Error deleting account:", error);
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }

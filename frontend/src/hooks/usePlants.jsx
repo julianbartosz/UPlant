@@ -49,7 +49,7 @@ export const usePlants = () => {
             const results = await response.json();
             setPlantsList(results);
         } catch (error) {
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }
@@ -83,7 +83,7 @@ export const usePlants = () => {
             const plantDetails = await response.json();
             return plantDetails;
         } catch (error) {
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }

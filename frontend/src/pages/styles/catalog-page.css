@@ -1,0 +1,13 @@
+.catalog-content {
+    position: fixed;
+    top: 60px;
+    left: 240px;
+    width: calc(100vw - 240px);
+    height: calc(100vh - 60px);
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: black;
+}

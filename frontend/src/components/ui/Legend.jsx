@@ -22,5 +22,4 @@ const Legend = ({ items }) => {
     );
 };
 
-
 export default Legend;
