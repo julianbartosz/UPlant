@@ -7,7 +7,7 @@ cffi==1.17.1
 charset-normalizer==3.4.1
 coverage==7.4.4
 cryptography==44.0.2
-Django==5.0.4
+Django==4.2.16
 django-allauth==65.4.1
 django-appconf==1.1.0
 django-cors-headers==4.7.0
