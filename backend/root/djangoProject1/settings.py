@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'rest_framework.authtoken',
     'user_management.apps.UserManagementConfig',
     'core.apps.CoreConfig',
     'plants.apps.PlantsConfig',
@@ -70,8 +71,18 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser'
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
 }
+
+AUTHENTICATION_BACKENDS = [
+    # Needed for email-based login
+    'allauth.account.auth_backends.AuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 AUTH_USER_MODEL = 'user_management.User'
 

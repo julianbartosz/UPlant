@@ -1,6 +1,6 @@
 # backend/root/user_management/api/views.py
 
-from django.contrib.auth import get_user_model, login, logout
+from django.contrib.auth import get_user_model, login, logout, authenticate
 from django.utils.translation import gettext_lazy as _
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
@@ -9,13 +9,14 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
-from rest_framework import viewsets, generics, status, permissions
+from rest_framework import viewsets, generics, status, permissions, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
+from rest_framework.authtoken.views import ObtainAuthToken
 
 from allauth.account.models import EmailAddress, EmailConfirmation
 from allauth.socialaccount.models import SocialAccount
@@ -30,6 +31,102 @@ from user_management.api.permissions import IsUserOrAdmin, IsAdminOrReadOnly
 
 User = get_user_model()
 
+class CustomAuthTokenSerializerLocal(serializers.Serializer):
+    email = serializers.EmailField(label=_("Email"))
+    password = serializers.CharField(
+        label=_("Password"),
+        style={'input_type': 'password'},
+        trim_whitespace=False
+    )
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        if email and password:
+            user = authenticate(request=self.context.get('request'),
+                                email=email, password=password)
+
+            if not user:
+                msg = _('Unable to log in with provided credentials.')
+                raise serializers.ValidationError(msg, code='authorization')
+        else:
+            msg = _('Must include "email" and "password".')
+            raise serializers.ValidationError(msg, code='authorization')
+
+        attrs['user'] = user
+        return attrs
+
+from rest_framework.authentication import SessionAuthentication
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    """
+    SessionAuthentication that skips CSRF verification entirely
+    """
+    def enforce_csrf(self, request):
+        # Skip CSRF check for API endpoints
+        return
+    
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from rest_framework.parsers import JSONParser
+
+@method_decorator(csrf_exempt, name='dispatch')
+class LoginView(ObtainAuthToken):
+    """
+    API endpoint for obtaining an authentication token.
+    
+    POST with email and password to get a token.
+    """
+    serializer_class = CustomAuthTokenSerializerLocal
+    authentication_classes = (CsrfExemptSessionAuthentication,)
+    parser_classes = (JSONParser,)
+    
+    def post(self, request, *args, **kwargs):
+        print("Request method:", request.method)
+        print("Content type:", request.content_type)
+        print("Raw body:", request.body.decode('utf-8'))
+        
+        data = request.data
+        email = data.get('email')
+        password = data.get('password')
+        
+        print(f"Attempting login with: {email}")
+        
+        try:
+            user = User.objects.get(email=email)
+            print(f"Found user: {user.username}")
+            
+            # Try direct authentication
+            if user.check_password(password):
+                print("Password check passed!")
+                # Manual authentication success
+                token, created = Token.objects.get_or_create(user=user)
+                return Response({
+                    'token': token.key,
+                    'user_id': user.pk,
+                    'email': user.email
+                })
+            else:
+                print("Password check failed!")
+                return Response(
+                    {'non_field_errors': ['Unable to log in with provided credentials.']},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        except User.DoesNotExist:
+            print(f"No user found with email: {email}")
+            return Response(
+                {'non_field_errors': ['Unable to log in with provided credentials.']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            print(f"Login exception: {str(e)}")
+            return Response(
+                {'detail': 'Authentication error occurred.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
 class UserDetailView(generics.RetrieveAPIView):
     """
     Get details of the current user.

@@ -2,6 +2,7 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from user_management.api.views import LoginView
 
 from user_management.api.views import (
     # User account endpoints
@@ -47,6 +48,7 @@ urlpatterns = [
     
     # Include router URLs for ViewSets
     path('', include(router.urls)),
+    path('login/', LoginView.as_view(), name='api-token-auth'),
 ]
 
 # Named URL patterns for this app
