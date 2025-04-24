@@ -16,7 +16,7 @@ const useNotifications = () => {
     console.log("Notifications:", notificationsList);
 
 
-    const mediateAddNotification = async (gardenIndex, notification) => {
+    const mediateAddNotification = async (gardenIndex, notification, callback) => {
 
         // {
         //     "garden": 1,          // ID of the specific garden
@@ -25,6 +25,29 @@ const useNotifications = () => {
         //     "subtype": "Morning", // Optional: Subtype (only required for "Other" type)
         //     "interval": 7         // Interval in days
         //   }
+        if (notification.plants.size === 0) {
+            alert('Please select at least one plant.');
+            return;
+        }
+
+        if (!notification.name.trim()) {
+            alert('Name cannot be empty.');
+            return;
+        }
+
+        if (notification.interval <= 0) {
+            alert('Interval must be greater than 0.');
+            return;
+        }
+
+        const isNameDuplicate = notificationsList[gardenIndex]?.some(
+            (existingNotification) => existingNotification.name.toLowerCase() === notification.name.toLowerCase()
+        );
+
+        if (isNameDuplicate) {
+            alert('Name must be unique.');
+            return;
+        }
         if (gardenIndex < 0 || gardenIndex >= notificationsList.length) {
             alert("Invalid gardenIndex. Please provide a valid index.");
             return;
@@ -35,6 +58,7 @@ const useNotifications = () => {
         );
 
         setNotifications(updatedNotifications);
+        callback();
 
         try {
             const response = await fetch(import.meta.env.VITE_NOTIFICATIONS_API_URL, {

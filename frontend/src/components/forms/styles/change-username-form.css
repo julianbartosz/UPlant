@@ -1,0 +1,42 @@
+.username-form-content {
+    font-family: monospace;
+    width: 100%;
+    margin-top: 40px;
+}
+
+.username-form-header {
+    margin-bottom: 40px;
+}
+
+.username-form-label {
+    margin-bottom: 5px;
+    color: black;
+}
+
+.username-form-input-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+}
+
+.username-form-input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    width: 200px;
+    margin-bottom: 15px;
+}
+
+.username-form-footer {
+    margin-top: 50px;
+}
+.username-form{
+    justify-content: center;
+    flex-direction: column;
+    /* align-self: center; */
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    }

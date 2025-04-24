@@ -24,7 +24,7 @@ import { PiEmptyBold } from "react-icons/pi";
 import './styles/data-table.css';
 
 const DataTable = ({ 
-        selectedGardenIndex = 0,    
+        selectedGardenIndex,    
         onAdd,
         data=[],
         fontSize,
@@ -32,11 +32,6 @@ const DataTable = ({
      
     const { mediateDeleteNotification} = useNotifications();
 
-
-
-    if (!data) {
-        return <div>...</div>;
-    }
 
     return (
         <>

@@ -207,12 +207,15 @@ export const useGardens = () => {
 
             if (!response.ok) {
                 console.log("Response not ok");
+                setNotifications(prevNotifications => prevNotifications.filter((_, i) => i !== index));
             }
 
             console.log(`Garden "${garden.name}" deleted successfully.`);
         } catch (error) {
             if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
+                // Handle dummy fetch scenario
                 console.error("Using dummy fetch, no rollback needed.");
+                setNotifications(prevNotifications => prevNotifications.filter((_, i) => i !== index));
                 return;
             }
             console.error("Error deleting garden:", error);
@@ -249,7 +252,7 @@ export const useGardens = () => {
         }
 
         const cells = Array.from({ length: y }, () => Array(x).fill(null));
-        const newGarden = { name: name, size_x: x, size_y: y, cells: cells };
+        const newGarden = { name: name, x: x, y: y, cells: cells };
         const newGardenReq = { name: name, size_x: x, size_y: y};
 
         if (!newGarden || !newGarden.name || newGarden.x <= 0 || newGarden.y <= 0) {
