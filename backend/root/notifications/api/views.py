@@ -2,6 +2,7 @@
 from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from datetime import timedelta
@@ -12,6 +13,12 @@ from notifications.api.serializers import (
     NotificationSerializer, NotificationInstanceSerializer,
     NotificationPlantAssociationSerializer, DashboardNotificationSerializer
 )
+
+# Authentication class to handle CSRF exemption
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        # Do not enforce CSRF for API views
+        return
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """Custom permission to only allow owners of a notification to edit it."""
@@ -28,6 +35,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     """API endpoint for Notifications"""
     serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['type', 'garden']
     search_fields = ['name', 'subtype']
@@ -207,6 +215,7 @@ class NotificationInstanceViewSet(viewsets.ModelViewSet):
     """API endpoint for NotificationInstances"""
     serializer_class = NotificationInstanceSerializer
     permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['status', 'notification']
     ordering_fields = ['next_due', 'status']
