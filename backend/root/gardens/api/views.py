@@ -189,8 +189,6 @@ class GardenViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
         
-        # Clear existing garden logs - note: this is destructive!
-        # Consider a more sophisticated approach to track changes if needed
         garden.logs.all().delete()
         
         # Create new garden logs based on grid data
