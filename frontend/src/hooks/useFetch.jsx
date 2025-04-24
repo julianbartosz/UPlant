@@ -16,7 +16,7 @@
 import { useState, useEffect } from "react";
 import { DummyFetch } from "../debugger";
 
-const useFetch = (url) => {
+const useGet = (url) => {
 
     if (!url) {
         throw new Error("URL is required");
@@ -29,7 +29,7 @@ const useFetch = (url) => {
         throw new Error("The provided URL is not among the allowed endpoints");
     }
 
-    const [data, setData] = useState(null);
+    const [data, setData] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     
@@ -37,7 +37,7 @@ const useFetch = (url) => {
         const fetchData = async () => {
             setLoading(true);
 
-            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_GARDENS_API_URL !== url && import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.log("Using dummy fetch");
                 console.log("Dummy fetch URL:", url);
                 const dummyData = await DummyFetch(url);
@@ -47,13 +47,14 @@ const useFetch = (url) => {
                 setLoading(false);
                 return;
             }
+      
 
             try {
                 const response = await fetch(url,  {
                     method: 'GET',
                     headers: {
+                        'Authorization': `Token ${localStorage.getItem('token')}`,
                         'Content-Type': 'application/json',
-                        'credentials': 'include',
                         'Accept': 'application/json'
                     }
                 });
@@ -62,6 +63,10 @@ const useFetch = (url) => {
                 }
                 const result = await response.json();
                 setData(result);
+
+                setLoading(false);
+
+
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -75,4 +80,4 @@ const useFetch = (url) => {
     return { data, setData, error, loading };
 };
 
-export default useFetch;
+export default useGet;

@@ -9,8 +9,8 @@ export const useGardens = () => {
     if (!context) {
         throw new Error("useGardens must be used within a UserProvider");
     }
-
-    const { gardens, setGardens, gardensLoading, gardensError, setNotifications } = context;
+    
+    const { gardens, setGardens, gardensLoading, gardensError, setNotifications, token } = context;
 
     const mediateGridSizeChange = (axis, change, edge, gardenName) => {
         const gardenIndex = gardens.findIndex(garden => garden.name === gardenName);
@@ -196,11 +196,10 @@ export const useGardens = () => {
         setGardens(prevGardens => prevGardens.filter((_, i) => i !== index));
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_GARDENS_API_URL}/${garden.id}`, {
+            const response = await fetch(`${import.meta.env.VITE_GARDENS_API_URL}${garden.id}`, {
                 method: 'DELETE',
                 headers: { 
                     'Content-Type': 'application/json',
-
                 },
                 'credentials': 'include' 
             });
@@ -253,7 +252,7 @@ export const useGardens = () => {
 
         const cells = Array.from({ length: y }, () => Array(x).fill(null));
         const newGarden = { name: name, x: x, y: y, cells: cells };
-        const newGardenReq = { name: name, size_x: x, size_y: y};
+        const requestBody = { name: name, size_x: x, size_y: y};
 
         if (!newGarden || !newGarden.name || newGarden.x <= 0 || newGarden.y <= 0) {
             alert("Invalid garden data. Please provide a valid name and dimensions.");
@@ -275,14 +274,18 @@ export const useGardens = () => {
         setNotifications(prevNotifications => [...prevNotifications, []]);
         setIndex(gardens.length);
 
-        const url = 'https://your-api-url.com/api/gardens/'; // Replace with your actual API URL
-        
+        console.log("ZZZZ", requestBody);
+        const cleanToken = token.replace(/[\n\r]/g, '').trim();
+
+        const url = "http://localhost:8000/api/gardens/gardens/";
+       
         try {
             const response = await fetch(url, {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}` // Include the user's token for authentication
+                  'Authorization': `Token ${token}`, 
                 },
                 body: JSON.stringify(requestBody),
               });
@@ -293,11 +296,7 @@ export const useGardens = () => {
             // If API assigns an ID or modifies data, update with the real data
             const savedGarden = await response.json();
 
-            setGardens(prevGardens =>
-                prevGardens.map(garden =>
-                    garden === newGarden ? savedGarden : garden
-                )
-            );
+            console.log("ZZZZCCCC", savedGarden);
     
         } catch (error) {
             if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {

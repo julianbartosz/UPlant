@@ -64,10 +64,10 @@ class Migration(migrations.Migration):
             model_name='user',
             name='first_name',
         ),
-        migrations.RemoveField(
-            model_name='user',
-            name='is_active',
-        ),
+        # migrations.RemoveField(
+        #     model_name='user',
+        #     name='is_active',
+        # ),
         migrations.RemoveField(
             model_name='user',
             name='last_name',
