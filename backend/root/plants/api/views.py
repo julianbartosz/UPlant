@@ -2,6 +2,7 @@
 
 import logging
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 from django.db.models import Q, Count
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,7 +16,7 @@ from plants.api.serializers import (
     PlantChangeRequestCreateSerializer, TreflePlantSerializer, 
     TreflePlantListResponseSerializer
 )
-from services.trefle_service import list_plants, retrieve_plants
+from services.search_service import perform_search, get_search_suggestions
 from plants.models import Plant, PlantChangeRequest
 
 logger = logging.getLogger(__name__)
@@ -499,4 +500,147 @@ class PlantStatisticsAPIView(APIView):
             'verified_plants': verified_plants,
             'your_plants': user_plants,
             'your_pending_changes': user_pending_changes
+        })
+
+class PlantSearchAPIView(APIView):
+    """
+    API endpoint for searching plants.
+    
+    GET /api/plants/search/?q=query_text
+    - Searches plants by common_name, scientific_name, family, etc.
+    - Returns matching plants
+    
+    Parameters:
+    - q: Search query string
+    - order_by: Field to order results by (optional)
+    - limit: Maximum number of results (optional)
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+    
+    def get(self, request, format=None):
+        query = request.query_params.get('q', '')
+        if not query:
+            return Response(
+                {"detail": "Please provide a search query with the 'q' parameter."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Add logging
+        logger.info(f"Search request: query='{query}'")
+        
+        try:
+            # Get additional filters from query params
+            additional_filters = {}
+            for param, value in request.query_params.items():
+                if param not in ['q', 'format', 'order_by', 'limit']:
+                    additional_filters[param] = value
+            
+            # Get order_by and limit parameters
+            order_by = request.query_params.get('order_by', '-id')
+            try:
+                limit = int(request.query_params.get('limit', settings.MAX_SEARCH_RESULTS))
+            except (ValueError, TypeError):
+                limit = settings.MAX_SEARCH_RESULTS
+                
+            # Limit to a reasonable number to prevent performance issues
+            limit = min(limit, 25)
+            
+            # Perform the search with error handling
+            try:
+                results = perform_search(
+                    query_text=query,
+                    model_class=Plant,
+                    additional_filters=additional_filters,
+                    order_by=order_by,
+                    limit=limit
+                )
+                
+                # Log result count
+                logger.info(f"Search found {len(results)} results")
+                
+            except Exception as e:
+                logger.error(f"Search error in perform_search: {str(e)}")
+                return Response(
+                    {"error": "An error occurred during search."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            try:
+                # Using a more basic serializer with fewer fields
+                serializer = PlantBaseSerializer(
+                    results[:limit], 
+                    many=True, 
+                    context={'request': request}
+                )
+                
+                # Build response object with proper structure
+                response_data = {
+                    'query': query,
+                    'count': len(results),
+                    'results': serializer.data
+                }
+                
+                return Response(response_data)
+                
+            except Exception as e:
+                logger.error(f"Search serialization error: {str(e)}")
+                # Return just the basic data if serialization fails
+                basic_data = [{
+                    'id': p.id,
+                    'common_name': p.common_name,
+                    'scientific_name': p.scientific_name
+                } for p in results[:limit]]
+                
+                return Response({
+                    'query': query,
+                    'count': len(results),
+                    'results': basic_data
+                })
+                
+        except Exception as e:
+            logger.error(f"Unexpected search error: {str(e)}")
+            return Response(
+                {"error": "An unexpected error occurred."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class PlantSuggestionsAPIView(APIView):
+    """
+    API endpoint for getting plant name suggestions for autocomplete.
+    
+    GET /api/plants/search/suggestions/?q=prefix
+    
+    Parameters:
+    - q: Prefix to get suggestions for (minimum 2 characters)
+    - field: Field to get suggestions from (default: common_name)
+    - limit: Maximum number of suggestions (default: 10)
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+    
+    def get(self, request, format=None):
+        prefix = request.query_params.get('q', '')
+        if not prefix or len(prefix) < 2:
+            return Response(
+                {"detail": "Please provide a prefix with at least 2 characters using the 'q' parameter."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get field to suggest from (default to common_name)
+        field = request.query_params.get('field', 'common_name')
+        limit = int(request.query_params.get('limit', 10))
+        
+        # Get suggestions
+        suggestions = get_search_suggestions(
+            prefix=prefix,
+            model_class=Plant,
+            field=field,
+            limit=limit
+        )
+        
+        return Response({
+            'prefix': prefix,
+            'count': len(suggestions),
+            'suggestions': suggestions
         })

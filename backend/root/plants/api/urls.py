@@ -5,7 +5,8 @@ from rest_framework.routers import DefaultRouter
 from plants.api.views import (
     ListPlantsAPIView, RetrievePlantAPIView, 
     PlantViewSet, PlantChangeRequestViewSet,
-    PlantStatisticsAPIView
+    PlantStatisticsAPIView,
+    PlantSearchAPIView, PlantSuggestionsAPIView,
 )
 
 # Create a router for ViewSets
@@ -14,6 +15,10 @@ router.register(r'plants', PlantViewSet, basename='plant')
 router.register(r'changes', PlantChangeRequestViewSet, basename='change-request')
 
 urlpatterns = [
+    # Search endpoints
+    path('search/', PlantSearchAPIView.as_view(), name='plant-search'),
+    path('search/suggestions/', PlantSuggestionsAPIView.as_view(), name='plant-search-suggestions'),
+    
     # Statistics and dashboards
     path('plants/statistics/', PlantStatisticsAPIView.as_view(), name='plant-statistics'),
 
@@ -24,7 +29,7 @@ urlpatterns = [
 
     # Root API
     path('', include(router.urls)),
-     
+
     # Include the router URLs
     # This will generate:
     # /plants/ - List/create plants

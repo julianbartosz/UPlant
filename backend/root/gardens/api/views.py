@@ -3,6 +3,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from gardens.models import Garden, GardenLog
 from gardens.api.serializers import GardenSerializer, GardenLogSerializer, GardenGridSerializer
 from notifications.models import Notification, NotificationInstance
@@ -10,6 +11,12 @@ from django.db.models import Count, Sum, Q
 from django.utils import timezone
 
 
+# Authentication class to handle CSRF exemption
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        # Do not enforce CSRF for API views
+        return
+    
 # delete health status code
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """Custom permission to only allow owners of a garden to edit it."""
@@ -27,6 +34,7 @@ class GardenViewSet(viewsets.ModelViewSet):
     """API endpoint for Gardens"""
     serializer_class = GardenSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
     
     def get_queryset(self):
         """Return only gardens belonging to the current user"""
@@ -132,7 +140,8 @@ class GardenLogViewSet(viewsets.ModelViewSet):
     """API endpoint for Garden Logs (plants in a garden)"""
     serializer_class = GardenLogSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+
     def get_queryset(self):
         """Return garden logs filtered by garden if specified"""
         queryset = GardenLog.objects.filter(garden__user=self.request.user)
