@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { DashboardPage, CatalogPage, SettingsPage, NotificationsPage } from './pages';
 import { LoadingAnimation } from './components/layout';
 import UserProvider from './contexts/UserProvider';
+import WeatherWidget from './components/widgets/WeatherWidget';
 import './styles/app.css';
 
 function App() {
@@ -18,7 +19,7 @@ function App() {
           <Route path="/settings" element={<SettingsPage/>} />
           <Route path="/notifications" element={<NotificationsPage/>} />
           <Route path="*" element={<div className='centered-message'>Oops! Looks like you've wandered off the garden path.</div>} />
-
+            {/* <Route path="/weather" element={<div style={{background: 'lightblue'}}><WeatherWidget /></div>} /> */}
         </Routes>
       </Router>
     </UserProvider>

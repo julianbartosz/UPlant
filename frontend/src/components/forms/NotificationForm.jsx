@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useNotifications from '../../hooks/useNotifications';
 import AddWithOptions from '../ui/AddWithOptions';
 import { GenericButton } from '../buttons';
@@ -7,13 +7,14 @@ import './styles/notification-form.css';
 const NotificationForm = ({ setToggleForm, onBack, selectedGardenIndex, plantOptions }) => {
     const [selectedPlants, setSelectedPlants] = useState(new Set());
 
-    const { mediateAddNotification } = useNotifications();
-
+    const { mediateAddNotification, notificationsList } = useNotifications();
+  
     const handlePlantSelection = (selected) => {
         setSelectedPlants(new Set(selected));
     };
 
     const handleSubmit = () => {
+        const initialLength = notificationsList[selectedGardenIndex].length;
         const nameInput = document.getElementById('name');
         const intervalInput = document.getElementById('interval');
         const name = nameInput?.value || '';
@@ -28,9 +29,9 @@ const NotificationForm = ({ setToggleForm, onBack, selectedGardenIndex, plantOpt
             })),
         };
 
-        setToggleForm(false);
-
-        mediateAddNotification(selectedGardenIndex, notification);
+        mediateAddNotification(selectedGardenIndex, notification, () => { 
+            setToggleForm(false); 
+        });
     };
 
     return (

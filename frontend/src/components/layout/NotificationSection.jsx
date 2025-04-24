@@ -8,7 +8,7 @@ const NotificationSection = ({ plantOptions, contentSize, notificationsList, sel
 
     return (
         <div className='notification-section-container'>
-            {toggleForm && (notificationsList[selectedGardenIndex].length < 10) ? (
+            {toggleForm ? (
                     <NotificationForm setToggleForm={setToggleForm}plantOptions={plantOptions} onBack={() => setToggleForm(false)} selectedGardenIndex={selectedGardenIndex} />
                 ) : (
                     <DataTable
