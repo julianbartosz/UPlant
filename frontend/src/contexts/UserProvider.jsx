@@ -18,12 +18,12 @@ export const UserProvider = ({ children }) => {
 
     const [gardens, setGardens] = useState(null);
     const [notificationsList, setNotifications] = useState(null);
+    const [plantsList, setPlantsList] = useState(null);
 
-
-    const {
-        data: plantsList,
-        setData: setPlantsList,
-    } = useGet(import.meta.env.VITE_PLANTS_API_URL);
+    useEffect(() => {   
+        
+    }
+    , [plantsList]);
 
     const {
         data: username,

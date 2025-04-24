@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
+
 from rest_framework import viewsets, generics, status, permissions, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,6 +18,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+
 
 from allauth.account.models import EmailAddress, EmailConfirmation
 from allauth.socialaccount.models import SocialAccount
@@ -57,8 +60,6 @@ class CustomAuthTokenSerializerLocal(serializers.Serializer):
         attrs['user'] = user
         return attrs
 
-from rest_framework.authentication import SessionAuthentication
-
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     """
     SessionAuthentication that skips CSRF verification entirely
@@ -79,7 +80,7 @@ class LoginView(ObtainAuthToken):
     POST with email and password to get a token.
     """
     serializer_class = CustomAuthTokenSerializerLocal
-    authentication_classes = (CsrfExemptSessionAuthentication,)
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
     parser_classes = (JSONParser,)
     
     def post(self, request, *args, **kwargs):
@@ -135,6 +136,7 @@ class UserDetailView(generics.RetrieveAPIView):
     """
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
     
     def get_object(self):
         return self.request.user
@@ -149,6 +151,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     """
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
     
     def get_object(self):
         return self.request.user
@@ -162,6 +165,7 @@ class PasswordChangeView(generics.GenericAPIView):
     """
     serializer_class = PasswordChangeSerializer
     permission_classes = [IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
     
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -194,7 +198,8 @@ class PasswordResetRequestView(generics.GenericAPIView):
     """
     serializer_class = PasswordResetRequestSerializer
     permission_classes = [AllowAny]
-    
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -242,7 +247,8 @@ class PasswordResetConfirmView(generics.GenericAPIView):
     """
     serializer_class = PasswordResetConfirmSerializer
     permission_classes = [AllowAny]
-    
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -280,7 +286,8 @@ class EmailVerificationView(APIView):
     Confirms user's email address using token from email.
     """
     permission_classes = [AllowAny]
-    
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+
     def get(self, request, key):
         try:
             # Find the email confirmation
@@ -311,7 +318,8 @@ class ResendVerificationEmailView(APIView):
     Sends a new verification email to the user's unverified email.
     """
     permission_classes = [IsAuthenticated]
-    
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+
     def post(self, request):
         try:
             # Check if user has an unverified email
@@ -337,7 +345,8 @@ class EmailChangeRequestView(generics.GenericAPIView):
     """
     serializer_class = EmailChangeRequestSerializer
     permission_classes = [IsAuthenticated]
-    
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -372,7 +381,8 @@ class SetPrimaryEmailView(APIView):
     Changes the user's primary email to one of their verified emails.
     """
     permission_classes = [IsAuthenticated]
-    
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+
     def post(self, request):
         email = request.data.get('email')
         
@@ -416,7 +426,8 @@ class SocialAccountDisconnectView(generics.GenericAPIView):
     """
     serializer_class = DisconnectSocialAccountSerializer
     permission_classes = [IsAuthenticated]
-    
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -460,7 +471,8 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = AdminUserSerializer
     permission_classes = [IsAdminUser]
-    
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+
     def get_queryset(self):
         """Optionally filter users"""
         queryset = User.objects.all().order_by('-date_joined')

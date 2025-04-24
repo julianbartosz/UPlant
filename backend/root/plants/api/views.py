@@ -464,7 +464,8 @@ class PlantStatisticsAPIView(APIView):
     Provides statistics about plants in the system.
     """
     permission_classes = [permissions.IsAuthenticated]
-    
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+
     def get(self, request, format=None):
         """Return statistics about plants."""
         total_plants = Plant.objects.count()

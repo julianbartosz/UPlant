@@ -6,7 +6,7 @@ import './styles/dashboard-page.css';
 
 function DashboardPage() {
   const { username, usernameError } = useUser();
-  const { gardens, setGardens, gardensLoading, gardensError } = useGardens();
+  const { gardens, setGardens, gardensLoading, gardensError, mediateAddPlantToGarden, mediateRemovePlantFromGarden } = useGardens();
 
   const [squareSize, setSquareSize] = useState(1);
   const [fontSize, setFontSize] = useState(null);
@@ -56,35 +56,19 @@ function DashboardPage() {
 
   const handlePlantClick = (item) => {
     if (item.type === 'SHEAR') {
-      setGardens((prevGardens) => {
-        const currentGarden = { ...prevGardens[selectedGardenIndexRef.current] };
-        if (!currentGarden) return prevGardens;
-        const newCells = [...currentGarden.cells];
-        selectedPlantCellsRef.current.forEach(key => {
-          const [row, col] = key.split('-').map(Number);
-          if (row < currentGarden.y && col < currentGarden.x) newCells[row][col] = null;
-        });
-        const updatedGarden = { ...currentGarden, cells: newCells };
-        const updatedGardens = [...prevGardens];
-        updatedGardens[selectedGardenIndexRef.current] = updatedGarden;
-        return updatedGardens;
+      selectedPlantCellsRef.current.forEach(key => {
+        const [row, col] = key.split('-').map(Number);
+        if (row < gardens[selectedGardenIndexRef.current].y && col < gardens[selectedGardenIndexRef.current].x) mediateRemovePlantFromGarden(gardens[selectedGardenIndexRef.current].id, row, col);
       });
       return;
+      
     }
-    
-    setGardens((prevGardens) => {
-      const currentGarden = { ...prevGardens[selectedGardenIndexRef.current] };
-      if (!currentGarden) return prevGardens;
-      const newCells = [...currentGarden.cells];
+    const currentGarden = gardens[selectedGardenIndexRef.current]
       selectedEmptyCellsRef.current.forEach(key => {
         const [row, col] = key.split('-').map(Number);
-        if (row < currentGarden.y && col < currentGarden.x) newCells[row][col] = item;
+        console.log("ROW COL: ", row, col);
+        if (row < currentGarden.y && col < currentGarden.x) mediateAddPlantToGarden(gardens[selectedGardenIndexRef.current].id, item, row, col);
       });
-      const updatedGarden = { ...currentGarden, cells: newCells };
-      const updatedGardens = [...prevGardens];
-      updatedGardens[selectedGardenIndexRef.current] = updatedGarden;
-      return updatedGardens;
-    });
   };
 
   const cellClickHandler = (obj, i, j) => {
@@ -125,7 +109,7 @@ function DashboardPage() {
             />
           {!gardensLoading && (
           <GardenGrid
-            garden={gardens[selectedGardenIndex]}
+            selectedGardenIndex={selectedGardenIndex}
             fontSize={fontSize}
             squareSize={squareSize}
             contentSize={contentSize}
