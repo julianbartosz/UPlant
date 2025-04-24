@@ -49,12 +49,12 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'rest_framework.authtoken',
-    'services.apps.ServicesConfig',
     'user_management.apps.UserManagementConfig',
     'core.apps.CoreConfig',
     'plants.apps.PlantsConfig',
     'gardens.apps.GardensConfig',
     'community.apps.CommunityConfig',
+    'notifications.apps.NotificationsConfig',
     'notifications.apps.NotificationsConfig',
     'django_extensions',
     'django_select2',
@@ -76,8 +76,18 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
 }
+
+AUTHENTICATION_BACKENDS = [
+    # Needed for email-based login
+    'allauth.account.auth_backends.AuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 AUTHENTICATION_BACKENDS = [
     # Needed for email-based login
@@ -91,6 +101,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -103,8 +114,15 @@ MIDDLEWARE = [
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'Authorization',
     'credentials',
+    'Authorization',
+    'credentials',
 ]
 CORS_ALLOW_ALL_ORIGINS = True if DEBUG else False  # Allow all origins in development, restrict in production
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+
+FRONTEND_URL = 'http://localhost:5173'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
@@ -198,6 +216,9 @@ AUTHENTICATION_BACKENDS = (
     'user_management.backends.EmailModelBackend',
     'user_management.backends.SocialEmailFallbackBackend',
     'allauth.account.auth_backends.AuthenticationBackend'
+    'user_management.backends.EmailModelBackend',
+    'user_management.backends.SocialEmailFallbackBackend',
+    'allauth.account.auth_backends.AuthenticationBackend'
 )
 
 ACCOUNT_LOGIN_METHOD = 'email'
@@ -270,10 +291,10 @@ if 'test' in sys.argv:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',  # Use in-memory database for faster tests
+            'NAME': ':memory:',  # Using in-memory database
         }
     }
-    
+
      # Skip migrations when testing
     class DisableMigrations:
         def __contains__(self, item):
@@ -283,3 +304,24 @@ if 'test' in sys.argv:
             return None
             
     MIGRATION_MODULES = DisableMigrations()
+
+# ENABLE_SEARCH_INDEXING = True
+
+# ENABLE_ADVANCED_SEARCH = True
+# SEARCH_ENGINE = 'elasticsearch'
+# ELASTICSEARCH_HOSTS = ['http://localhost:9200']
+# ELASTICSEARCH_INDEX_PREFIX = 'uplant'
+# SEARCH_SETTINGS = {
+#     'elasticsearch': {
+#         'timeout': 30,
+#         'retry_on_timeout': True
+#     }
+# }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
+SKIP_CACHE_INITIALIZATION = True

@@ -11,7 +11,7 @@ class UserMinimalSerializer(serializers.ModelSerializer):
     """Minimal user representation for related fields"""
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
+        fields = ['id', 'username', 'first_name', 'last_name']
 
 class PlantBaseSerializer(serializers.ModelSerializer):
     """Base serializer with common plant fields"""
@@ -20,8 +20,8 @@ class PlantBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plant
         fields = [
-            'id', 'common_name', 'scientific_name', 'slug', 'family_common_name', 'family',
-            'image_url', 'is_user_created', 'is_verified', 'water_interval',
+            'id', 'common_name', 'scientific_name', 'slug', 
+            'image_url', 'is_user_created', 'is_verified',
             'created_by', 'created_by_username', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
@@ -35,7 +35,7 @@ class PlantDetailSerializer(PlantBaseSerializer):
     
     class Meta(PlantBaseSerializer.Meta):
         fields = PlantBaseSerializer.Meta.fields + [
-            'api_id', 'status', 'rank',
+            'api_id', 'status', 'rank', 'family_common_name', 'family', 
             'genus_id', 'genus', 'synonyms', 'vegetable', 'duration', 
             'edible', 'edible_part', 'flower_color', 'flower_conspicuous', 
             'foliage_texture', 'foliage_color', 'foliage_retention', 
@@ -46,27 +46,19 @@ class PlantDetailSerializer(PlantBaseSerializer):
             'atmospheric_humidity', 'minimum_precipitation', 'maximum_precipitation',
             'minimum_root_depth', 'growth_months', 'bloom_months', 
             'fruit_months', 'growth_rate', 'average_height', 'maximum_height',
-            'toxicity', 'sunlight_requirements', 'soil_type',
+            'toxicity', 'water_interval', 'sunlight_requirements', 'soil_type',
             'min_temperature', 'max_temperature', 'detailed_description',
             'care_instructions', 'nutrient_requirements', 'maintenance_notes',
             'pending_changes'
         ]
     
     def get_pending_changes(self, obj):
+        """Return count of pending change requests"""
+        # Only return this for staff/admin users
         request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            if request.user.is_staff or getattr(request.user, 'role', '') in ('Admin', 'Moderator'):
-                # Admin/moderator view - show all pending changes
-                changes = obj.change_requests.filter(status='PENDING').order_by('-created_at')
-                return PlantChangeRequestSerializer(changes, many=True).data
-            else:
-                # Regular user view - show only their pending changes
-                changes = obj.change_requests.filter(
-                    user=request.user, 
-                    status='PENDING'
-                ).order_by('-created_at')
-                return PlantChangeRequestSerializer(changes, many=True).data
-        return []  # Return empty list for anonymous users
+        if request and (request.user.is_staff or request.user.role in ('Admin', 'Moderator')):
+            return obj.change_requests.filter(status='PENDING').count()
+        return 0
 
 class UserPlantCreateSerializer(serializers.ModelSerializer):
     """Serializer for users to create custom plants"""

@@ -6,7 +6,6 @@ import './styles/dashboard-page.css';
 
 function DashboardPage() {
   const { username, usernameError } = useUser();
-  const { notificationsList, notificationsListLoading, notificationsListError } = useNotifications();
   const { gardens, setGardens, gardensLoading, gardensError } = useGardens();
 
   const [squareSize, setSquareSize] = useState(1);
@@ -27,7 +26,8 @@ function DashboardPage() {
     setSelectedPlantCells(new Set());
      
     const handleResize = () => {
-      if (containerRef.current) {
+      if (containerRef.current && gardens && gardens.length > 0) {
+
         const { width, height } = containerRef.current.getBoundingClientRect();
         const maxDimension = Math.max(gardens[selectedGardenIndex].x, gardens[selectedGardenIndex].y);
         const newSquareSize = Math.min(width * 0.6, height * 0.6) / maxDimension;
@@ -52,6 +52,7 @@ function DashboardPage() {
     if (containerRef.current) observer.observe(containerRef.current, { childList: true, subtree: true });
     return () => { if (containerRef.current) observer.disconnect(); };
   }, []);
+
 
   const handlePlantClick = (item) => {
     if (item.type === 'SHEAR') {
@@ -101,13 +102,7 @@ function DashboardPage() {
     }
   };
 
-  if (notificationsListLoading) return <p>Loading notifications...</p>;
-  if (gardensLoading) return <p>Loading gardens...</p>;
-  if (!gardens) return <p>No gardens available.</p>;
-  if (gardensError || notificationsListError || usernameError) {
-    console.error('Error fetching data:', gardensError, notificationsListError, usernameError);
-    return <p>Error fetching data.</p>;
-  }
+  if (!gardens) return null;
 
   return (
     <>
@@ -150,11 +145,7 @@ function DashboardPage() {
           >
           <NotificationSection
             contentSize={contentSize}
-            notificationsList={notificationsList}
             selectedGardenIndex={selectedGardenIndex}
-            plantOptions={[
-              ...new Set(gardens[selectedGardenIndex].cells.flat().filter(item => item !== null))
-            ]}
           />
         </div>
     </div>

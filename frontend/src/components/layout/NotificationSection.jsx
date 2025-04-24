@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import NotificationForm from '../forms/NotificationForm';
 import DataTable from '../ui/DataTable';
+import { useGardens } from '../../hooks/useGardens';
 import './styles/notification-section.css';
+import { useNotifications } from '../../hooks';
 
-const NotificationSection = ({ plantOptions, contentSize, notificationsList, selectedGardenIndex }) => {
+const NotificationSection = ({ contentSize, selectedGardenIndex }) => {
     const [toggleForm, setToggleForm] = useState(false);
+    const { gardens } = useGardens();
+    const { notificationsList } = useNotifications();
+    const plantOptions = [
+        ...new Set(gardens[selectedGardenIndex]?.cells.flat().filter(item => item !== null))
+      ];
 
     return (
         <div className='notification-section-container'>

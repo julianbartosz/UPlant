@@ -2,29 +2,24 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from user_management.api.views import LoginView
 
 from user_management.api.views import (
     # User account endpoints
-    UserDetailView, UserProfileView, UsernameChangeView, UserDeleteView,
+    UserDetailView, UserProfileView,
     
     # Password management
     PasswordChangeView, PasswordResetRequestView, PasswordResetConfirmView,
     
     # Email management
     EmailVerificationView, ResendVerificationEmailView, EmailChangeRequestView,
-    SetPrimaryEmailView, EmailListView,
+    SetPrimaryEmailView,
     
     # Social account management
-    SocialAccountDisconnectView, SocialAccountListView,
+    SocialAccountDisconnectView,
     
     # Admin endpoints
-    AdminUserViewSet, AdminStatsView,
-
-    # Weather endpoints
-    UserWeatherView, UserLocationUpdateView,
+    AdminUserViewSet
 )
 
 # Create a router for ViewSets
@@ -36,12 +31,6 @@ urlpatterns = [
     # User profile endpoints
     path('me/', UserDetailView.as_view(), name='user-detail'),
     path('me/profile/', UserProfileView.as_view(), name='user-profile'),
-    path('me/delete/', UserDeleteView.as_view(), name='user-delete'),
-    path('me/update_username/', UsernameChangeView.as_view(), name='update-username'),
-    
-    # Weather endpoints
-    path('weather/', UserWeatherView.as_view(), name='user-weather'),
-    path('location/', UserLocationUpdateView.as_view(), name='user-location-update'),
     
     # Password management endpoints
     path('password/change/', PasswordChangeView.as_view(), name='password-change'),
@@ -49,18 +38,13 @@ urlpatterns = [
     path('password/reset/confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
     
     # Email management endpoints
-    path('email/', EmailListView.as_view(), name='email-list'),
     path('email/verify/<str:key>/', EmailVerificationView.as_view(), name='email-verification'),
     path('email/resend-verification/', ResendVerificationEmailView.as_view(), name='resend-verification'),
     path('email/change/', EmailChangeRequestView.as_view(), name='email-change'),
     path('email/set-primary/', SetPrimaryEmailView.as_view(), name='set-primary-email'),
     
     # Social account endpoints
-    path('social/', SocialAccountListView.as_view(), name='social-accounts'),
     path('social/disconnect/', SocialAccountDisconnectView.as_view(), name='disconnect-social'),
-    
-    # Admin stats endpoint
-    path('admin/stats/', AdminStatsView.as_view(), name='admin-stats'),
     
     # Include router URLs for ViewSets
     path('', include(router.urls)),

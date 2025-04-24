@@ -1,12 +1,23 @@
 # backend/root/gardens/apps.py
 
 import logging
+
+import logging
 from django.apps import AppConfig
+from django.utils.translation import gettext_lazy as _
+
+logger = logging.getLogger(__name__)
 from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
 class GardensConfig(AppConfig):
+    """
+    Configuration for the Gardens application.
+    
+    This app manages user garden spaces, including the placement of plants
+    in gardens and tracking their health and care activities.
+    """
     """
     Configuration for the Gardens application.
     
@@ -26,8 +37,6 @@ class GardensConfig(AppConfig):
         3. Integration with other system components
         """
         try:
-            from services import notification_service
-
             # Import signal handlers from signals.py to register them
             from gardens import signals
             logger.info("Garden signals registered successfully")

@@ -21,8 +21,11 @@ const GardenGrid = ({
     cellClickHandler = null,
     coloredCells = null
 }) => {
-    console.log("LLLLL", coloredCells)
 
+    if (!garden) {  
+        return (null);
+    }
+    
     const { mediateGridSizeChange } = useGardens();
 
     const isSelectedEmpty = (i, j) => selectedEmptyCells && selectedEmptyCells.has(`${i}-${j}`);
