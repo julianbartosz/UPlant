@@ -10,3 +10,9 @@ class CustomAuthenticationForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super(CustomAuthenticationForm, self).__init__(*args, **kwargs)
         self.fields['username'].label = "Email"
+
+
+class ContactForm(forms.Form):
+    subject = forms.CharField(max_length=100, label='Subject')
+    email = forms.EmailField(label='Your Email')
+    message = forms.CharField(widget=forms.Textarea, label='Message')

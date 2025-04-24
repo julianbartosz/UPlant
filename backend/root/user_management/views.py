@@ -140,3 +140,4 @@ class PasswordChangeView(LoginRequiredMixin, UpdateView):
         # If the old password doesn't match, add an error
         form.add_error(None, 'Old password is incorrect')
         return self.form_invalid(form)
+    

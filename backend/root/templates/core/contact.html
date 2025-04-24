@@ -1,3 +1,31 @@
-<!-- backend/root/templates/core/contact.html -->
-
 {% extends 'basic_generic.html' %}
+
+{% block content %}
+<h2>Contact Us</h2>
+<p>If you have any questions or feedback, fill out the form below and we'll get back to you!</p>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <!-- Render the form fields -->
+    <label for="id_subject">Subject:</label><br>
+    {{ form.subject }}<br><br>
+
+    <label for="id_email">Your Email:</label><br>
+    {{ form.email }}<br><br>
+
+    <label for="id_message">Message:</label><br>
+    {{ form.message }}<br><br>
+
+    <button type="submit">Send</button>
+</form>
+
+<!-- Feedback -->
+{% if messages %}
+    <ul>
+    {% for message in messages %}
+        <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}
