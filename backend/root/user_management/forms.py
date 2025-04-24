@@ -76,3 +76,4 @@ class ProfileForm(forms.ModelForm):
         if User.objects.filter(username=username).exists():
             raise ValidationError("This username is already taken. Please choose another.")
         return username
+    

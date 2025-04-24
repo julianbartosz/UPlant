@@ -1,12 +1,14 @@
 # backend/root/user_management/views.py
 
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, ListView, DetailView, DeleteView
+from django.views.generic import CreateView, UpdateView, ListView, DetailView, DeleteView, FormView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from user_management.forms import CustomUserCreationForm, CustomUserUpdateForm, CustomPasswordChangeForm
 from user_management.models import User
 from django.db.models import Q
 from django.contrib import messages
+
+
 
 class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = User
@@ -96,3 +98,4 @@ class PasswordChangeView(LoginRequiredMixin, UpdateView):
             return super().form_valid(form)
         form.add_error(None, 'Old password is incorrect')
         return self.form_invalid(form)
+    

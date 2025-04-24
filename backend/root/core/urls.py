@@ -4,6 +4,7 @@ from django.urls import path
 from core import views
 from django.contrib.auth.views import LoginView, LogoutView
 from core.forms import CustomAuthenticationForm
+from core.views import ContactView
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -21,5 +22,5 @@ urlpatterns = [
     path('privacy/', views.privacy, name='privacy'),
     path('help/', views.help_page, name='help'),  # Using help_page because help is a Python keyword
     path('terms/', views.terms, name='terms'),
-    path('contact/', views.contact, name='contact'),
+    path('contact/', ContactView.as_view(), name='contact'),
 ]
