@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status, viewsets, permissions, filters
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 from plants.api.serializers import (
     PlantBaseSerializer, PlantDetailSerializer, UserPlantCreateSerializer, 
@@ -55,7 +55,7 @@ class ListPlantsAPIView(APIView):
     GET /api/v1/trefle/plants
     Public endpoint that lists plants using the Trefle API.
     """
-    authentication_classes = [CsrfExemptSessionAuthentication]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
     
     def get(self, request, format=None):
         try:
@@ -96,7 +96,7 @@ class RetrievePlantAPIView(APIView):
     GET /api/v1/trefle/plants/{id}
     Public endpoint that retrieves details for a single plant from Trefle.
     """
-    authentication_classes = [CsrfExemptSessionAuthentication]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
     
     def get(self, request, id, format=None):
         try:
@@ -143,7 +143,7 @@ class PlantViewSet(viewsets.ModelViewSet):
     """
     queryset = Plant.objects.all()
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    authentication_classes = [CsrfExemptSessionAuthentication]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['is_user_created', 'is_verified', 'vegetable', 'edible']
     search_fields = ['common_name', 'scientific_name', 'family', 'genus']
@@ -342,7 +342,7 @@ class PlantChangeRequestViewSet(viewsets.ModelViewSet):
     """
     queryset = PlantChangeRequest.objects.all()
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [CsrfExemptSessionAuthentication]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['status', 'field_name', 'plant__common_name']
     ordering_fields = ['created_at', 'updated_at', 'field_name']

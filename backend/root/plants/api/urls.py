@@ -14,16 +14,17 @@ router.register(r'plants', PlantViewSet, basename='plant')
 router.register(r'changes', PlantChangeRequestViewSet, basename='change-request')
 
 urlpatterns = [
-    # Root API
-    path('', include(router.urls)),
+    # Statistics and dashboards
+    path('plants/statistics/', PlantStatisticsAPIView.as_view(), name='plant-statistics'),
+
     
     # Trefle API integration endpoints
     path('trefle/plants/', ListPlantsAPIView.as_view(), name='trefle-list-plants'),
     path('trefle/plants/<str:id>/', RetrievePlantAPIView.as_view(), name='trefle-retrieve-plant'),
-    
-    # Statistics and dashboards
-    path('plants/statistics/', PlantStatisticsAPIView.as_view(), name='plant-statistics'),
-    
+
+    # Root API
+    path('', include(router.urls)),
+     
     # Include the router URLs
     # This will generate:
     # /plants/ - List/create plants
