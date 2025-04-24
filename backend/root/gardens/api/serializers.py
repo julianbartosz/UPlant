@@ -5,16 +5,15 @@ from gardens.models import Garden, GardenLog
 from plants.api.serializers import PlantBaseSerializer
 
 class GardenLogSerializer(serializers.ModelSerializer):
-    # Update this to use PlantBaseSerializer instead
     plant_details = PlantBaseSerializer(source='plant', read_only=True)
     
     class Meta:
         model = GardenLog
-        fields = ['id', 'plant', 'plant_details', 'x_position', 'y_position', 
+        fields = ['id', 'plant', 'plant_details', 'x_coordinate', 'y_coordinate', 
                  'planted_date', 'notes', 'health_status', 'last_watered']
 
 class GardenSerializer(serializers.ModelSerializer):
-    garden_logs = GardenLogSerializer(many=True, read_only=True, source='gardenlog_set')
+    garden_logs = GardenLogSerializer(many=True, read_only=True, source='logs')
     total_plants = serializers.SerializerMethodField()
     
     class Meta:
@@ -24,7 +23,7 @@ class GardenSerializer(serializers.ModelSerializer):
         read_only_fields = ['user']
     
     def get_total_plants(self, obj):
-        return obj.gardenlog_set.count()
+        return obj.logs.count()
     
     def create(self, validated_data):
         # Assign the current user
@@ -47,10 +46,10 @@ class GardenGridSerializer(serializers.ModelSerializer):
         grid = [[None for _ in range(obj.size_x)] for _ in range(obj.size_y)]
         
         # Fill in plants where they exist in the garden logs
-        garden_logs = obj.gardenlog_set.select_related('plant').all()
+        garden_logs = obj.logs.select_related('plant').all()
         
         for log in garden_logs:
-            if 0 <= log.y_position < obj.size_y and 0 <= log.x_position < obj.size_x:
+            if 0 <= log.y_coordinate < obj.size_y and 0 <= log.x_coordinate < obj.size_x:
                 # Create a simplified plant object for the frontend
                 plant_data = {
                     'id': log.plant.id,
@@ -60,6 +59,6 @@ class GardenGridSerializer(serializers.ModelSerializer):
                     'health_status': log.health_status,
                     'log_id': log.id
                 }
-                grid[log.y_position][log.x_position] = plant_data
+                grid[log.y_coordinate][log.x_coordinate] = plant_data
                 
         return grid

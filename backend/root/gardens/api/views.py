@@ -108,7 +108,7 @@ class GardenViewSet(viewsets.ModelViewSet):
         
         # Clear existing garden logs - note: this is destructive!
         # Consider a more sophisticated approach to track changes if needed
-        garden.gardenlog_set.all().delete()
+        garden.logs.all().delete()
         
         # Create new garden logs based on grid data
         for y, row in enumerate(cells_data):
@@ -117,8 +117,8 @@ class GardenViewSet(viewsets.ModelViewSet):
                     GardenLog.objects.create(
                         garden=garden,
                         plant_id=cell['id'],
-                        x_position=x,
-                        y_position=y,
+                        x_coordinate=x,
+                        y_coordinate=y,
                         planted_date=timezone.now().date(),
                         health_status='Healthy'  # Default status
                     )
