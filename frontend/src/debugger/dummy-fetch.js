@@ -32,22 +32,22 @@ const DummyFetch = async (url) => {
         case import.meta.env.VITE_PLANTS_API_URL:
             return { 
                 data: [
-                    { common_name: 'Rose', id: 4, family: 'Rosaceae' },
-                    { common_name: 'Tulip', id: 5, family: 'Liliaceae' },
-                    { common_name: 'Orchid', id: 7, family: 'Orchidaceae' },
-                    { common_name: 'Cactus', id: 8, family: 'Cactaceae' },
-                    { common_name: 'Bamboo', id: 10, family: 'Poaceae' },
-                    { common_name: 'Maple', id: 11, family: 'Sapindaceae' },
-                    { common_name: 'Oak', id: 12, family: 'Fagaceae' },
-                    { common_name: 'Pine', id: 13, family: 'Pinaceae' },
-                    { common_name: 'Lavender', id: 14, family: 'Lamiaceae' },
-                    { common_name: 'Mint', id: 15, family: 'Lamiaceae' },
-                    { common_name: 'Sunflower', id: 16, family: 'Asteraceae' },
-                    { common_name: 'Daisy', id: 17, family: 'Asteraceae' },
-                    { common_name: 'Tomato', id: 18, family: 'Solanaceae' },
-                    { common_name: 'Pepper', id: 19, family: 'Solanaceae' },
-                    { common_name: 'Strawberry', id: 20, family: 'Rosaceae' },
-                    { common_name: 'Blueberry', id: 21, family: 'Ericaceae' }
+                    // { common_name: 'Rose', id: 4, family: 'Rosaceae' },
+                    // { common_name: 'Tulip', id: 5, family: 'Liliaceae' },
+                    // { common_name: 'Orchid', id: 7, family: 'Orchidaceae' },
+                    // { common_name: 'Cactus', id: 8, family: 'Cactaceae' },
+                    // { common_name: 'Bamboo', id: 10, family: 'Poaceae' },
+                    // { common_name: 'Maple', id: 11, family: 'Sapindaceae' },
+                    // { common_name: 'Oak', id: 12, family: 'Fagaceae' },
+                    // { common_name: 'Pine', id: 13, family: 'Pinaceae' },
+                    // { common_name: 'Lavender', id: 14, family: 'Lamiaceae' },
+                    // { common_name: 'Mint', id: 15, family: 'Lamiaceae' },
+                    // { common_name: 'Sunflower', id: 16, family: 'Asteraceae' },
+                    // { common_name: 'Daisy', id: 17, family: 'Asteraceae' },
+                    // { common_name: 'Tomato', id: 18, family: 'Solanaceae' },
+                    // { common_name: 'Pepper', id: 19, family: 'Solanaceae' },
+                    // { common_name: 'Strawberry', id: 20, family: 'Rosaceae' },
+                    // { common_name: 'Blueberry', id: 21, family: 'Ericaceae' }
                 ] 
             };
 

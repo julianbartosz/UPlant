@@ -11,7 +11,7 @@ import { useGardens } from "../../hooks";
 import "./styles/garden-grid.css"
 
 const GardenGrid = ({
-    garden, 
+    selectedGardenIndex, 
     fontSize, 
     squareSize,
     contentSize,
@@ -22,7 +22,9 @@ const GardenGrid = ({
     coloredCells = null
 }) => {
 
-    if (!garden) {  
+    const { gardens } = useGardens();
+
+    if (!gardens[selectedGardenIndex]) {  
         return (null);
     }
     
@@ -37,18 +39,18 @@ const GardenGrid = ({
                 <div 
                     className="grid-container" 
                     style={{
-                    width: `${squareSize * garden.x}px`, 
-                    height: `${squareSize * garden.y}px`,
+                    width: `${squareSize * gardens[selectedGardenIndex].x}px`, 
+                    height: `${squareSize * gardens[selectedGardenIndex].y}px`,
                 }}
                  >
         <div 
         className="grid" 
         style={{
-        gridTemplateColumns: `repeat(${garden.x}, ${squareSize}px)`, 
-        gridTemplateRows: `repeat(${garden.y}, ${squareSize}px)`,
+        gridTemplateColumns: `repeat(${gardens[selectedGardenIndex].x}, ${squareSize}px)`, 
+        gridTemplateRows: `repeat(${gardens[selectedGardenIndex].y}, ${squareSize}px)`,
         }}>
 
-       { garden.cells.map((row, i) => (
+       { gardens[selectedGardenIndex].cells.map((row, i) => (
                     row.map((item, j) => (
                         <div  key={`${i}-${j}`} data-tooltip-id="my-tooltip" data-tooltip-content={item ? item['common_name'] : ""}>
                             <div
@@ -70,8 +72,8 @@ const GardenGrid = ({
                 <>
                     <div style={{ position: "absolute", top: "-20px", left: "50%", transform: "translateX(-50%)", zIndex: -0.5, display: "flex" }}>
                         {/* Top Center Button */}
-                        <CircleButton text={<FaArrowUp />} className="grid-add-btn" onClick={() => mediateGridSizeChange('y', 1, "top", garden.name)} />
-                        <CircleButton text={<FaArrowDown />} className="grid-remove-btn" onClick={() => mediateGridSizeChange('y', -1, "top", garden.name)} />
+                        <CircleButton text={<FaArrowUp />} className="grid-add-btn" onClick={() => mediateGridSizeChange('y', 1, "top", gardens[selectedGardenIndex].name)} />
+                        <CircleButton text={<FaArrowDown />} className="grid-remove-btn" onClick={() => mediateGridSizeChange('y', -1, "top", gardens[selectedGardenIndex].name)} />
                     </div>
                     <div style={{
                         position: "absolute",
@@ -83,8 +85,8 @@ const GardenGrid = ({
                         justifyContent: "center",
                     }}>
                         {/* Left Center Button */}
-                        <CircleButton text={<FaArrowRight />} className="grid-remove-btn" onClick={() => mediateGridSizeChange('x', -1, "left", garden.name)} />
-                        <CircleButton text={<FaArrowLeft />} className="grid-add-btn" onClick={() => mediateGridSizeChange('x', 1, "left", garden.name)} />
+                        <CircleButton text={<FaArrowRight />} className="grid-remove-btn" onClick={() => mediateGridSizeChange('x', -1, "left", gardens[selectedGardenIndex].name)} />
+                        <CircleButton text={<FaArrowLeft />} className="grid-add-btn" onClick={() => mediateGridSizeChange('x', 1, "left", gardens[selectedGardenIndex].name)} />
                     </div>
                     <div style={{
                         position: "absolute",
@@ -96,13 +98,13 @@ const GardenGrid = ({
                         justifyContent: "center",
                     }}>
                         {/* Right Center Button */}
-                        <CircleButton text={<FaArrowLeft />} className="grid-remove-btn" onClick={() => mediateGridSizeChange('x', -1, "right", garden.name)} />
-                        <CircleButton text={<FaArrowRight />} className="grid-add-btn" onClick={() => mediateGridSizeChange('x', 1, "right", garden.name)} />
+                        <CircleButton text={<FaArrowLeft />} className="grid-remove-btn" onClick={() => mediateGridSizeChange('x', -1, "right", gardens[selectedGardenIndex].name)} />
+                        <CircleButton text={<FaArrowRight />} className="grid-add-btn" onClick={() => mediateGridSizeChange('x', 1, "right", gardens[selectedGardenIndex].name)} />
                     </div>
                     <div style={{ position: "absolute", bottom: "-20px", left: "50%", transform: "translateX(-50%)", zIndex: 1, display: "flex" }}>
                         {/* Bottom Center Button */}
-                        <CircleButton text={<FaArrowDown />} className="grid-add-btn" onClick={() => mediateGridSizeChange('y', 1, "bottom", garden.name)} />
-                        <CircleButton text={<FaArrowUp />} className="grid-remove-btn" onClick={() => mediateGridSizeChange('y', -1, "bottom", garden.name)} />
+                        <CircleButton text={<FaArrowDown />} className="grid-add-btn" onClick={() => mediateGridSizeChange('y', 1, "bottom", gardens[selectedGardenIndex].name)} />
+                        <CircleButton text={<FaArrowUp />} className="grid-remove-btn" onClick={() => mediateGridSizeChange('y', -1, "bottom", gardens[selectedGardenIndex].name)} />
                     </div>
                 </>
             )}

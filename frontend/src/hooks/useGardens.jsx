@@ -1,9 +1,11 @@
 import { useContext } from 'react';
 import { UserContext }  from '../contexts/UserProvider';
 import { MAXSIZE_GARDEN } from '../constants';
+import patchGarden from './api/patching';
+import { PiWatch } from 'react-icons/pi';
 
 export const useGardens = () => {
-
+    
     const context = useContext(UserContext);
 
     if (!context) {
@@ -71,7 +73,41 @@ export const useGardens = () => {
             }
         }
 
-        mediateUpdateGarden(newGarden, false);
+        setGardens(prevGardens => 
+            prevGardens.map((garden, index) => 
+                index === gardenIndex ? newGarden : garden
+            )
+        );
+
+        // IIFE to handle async operation
+        (async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_GARDENS_API_URL}${newGarden.id}/`, {
+                    method: 'PATCH',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({size_x: newGarden.x, size_y: newGarden.y}),
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to update gardens");
+                }
+
+            } catch (error) {
+                if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
+                    console.error("Using dummy fetch, no rollback needed.");
+                    return;
+                }
+                console.error("Error updating gardens:", error);
+                setGardens(previousGardens); // Rollback UI
+                alert("Failed to update gardens. Please try again.");
+            }
+        })();
+
+        
     };
         
     const mediateRenameGarden = async (index) => {
@@ -98,9 +134,9 @@ export const useGardens = () => {
         try {
             const response = await fetch(`/api/gardens/${garden.name}/rename`, {
             method: 'PUT',
+            
             headers: {
                 'Content-Type': 'application/json',
-                'credentials': 'include'
             },
             body: JSON.stringify({ newName: newGardenName }),
             });
@@ -125,8 +161,62 @@ export const useGardens = () => {
         }
     };
     
-    
-    const mediateUpdateGarden = async (updatedGarden, sync=true) => {
+    const mediateAddPlantToGarden = (gardenId, plant, y, x) => {
+        const garden = { ...gardens.find(g => g.id === gardenId)};
+        const prevGardens = [...gardens];
+        
+        if (!garden) {
+            alert("Invalid garden data. Please provide valid gardens.");
+            return;
+        }
+
+        if (garden.cells[y][x] !== null) {
+            alert("Cannot add plant: Cell is already occupied.");
+            return;
+        }
+        garden.cells[y][x] = plant;
+
+        // Optimistically update UI
+        setGardens(prevGardens => 
+            prevGardens.map(g => 
+                g.id === gardenId ? garden : g
+            )
+        );
+
+        const reqBody =  { "garden": gardenId, "plant": plant.id, "x_coordinate": x, "y_coordinate": y };
+
+        // IIFE to handle async operation
+        (async () => {
+            try {
+                const response = await fetch(import.meta.env.VITE_GARDENLOGS_API_URL, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(reqBody),
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to update gardens");
+                }
+
+            } catch (error) {
+                if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
+                    console.error("Using dummy fetch, no rollback needed.");
+                    return;
+                }
+                console.error("Error updating gardens:", error);
+                setGardens(previousGardens); // Rollback UI
+                alert("Failed to update gardens. Please try again.");
+            }
+        })();
+
+        
+        
+    }
+    // Function to mediate field alterations {name, size_x, size_y}
+    const mediateUpdateGarden = (updatedGarden, sync=true) => {
         
         if (!updatedGarden) {
             alert("Invalid garden data. Please provide valid gardens.");
@@ -135,6 +225,12 @@ export const useGardens = () => {
 
         // Store the previous state in case we need to rollback
         const previousGardens = [...gardens];
+
+        const prevGarden = gardens.find(g => g.id === updatedGarden.id);
+
+        if (!prevGarden) {
+            throw new Error("Garden not found in the current state");
+        } 
 
         // Optimistically update UI
         setGardens(prevGardens =>
@@ -147,31 +243,86 @@ export const useGardens = () => {
             return;
         }
 
-        try {
-            const response = await fetch(import.meta.env.VITE_GARDENS_API_URL, {
-                method: 'PATCH',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'credentials': 'include' 
-                },
-                body: JSON.stringify(updatedGarden),
-            });
+        // IIFE to handle async operation
+        (async () => {
+            try {
+                const response = await fetch(import.meta.env.VITE_GARDENS_API_URL, {
+                    method: 'PATCH',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        
+                    },
+                    body: JSON.stringify(updatedGarden),
+                });
 
-            if (!response.ok) {
-                throw new Error("Failed to update gardens");
+                if (!response.ok) {
+                    throw new Error("Failed to update gardens");
+                }
+            } catch (error) {
+                if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
+                    console.error("Using dummy fetch, no rollback needed.");
+                    return;
+                }
+                console.error("Error updating gardens:", error);
+                setGardens(previousGardens); // Rollback UI
+                alert("Failed to update gardens. Please try again.");
             }
-
-        } catch (error) {
-            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
-                console.error("Using dummy fetch, no rollback needed.");
-                return;
-            }
-            console.error("Error updating gardens:", error);
-            setGardens(previousGardens); // Rollback UI
-            alert("Failed to update gardens. Please try again.");
-        }
+        })();
 
     }
+    
+    const mediateRemovePlantFromGarden = (gardenId, y, x) => { 
+        const garden = { ...gardens.find(g => g.id === gardenId)};
+        const prevGardens = [...gardens];
+
+        if (!garden) {
+            alert("Invalid garden data. Please provide valid gardens.");
+            return;
+        }
+
+        if (garden.cells[y][x] === null) {
+            alert("Cannot remove plant: Cell is already empty.");
+            return;
+        }
+
+        const logId = garden.cells[y][x].logId;
+        garden.cells[y][x] = null;
+        // Optimistically update UI
+        setGardens(prevGardens =>
+            prevGardens.map(g =>
+                g.id === gardenId ? garden : g
+            )
+        );
+
+        // IIFE to handle async operation
+        (async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_GARDENLOGS_API_URL}${logId}/`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error("Failed to update gardens");
+                }
+            } catch (error) {
+                if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
+                    console.error("Using dummy fetch, no rollback needed.");
+                    return;
+                }
+                console.error("Error updating gardens:", error);
+                setGardens(previousGardens); // Rollback UI
+                alert("Failed to update gardens. Please try again.");
+            }
+        })();
+
+        
+
+    }
+
 
 
     const mediateDeleteGarden = async (index) => {
@@ -319,8 +470,10 @@ export const useGardens = () => {
         mediateRenameGarden,
         mediateUpdateGarden,
         mediateDeleteGarden,
+        mediateAddPlantToGarden,
         mediateAddGarden,
         mediateGridSizeChange,
+        mediateRemovePlantFromGarden,
     };
 };
 
