@@ -17,12 +17,11 @@ export const UserProvider = ({ children }) => {
     }, [token]);
 
     const [gardens, setGardens] = useState(null);
+    const [notificationsList, setNotifications] = useState(null);
 
 
     const {
         data: plantsList,
-        loading: plantsListLoading,
-        error: plantsListError,
         setData: setPlantsList,
     } = useGet(import.meta.env.VITE_PLANTS_API_URL);
 
@@ -34,16 +33,20 @@ export const UserProvider = ({ children }) => {
     } = useGet(import.meta.env.VITE_USERNAME_API_URL);
 
     const {
-        data: notificationsList,
-        loading: notificationsListLoading,
-        error: notificationsListError,
-        setData: setNotifications,
+        data: notificationsListData,
     } = useGet(import.meta.env.VITE_NOTIFICATIONS_API_URL);
+
+    useEffect(() => {
+        console.log("Notifications data:", notificationsListData);
+        if (notificationsListData) {
+            setNotifications(notificationsListData);
+        }
+    }
+    , [notificationsListData]);
 
     const {
         data: gardensData,
         loading: gardensLoading,
-        setLoading: setGardensLoading,
         error: gardensError,
     } = useGet(import.meta.env.VITE_GARDENS_API_URL);
 
@@ -72,8 +75,6 @@ export const UserProvider = ({ children }) => {
                 // Plants list
                 plantsList,
                 setPlantsList,
-                plantsListLoading,
-                plantsListError,
 
                 // Selected plant (manual)
                 selectedPlant,
@@ -86,8 +87,6 @@ export const UserProvider = ({ children }) => {
                 // Notifications
                 notificationsList,
                 setNotifications,
-                notificationsListLoading,
-                notificationsListError,
 
                 // Gardens
                 gardens,

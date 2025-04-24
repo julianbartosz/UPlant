@@ -11,7 +11,7 @@ class UserMinimalSerializer(serializers.ModelSerializer):
     """Minimal user representation for related fields"""
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name']
+        fields = ['id', 'username', 'email']
 
 class PlantBaseSerializer(serializers.ModelSerializer):
     """Base serializer with common plant fields"""
@@ -21,7 +21,7 @@ class PlantBaseSerializer(serializers.ModelSerializer):
         model = Plant
         fields = [
             'id', 'common_name', 'scientific_name', 'slug', 
-            'image_url', 'is_user_created', 'is_verified',
+            'image_url', 'is_user_created', 'is_verified', 'water_interval',
             'created_by', 'created_by_username', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

@@ -178,6 +178,8 @@ export const useGardens = () => {
         console.log("Deleting garden...");
         const garden = gardens[index];
 
+        console.log("Garden to delete:", garden);
+
         if (!garden) {
             alert("Invalid garden data. Please provide valid gardens.");
             return;

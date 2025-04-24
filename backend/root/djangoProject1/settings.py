@@ -283,7 +283,9 @@ if 'test' in sys.argv:
             
     MIGRATION_MODULES = DisableMigrations()
 
-# ENABLE_SEARCH_INDEXING = True
+ENABLE_SEARCH_INDEXING = True
+MAX_SEARCH_RESULTS = 100
+SEARCH_CACHE_TIMEOUT = 3600  # 1 hour
 
 # ENABLE_ADVANCED_SEARCH = True
 # SEARCH_ENGINE = 'elasticsearch'
