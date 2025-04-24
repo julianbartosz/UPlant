@@ -83,9 +83,36 @@ class Plant(models.Model):
         if 'scientific_name' not in plant_data:
             plant_data['scientific_name'] = f"User Plant: {plant_data.get('common_name', 'Unnamed')}"
             
-        # Create and return the plant
+        plant_data['rank'] = 'species'  # Default taxonomic rank
+        plant_data['family'] = 'User Plants'  # Generic family for user plants
+        
+        # Extract genus from scientific name or use default
+        if 'scientific_name' in plant_data and ' ' in plant_data['scientific_name']:
+            # Use first word of scientific name as genus
+            plant_data['genus'] = plant_data['scientific_name'].split()[0]
+        else:
+            plant_data['genus'] = 'UserPlantus'  # Default genus
+            
+        try:
+            # Try to find if we have any existing user-created genus with this name
+            from django.db import connection
+            with connection.cursor() as cursor:
+                # Find the max genus_id in use by our system to avoid conflicts
+                cursor.execute("SELECT MAX(genus_id) FROM plants_plant")
+                max_id = cursor.fetchone()[0] or 0
+                
+            # Use a high ID value beyond what the external taxonomy system would use
+            plant_data['genus_id'] = max(10000000, max_id + 1000)
+            
+        except Exception:
+            # If any database error occurs, fall back to a safer high value
+            # Use hash of genus name to generate a consistent ID for the same genus
+            import hashlib
+            genus_hash = int(hashlib.md5(plant_data['genus'].encode('utf-8')).hexdigest(), 16)
+            plant_data['genus_id'] = 20000000 + (genus_hash % 1000000)
+            
         plant = cls(**plant_data)
-        plant.full_clean()  # Validate
+        plant.full_clean()
         plant.save()
         return plant
         

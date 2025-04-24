@@ -54,7 +54,7 @@ const DummyFetch = async (url) => {
         case import.meta.env.VITE_NOTIFICATIONS_API_URL:
             console.log("Fetching notificationsList from dummy data");
             return { 
-                data: [
+                data: { 33:
                     [
                         { 
                             name: 'Water', 
@@ -81,7 +81,7 @@ const DummyFetch = async (url) => {
                             ] 
                         }
                     ]
-                ] 
+                }
             };
 
         case import.meta.env.VITE_USERNAME_API_URL:

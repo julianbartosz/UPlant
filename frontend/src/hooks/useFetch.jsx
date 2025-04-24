@@ -52,10 +52,12 @@ const useGet = (url) => {
             try {
                 const response = await fetch(url,  {
                     method: 'GET',
+                    credentials: 'include',
                     headers: {
-                        'Authorization': `Token ${localStorage.getItem('token')}`,
+                        // 'Authorization': `Token ${localStorage.getItem('token')}`,
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+
                     }
                 });
                 if (!response.ok) {

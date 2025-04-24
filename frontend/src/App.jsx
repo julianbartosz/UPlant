@@ -10,13 +10,12 @@ import LoginModal from './pages/LoginModal';
 import SignupPage from './pages/SignupModal';
 
 const getCSRFToken = async () => {
-  const response = await fetch('http://localhost:8000/api/gardens/gardens/', {  // Updated endpoint to match the CSRF token route
+  const response = await fetch('http://localhost:8000/api/notifications/notifications/', {  // Updated endpoint to match the CSRF token route
     'credentials': 'include',
   });
   console.log(response.status);
   const data = await response.json();
   console.log(data);
-  return data.csrfToken;
 };
 
 function App() {

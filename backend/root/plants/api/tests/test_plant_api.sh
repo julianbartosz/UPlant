@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# filepath: /UPlant/backend/root/plants/api/tests/test_plant_api.sh
+# filepath: /Users/julianbartosz/git/schoolwork/UPlant/backend/root/plants/api/tests/test_plant_api.sh
 
 # Set up token
 TOKEN="9811995a3db487b9cd8d772aac66cacbf6dc861c" 
@@ -18,7 +18,7 @@ echo "Testing all endpoints..."
 echo -e "\n1. Listing all plants..."
 if [ ! -f api_test_results/plants_list.json ] || [ "$FORCE_NEW_LIST" = true ]; then
   curl -s -X GET "http://localhost:8000/api/plants/plants/" \
-      -b "$SESSION_COOKIE" \ \
+    -H "Authorization: Token $TOKEN" \
     -H "Content-Type: application/json" > api_test_results/plants_list.json
   echo "Plants list saved to api_test_results/plants_list.json"
 else
@@ -28,7 +28,7 @@ fi
 # 2. GET PLANT STATISTICS
 echo -e "\n2. Getting plant statistics..."
 curl -s -X GET "http://localhost:8000/api/plants/plants/statistics/" \
-    -b "$SESSION_COOKIE" \ \
+  -H "Authorization: Token $TOKEN" \
   -H "Content-Type: application/json" > api_test_results/plants_statistics.json
 echo "Plant statistics saved to api_test_results/plants_statistics.json"
 
@@ -63,14 +63,14 @@ if [[ "$PLANT_ID" =~ ^[0-9]+$ ]]; then
     # 4. GET A SPECIFIC PLANT
     echo -e "\n4. Fetching plant details for ID: $PLANT_ID..."
     curl -s -X GET "http://localhost:8000/api/plants/plants/$PLANT_ID/" \
-        -b "$SESSION_COOKIE" \ \
+      -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" > "api_test_results/plant_detail_${PLANT_ID}.json"
     echo "Plant details saved to api_test_results/plant_detail_${PLANT_ID}.json"
     
     # 5. UPDATE A USER PLANT
     echo -e "\n5. Updating plant via user-update endpoint..."
     curl -s -X PATCH "http://localhost:8000/api/plants/plants/$PLANT_ID/user-update/" \
-        -b "$SESSION_COOKIE" \ \
+      -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" \
       -d '{
         "detailed_description": "This plant was updated via API test",
@@ -81,7 +81,7 @@ if [[ "$PLANT_ID" =~ ^[0-9]+$ ]]; then
     # 6. LIST USER'S PLANTS
     echo -e "\n6. Listing user plants..."
     curl -s -X GET "http://localhost:8000/api/plants/plants/user-plants/" \
-        -b "$SESSION_COOKIE" \ \
+      -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" > api_test_results/user_plants_list.json
     echo "User plants list saved to api_test_results/user_plants_list.json"
 
@@ -91,7 +91,7 @@ if [[ "$PLANT_ID" =~ ^[0-9]+$ ]]; then
     # 7. SUBMIT A CHANGE REQUEST
     echo -e "\n7. Submitting a change request for plant ID: $TREFLE_PLANT_ID..."
     curl -s -X POST "http://localhost:8000/api/plants/plants/$TREFLE_PLANT_ID/submit-change/" \
-        -b "$SESSION_COOKIE" \ \
+      -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" \
       -d '{
         "field_name": "care_instructions",
@@ -103,14 +103,14 @@ if [[ "$PLANT_ID" =~ ^[0-9]+$ ]]; then
     # 8. LIST CHANGE REQUESTS
     echo -e "\n8. Listing all change requests..."
     curl -s -X GET "http://localhost:8000/api/plants/changes/" \
-        -b "$SESSION_COOKIE" \ \
+      -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" > api_test_results/change_requests_list.json
     echo "Change requests list saved to api_test_results/change_requests_list.json"
     
     # 9. LIST USER CHANGE REQUESTS
     echo -e "\n9. Listing user's change requests..."
     curl -s -X GET "http://localhost:8000/api/plants/changes/user-changes/" \
-        -b "$SESSION_COOKIE" \ \
+      -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" > api_test_results/user_change_requests.json
     echo "User change requests saved to api_test_results/user_change_requests.json"
 
@@ -132,7 +132,7 @@ except:
         # 10. GET SPECIFIC CHANGE REQUEST
         echo -e "\n10. Getting specific change request ID: $CHANGE_ID..."
         curl -s -X GET "http://localhost:8000/api/plants/changes/$CHANGE_ID/" \
-            -b "$SESSION_COOKIE" \ \
+          -H "Authorization: Token $TOKEN" \
           -H "Content-Type: application/json" > "api_test_results/change_request_${CHANGE_ID}.json"
         echo "Change request details saved to api_test_results/change_request_${CHANGE_ID}.json"
     else
@@ -142,7 +142,7 @@ except:
     # 11. DELETE THE TEST PLANT
     echo -e "\n11. Deleting the test plant ID: $PLANT_ID..."
     curl -s -X DELETE "http://localhost:8000/api/plants/plants/$PLANT_ID/" \
-        -b "$SESSION_COOKIE" \ \
+      -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" > "api_test_results/plant_delete_${PLANT_ID}.json"
     echo "Plant deletion response saved to api_test_results/plant_delete_${PLANT_ID}.json"
     else
@@ -152,28 +152,28 @@ except:
     # 12. TEST PLANT SEARCH API
     echo -e "\n12. Testing plant search API..."
     curl -s -X GET "http://localhost:8000/api/plants/search/?q=oak&limit=10" \
-        -b "$SESSION_COOKIE" \ \
+      -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" > api_test_results/plant_search_results.json
     echo "Search results saved to api_test_results/plant_search_results.json"
 
     # 13. TEST PLANT SEARCH WITH FILTERS
     echo -e "\n13. Testing plant search with filters..."
     curl -s -X GET "http://localhost:8000/api/plants/search/?q=oak&family=Fagaceae&limit=5" \
-        -b "$SESSION_COOKIE" \ \
+      -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" > api_test_results/plant_search_filtered.json
     echo "Filtered search results saved to api_test_results/plant_search_filtered.json"
 
     # 14. TEST SEARCH SUGGESTIONS API
     echo -e "\n14. Testing plant search suggestions API..."
     curl -s -X GET "http://localhost:8000/api/plants/search/suggestions/?q=ma&field=common_name&limit=5" \
-        -b "$SESSION_COOKIE" \ \
+      -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" > api_test_results/plant_search_suggestions.json
     echo "Search suggestions saved to api_test_results/plant_search_suggestions.json"
 
     # 15. TEST SEARCH API WITH ORDERING
     echo -e "\n15. Testing plant search with custom ordering..."
     curl -s -X GET "http://localhost:8000/api/plants/search/?q=maple&order_by=common_name&limit=10" \
-        -b "$SESSION_COOKIE" \ \
+      -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" > api_test_results/plant_search_ordered.json
     echo "Ordered search results saved to api_test_results/plant_search_ordered.json"
 

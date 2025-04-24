@@ -3,6 +3,9 @@
 # Set up token
 TOKEN="9811995a3db487b9cd8d772aac66cacbf6dc861c" 
 
+# Set the session cookie from browser
+SESSION_COOKIE="sessionid=iaw7sl43l7slynu4sxj6ozwie14lc1bs"
+
 # Create output directory
 mkdir -p api_test_results
 
@@ -12,14 +15,14 @@ echo "Testing all 12 endpoints..."
 # 1. LIST ALL GARDENS
 echo -e "\n1. Listing all gardens..."
 curl -s -X GET http://localhost:8000/api/gardens/gardens/ \
-  -H "Authorization: Token $TOKEN" \
+  -b "$SESSION_COOKIE" \
   -H "Content-Type: application/json" > api_test_results/gardens_list.json
 echo "Garden list saved to api_test_results/gardens_list.json"
 
 # 2. CREATE A NEW GARDEN
 echo -e "\n2. Creating a new garden..."
 curl -s -X POST http://localhost:8000/api/gardens/gardens/ \
-  -H "Authorization: Token $TOKEN" \
+  -b "$SESSION_COOKIE" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Complete API Test Garden",
@@ -36,14 +39,14 @@ if [[ "$GARDEN_ID" =~ ^[0-9]+$ ]]; then
     # 3. GET A SPECIFIC GARDEN
     echo -e "\n3. Fetching garden details for ID: $GARDEN_ID..."
     curl -s -X GET "http://localhost:8000/api/gardens/gardens/$GARDEN_ID/" \
-      -H "Authorization: Token $TOKEN" \
+        -b "$SESSION_COOKIE" \ \
       -H "Content-Type: application/json" > "api_test_results/garden_detail_${GARDEN_ID}.json"
     echo "Garden details saved to api_test_results/garden_detail_${GARDEN_ID}.json"
     
     # 4. UPDATE A GARDEN
     echo -e "\n4. Updating garden..."
     curl -s -X PATCH "http://localhost:8000/api/gardens/gardens/$GARDEN_ID/" \
-      -H "Authorization: Token $TOKEN" \
+        -b "$SESSION_COOKIE" \ \
       -H "Content-Type: application/json" \
       -d '{
         "name": "Updated Garden Name",
@@ -54,7 +57,7 @@ if [[ "$GARDEN_ID" =~ ^[0-9]+$ ]]; then
     # 5. GET GRID LAYOUT
     echo -e "\n5. Fetching garden grid layout..."
     curl -s -X GET "http://localhost:8000/api/gardens/gardens/$GARDEN_ID/grid/" \
-      -H "Authorization: Token $TOKEN" \
+        -b "$SESSION_COOKIE" \ \
       -H "Content-Type: application/json" > "api_test_results/garden_grid_${GARDEN_ID}.json"
     echo "Garden grid layout saved to api_test_results/garden_grid_${GARDEN_ID}.json"
     
@@ -62,7 +65,7 @@ if [[ "$GARDEN_ID" =~ ^[0-9]+$ ]]; then
     echo -e "\n6. Updating garden grid layout..."
     # Creating a grid with a plant at position [2,3]
     curl -s -X POST "http://localhost:8000/api/gardens/gardens/$GARDEN_ID/update_grid/" \
-      -H "Authorization: Token $TOKEN" \
+        -b "$SESSION_COOKIE" \ \
       -H "Content-Type: application/json" \
       -d "{
         \"cells\": [
@@ -85,21 +88,21 @@ if [[ "$GARDEN_ID" =~ ^[0-9]+$ ]]; then
     
     echo -e "\nVerifying grid update..."
     curl -s -X GET "http://localhost:8000/api/gardens/gardens/$GARDEN_ID/grid/" \
-      -H "Authorization: Token $TOKEN" \
+        -b "$SESSION_COOKIE" \ \
       -H "Content-Type: application/json" > "api_test_results/garden_grid_after_update_${GARDEN_ID}.json"
     echo "Updated grid saved to api_test_results/garden_grid_after_update_${GARDEN_ID}.json"
     
     # 7. LIST ALL GARDEN LOGS
     echo -e "\n7. Listing all garden logs..."
     curl -s -X GET "http://localhost:8000/api/gardens/garden-logs/" \
-      -H "Authorization: Token $TOKEN" \
+        -b "$SESSION_COOKIE" \ \
       -H "Content-Type: application/json" > "api_test_results/garden_logs_list.json"
     echo "Garden logs list saved to api_test_results/garden_logs_list.json"
     
     # 8. ADD A PLANT TO GARDEN
     echo -e "\n8. Adding a plant to garden..."
     curl -s -X POST "http://localhost:8000/api/gardens/garden-logs/" \
-      -H "Authorization: Token $TOKEN" \
+        -b "$SESSION_COOKIE" \ \
       -H "Content-Type: application/json" \
       -d "{
         \"garden\": $GARDEN_ID,
@@ -120,14 +123,14 @@ if [[ "$GARDEN_ID" =~ ^[0-9]+$ ]]; then
         # 9. GET A SPECIFIC GARDEN LOG
         echo -e "\n9. Fetching garden log details for ID: $GARDEN_LOG_ID..."
         curl -s -X GET "http://localhost:8000/api/gardens/garden-logs/$GARDEN_LOG_ID/" \
-          -H "Authorization: Token $TOKEN" \
+            -b "$SESSION_COOKIE" \ \
           -H "Content-Type: application/json" > "api_test_results/garden_log_detail_${GARDEN_LOG_ID}.json"
         echo "Garden log details saved to api_test_results/garden_log_detail_${GARDEN_LOG_ID}.json"
         
         # 10. UPDATE A GARDEN LOG
         echo -e "\n10. Updating garden log..."
         curl -s -X PATCH "http://localhost:8000/api/gardens/garden-logs/$GARDEN_LOG_ID/" \
-          -H "Authorization: Token $TOKEN" \
+            -b "$SESSION_COOKIE" \ \
           -H "Content-Type: application/json" \
           -d '{
             "notes": "Updated plant notes via API",
@@ -138,7 +141,7 @@ if [[ "$GARDEN_ID" =~ ^[0-9]+$ ]]; then
         # 11. DELETE A GARDEN LOG
         echo -e "\n11. Deleting garden log..."
         curl -s -X DELETE "http://localhost:8000/api/gardens/garden-logs/$GARDEN_LOG_ID/" \
-          -H "Authorization: Token $TOKEN" \
+            -b "$SESSION_COOKIE" \ \
           -H "Content-Type: application/json" > "api_test_results/garden_log_delete_${GARDEN_LOG_ID}.json"
         echo "Garden log deletion response saved to api_test_results/garden_log_delete_${GARDEN_LOG_ID}.json"
     else
@@ -148,7 +151,7 @@ if [[ "$GARDEN_ID" =~ ^[0-9]+$ ]]; then
     # 12. DELETE A GARDEN (doing this last so other tests can complete)
     echo -e "\n12. Deleting garden..."
     curl -s -X DELETE "http://localhost:8000/api/gardens/gardens/$GARDEN_ID/" \
-      -H "Authorization: Token $TOKEN" \
+        -b "$SESSION_COOKIE" \ \
       -H "Content-Type: application/json" > "api_test_results/garden_delete_${GARDEN_ID}.json"
     echo "Garden deletion response saved to api_test_results/garden_delete_${GARDEN_ID}.json"
 else

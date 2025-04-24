@@ -44,7 +44,9 @@ class PlantsConfig(AppConfig):
                 register_search_models(Plant, fields=[
                     'common_name', 'scientific_name', 'family', 
                     'detailed_description', 'care_instructions'
-                ])
+                ], boost_fields={
+                    'common_name': 2.0, 'scientific_name': 1.5}
+                )
                 logger.info("Plant search indexing configured")
             except ImportError:
                 logger.warning("Search service not available, plant indexing skipped")

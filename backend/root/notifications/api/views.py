@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from datetime import timedelta
-from django.db.models import Q
 
 from notifications.models import Notification, NotificationInstance, NotificationPlantAssociation
 from notifications.api.serializers import (
