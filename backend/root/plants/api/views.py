@@ -526,9 +526,6 @@ class PlantSearchAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Add logging
-        logger.info(f"Search request: query='{query}'")
-        
         try:
             # Get additional filters from query params
             additional_filters = {}
@@ -538,70 +535,33 @@ class PlantSearchAPIView(APIView):
             
             # Get order_by and limit parameters
             order_by = request.query_params.get('order_by', '-id')
-            try:
-                limit = int(request.query_params.get('limit', settings.MAX_SEARCH_RESULTS))
-            except (ValueError, TypeError):
-                limit = settings.MAX_SEARCH_RESULTS
-                
-            # Limit to a reasonable number to prevent performance issues
-            limit = min(limit, 25)
+            limit = min(
+                int(request.query_params.get('limit', settings.MAX_SEARCH_RESULTS)),
+                settings.MAX_SEARCH_RESULTS
+            )
             
-            # Perform the search with error handling
-            try:
-                results = perform_search(
-                    query_text=query,
-                    model_class=Plant,
-                    additional_filters=additional_filters,
-                    order_by=order_by,
-                    limit=limit
-                )
-                
-                # Log result count
-                logger.info(f"Search found {len(results)} results")
-                
-            except Exception as e:
-                logger.error(f"Search error in perform_search: {str(e)}")
-                return Response(
-                    {"error": "An error occurred during search."},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
+            # Perform the search
+            results = perform_search(
+                query_text=query,
+                model_class=Plant,
+                additional_filters=additional_filters,
+                order_by=order_by,
+                limit=limit
+            )
             
-            try:
-                # Using a more basic serializer with fewer fields
-                serializer = PlantBaseSerializer(
-                    results[:limit], 
-                    many=True, 
-                    context={'request': request}
-                )
-                
-                # Build response object with proper structure
-                response_data = {
-                    'query': query,
-                    'count': len(results),
-                    'results': serializer.data
-                }
-                
-                return Response(response_data)
-                
-            except Exception as e:
-                logger.error(f"Search serialization error: {str(e)}")
-                # Return just the basic data if serialization fails
-                basic_data = [{
-                    'id': p.id,
-                    'common_name': p.common_name,
-                    'scientific_name': p.scientific_name
-                } for p in results[:limit]]
-                
-                return Response({
-                    'query': query,
-                    'count': len(results),
-                    'results': basic_data
-                })
-                
+            # Serialize the results
+            serializer = PlantBaseSerializer(results, many=True, context={'request': request})
+            
+            return Response({
+                'query': query,
+                'count': len(results),
+                'results': serializer.data
+            })
+            
         except Exception as e:
-            logger.error(f"Unexpected search error: {str(e)}")
+            logger.error(f"Search error: {str(e)}")
             return Response(
-                {"error": "An unexpected error occurred."},
+                {"error": "An error occurred during search. Please try again."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

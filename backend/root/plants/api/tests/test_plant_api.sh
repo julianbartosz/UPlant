@@ -85,18 +85,11 @@ if [[ "$PLANT_ID" =~ ^[0-9]+$ ]]; then
       -H "Content-Type: application/json" > api_test_results/user_plants_list.json
     echo "User plants list saved to api_test_results/user_plants_list.json"
 
-    # 7. FETCH AN EXTERNAL PLANT FROM TREFLE API (if available)
-    echo -e "\n7. Getting external plant data from Trefle API..."
-    curl -s -X GET "http://localhost:8000/api/plants/trefle/plants/?q=oak" \
-      -H "Authorization: Token $TOKEN" \
-      -H "Content-Type: application/json" > api_test_results/trefle_plants_list.json
-    echo "Trefle plants list saved to api_test_results/trefle_plants_list.json"
-
     # Trefle plant ID from  database
     TREFLE_PLANT_ID=77116
 
-    # 8. SUBMIT A CHANGE REQUEST
-    echo -e "\n8. Submitting a change request for plant ID: $TREFLE_PLANT_ID..."
+    # 7. SUBMIT A CHANGE REQUEST
+    echo -e "\n7. Submitting a change request for plant ID: $TREFLE_PLANT_ID..."
     curl -s -X POST "http://localhost:8000/api/plants/plants/$TREFLE_PLANT_ID/submit-change/" \
       -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" \
@@ -107,15 +100,15 @@ if [[ "$PLANT_ID" =~ ^[0-9]+$ ]]; then
       }' > api_test_results/change_request_submit.json
     echo "Change request submission saved to api_test_results/change_request_submit.json"
 
-    # 9. LIST CHANGE REQUESTS
-    echo -e "\n9. Listing all change requests..."
+    # 8. LIST CHANGE REQUESTS
+    echo -e "\n8. Listing all change requests..."
     curl -s -X GET "http://localhost:8000/api/plants/changes/" \
       -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" > api_test_results/change_requests_list.json
     echo "Change requests list saved to api_test_results/change_requests_list.json"
     
-    # 10. LIST USER CHANGE REQUESTS
-    echo -e "\n10. Listing user's change requests..."
+    # 9. LIST USER CHANGE REQUESTS
+    echo -e "\n9. Listing user's change requests..."
     curl -s -X GET "http://localhost:8000/api/plants/changes/user-changes/" \
       -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" > api_test_results/user_change_requests.json
@@ -136,8 +129,8 @@ except:
 ")
     
     if [[ "$CHANGE_ID" =~ ^[0-9]+$ ]]; then
-        # 11. GET SPECIFIC CHANGE REQUEST
-        echo -e "\n11. Getting specific change request ID: $CHANGE_ID..."
+        # 10. GET SPECIFIC CHANGE REQUEST
+        echo -e "\n10. Getting specific change request ID: $CHANGE_ID..."
         curl -s -X GET "http://localhost:8000/api/plants/changes/$CHANGE_ID/" \
           -H "Authorization: Token $TOKEN" \
           -H "Content-Type: application/json" > "api_test_results/change_request_${CHANGE_ID}.json"
@@ -146,14 +139,42 @@ except:
         echo "Could not extract change request ID for detailed testing"
     fi
 
-    # 12. DELETE THE TEST PLANT
-    echo -e "\n12. Deleting the test plant ID: $PLANT_ID..."
+    # 11. DELETE THE TEST PLANT
+    echo -e "\n11. Deleting the test plant ID: $PLANT_ID..."
     curl -s -X DELETE "http://localhost:8000/api/plants/plants/$PLANT_ID/" \
       -H "Authorization: Token $TOKEN" \
       -H "Content-Type: application/json" > "api_test_results/plant_delete_${PLANT_ID}.json"
     echo "Plant deletion response saved to api_test_results/plant_delete_${PLANT_ID}.json"
-else
-    echo "Error: Could not extract valid plant ID. Check api_test_results/plant_create.json"
-fi
+    else
+        echo "Error: Could not extract valid plant ID. Check api_test_results/plant_create.json"
+    fi
 
-echo -e "\nAll plant API endpoints tested. Check the api_test_results directory for results."
+    # 12. TEST PLANT SEARCH API
+    echo -e "\n12. Testing plant search API..."
+    curl -s -X GET "http://localhost:8000/api/plants/search/?q=oak&limit=10" \
+      -H "Authorization: Token $TOKEN" \
+      -H "Content-Type: application/json" > api_test_results/plant_search_results.json
+    echo "Search results saved to api_test_results/plant_search_results.json"
+
+    # 13. TEST PLANT SEARCH WITH FILTERS
+    echo -e "\n13. Testing plant search with filters..."
+    curl -s -X GET "http://localhost:8000/api/plants/search/?q=oak&family=Fagaceae&limit=5" \
+      -H "Authorization: Token $TOKEN" \
+      -H "Content-Type: application/json" > api_test_results/plant_search_filtered.json
+    echo "Filtered search results saved to api_test_results/plant_search_filtered.json"
+
+    # 14. TEST SEARCH SUGGESTIONS API
+    echo -e "\n14. Testing plant search suggestions API..."
+    curl -s -X GET "http://localhost:8000/api/plants/search/suggestions/?q=ma&field=common_name&limit=5" \
+      -H "Authorization: Token $TOKEN" \
+      -H "Content-Type: application/json" > api_test_results/plant_search_suggestions.json
+    echo "Search suggestions saved to api_test_results/plant_search_suggestions.json"
+
+    # 15. TEST SEARCH API WITH ORDERING
+    echo -e "\n15. Testing plant search with custom ordering..."
+    curl -s -X GET "http://localhost:8000/api/plants/search/?q=maple&order_by=common_name&limit=10" \
+      -H "Authorization: Token $TOKEN" \
+      -H "Content-Type: application/json" > api_test_results/plant_search_ordered.json
+    echo "Ordered search results saved to api_test_results/plant_search_ordered.json"
+
+    echo -e "\nAll plant API endpoints tested, including search functionality. Check the api_test_results directory for results."
