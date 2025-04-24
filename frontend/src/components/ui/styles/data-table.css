@@ -16,4 +16,11 @@
 
 .data-table-header {
   color: black;
+  height: 80px;
+}
+
+li {
+  margin-right: 35px;
+  margin-left: 35px;
+  text-align: left;
 }
