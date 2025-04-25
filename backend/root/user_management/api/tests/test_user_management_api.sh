@@ -4,6 +4,7 @@
 # Set up tokens
 ADMIN_TOKEN="9811995a3db487b9cd8d772aac66cacbf6dc861c"
 USER_TOKEN=""  # Will be populated if login succeeds
+TEST_USER_TOKEN="" # Will be populated for test user
 
 # Set the session cookie from browser
 SESSION_COOKIE="sessionid=iaw7sl43l7slynu4sxj6ozwie14lc1bs"
@@ -14,7 +15,63 @@ mkdir -p api_test_results
 echo "=== User Management API Testing ==="
 echo "Testing all endpoints..."
 
-# 1. LOGIN TEST
+# CREATE TEST USER FOR PASSWORD OPERATIONS
+echo -e "\n--- CREATING TEST USER ---"
+TEST_EMAIL="testuser_$(date +%s)@example.com"
+TEST_USERNAME="testuser$(date +%s)"
+TEST_PASSWORD="TestPassword123Abc"
+NEW_TEST_PASSWORD="NewTestPassword456"
+
+echo "Creating test user with username: $TEST_USERNAME and email: $TEST_EMAIL"
+
+curl -s -X POST "http://localhost:8000/api/users/admin/users/" \
+  -H "Authorization: Token $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "'$TEST_EMAIL'",
+    "username": "'$TEST_USERNAME'",
+    "password": "'$TEST_PASSWORD'",
+    "is_active": true
+  }' > api_test_results/test_user_creation.json
+
+echo "Test user creation response:"
+cat api_test_results/test_user_creation.json
+
+# Get the test user's ID
+TEST_USER_ID=$(jq -r '.id // empty' api_test_results/test_user_creation.json 2>/dev/null)
+if [[ -n "$TEST_USER_ID" && "$TEST_USER_ID" != "null" ]]; then
+  echo "✅ Created test user with ID: $TEST_USER_ID"
+  
+  # ADD THE ACTIVATION HERE - AFTER we have the ID
+  echo "Activating test user..."
+  curl -s -X POST "http://localhost:8000/api/users/admin/users/$TEST_USER_ID/activate/" \
+    -H "Authorization: Token $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"is_active": true}' > api_test_results/test_user_activate.json
+  
+  # Login as test user to get token
+  curl -s -X POST http://localhost:8000/api/users/login/ \
+    -H "Content-Type: application/json" \
+    -d '{
+      "email": "'$TEST_EMAIL'",
+      "password": "'$TEST_PASSWORD'"
+    }' > api_test_results/test_user_login.json
+    
+    echo "Test user login response:"
+    cat api_test_results/test_user_login.json
+
+  TEST_USER_TOKEN=$(jq -r '.token // empty' api_test_results/test_user_login.json 2>/dev/null)
+  
+  if [[ -n "$TEST_USER_TOKEN" && "$TEST_USER_TOKEN" != "null" ]]; then
+    echo "✅ Successfully logged in as test user"
+  else
+    echo "❌ Failed to login as test user - some tests may fail"
+  fi
+else
+  echo "❌ Failed to create test user - some tests may fail"
+fi
+
+# 1. LOGIN TEST (regular user)
 echo -e "\n1. Testing login endpoint..."
 curl -s -X POST http://localhost:8000/api/users/login/ \
   -H "Content-Type: application/json" \
@@ -25,7 +82,7 @@ curl -s -X POST http://localhost:8000/api/users/login/ \
 echo "Login response saved to api_test_results/login.json"
 
 # Extract token from login response for user endpoints
-LOGIN_TOKEN=$(jq -r '.token' api_test_results/login.json 2>/dev/null || echo "")
+LOGIN_TOKEN=$(jq -r '.token // empty' api_test_results/login.json 2>/dev/null)
 if [[ -n "$LOGIN_TOKEN" && "$LOGIN_TOKEN" != "null" ]]; then
   echo "Successfully logged in and retrieved user token"
   USER_TOKEN=$LOGIN_TOKEN
@@ -56,75 +113,161 @@ curl -s -X PATCH http://localhost:8000/api/users/me/profile/ \
   -H "Authorization: Token $USER_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "bio": "Updated via API test",
     "zip_code": "12345"
   }' > api_test_results/user_profile_update.json
 echo "User profile update saved to api_test_results/user_profile_update.json"
 
 # 4.1. TEST USERNAME CHANGE
 echo -e "\n4.1. Testing username change endpoint..."
-curl -s -X POST http://localhost:8000/api/users/me/update_username/ \
-  -H "Authorization: Token $USER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "test_username_change"
-  }' > api_test_results/username_change.json
-echo "Username change response saved to api_test_results/username_change.json"
+if [[ -n "$TEST_USER_TOKEN" ]]; then
+  # Use test user for this operation
+  NEW_TEST_USERNAME="${TEST_USERNAME}_updated"
+  curl -s -X POST http://localhost:8000/api/users/me/update_username/ \
+    -H "Authorization: Token $TEST_USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "username": "'$NEW_TEST_USERNAME'"
+    }' > api_test_results/username_change.json
+  echo "Username change response saved to api_test_results/username_change.json"
+  
+  # Verify username was changed
+  CHANGED_USERNAME=$(jq -r '.username // empty' api_test_results/username_change.json 2>/dev/null)
+  if [[ "$CHANGED_USERNAME" == "$NEW_TEST_USERNAME" ]]; then
+    echo "✅ Username successfully changed to: $CHANGED_USERNAME"
+  fi
+else
+  echo "⚠️ Skipping actual username change - no test user available"
+  curl -s -X POST http://localhost:8000/api/users/me/update_username/ \
+    -H "Authorization: Token $USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "username": "test_username_change_simulation"
+    }' > api_test_results/username_change.json
+fi
 
-# 5. TEST PASSWORD CHANGE (using wrong password to avoid changing the actual password)
-echo -e "\n5. Testing password change endpoint (simulated)..."
-curl -s -X POST http://localhost:8000/api/users/password/change/ \
-  -H "Authorization: Token $USER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "current_password": "wrongpassword",
-    "new_password": "newpassword123",
-    "confirm_password": "newpassword123"
-  }' > api_test_results/password_change.json
-echo "Password change response saved to api_test_results/password_change.json"
+# 5. TEST PASSWORD CHANGE
+echo -e "\n5. Testing password change endpoint..."
+if [[ -n "$TEST_USER_TOKEN" ]]; then
+  curl -s -X POST http://localhost:8000/api/users/password/change/ \
+    -H "Authorization: Token $TEST_USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "current_password": "'$TEST_PASSWORD'",
+      "new_password": "'$NEW_TEST_PASSWORD'",
+      "confirm_password": "'$NEW_TEST_PASSWORD'"
+    }' > api_test_results/password_change.json
+  echo "Password change response saved to api_test_results/password_change.json"
+  
+  # Verify password was changed by logging in again with new password
+  curl -s -X POST http://localhost:8000/api/users/login/ \
+    -H "Content-Type: application/json" \
+    -d '{
+      "email": "'$TEST_EMAIL'",
+      "password": "'$NEW_TEST_PASSWORD'"
+    }' > api_test_results/test_user_relogin.json
+    
+  NEW_TOKEN=$(jq -r '.token // empty' api_test_results/test_user_relogin.json 2>/dev/null)
+  if [[ -n "$NEW_TOKEN" && "$NEW_TOKEN" != "null" ]]; then
+    echo "✅ Password change verified - successfully logged in with new password"
+    TEST_USER_TOKEN=$NEW_TOKEN
+  else
+    echo "❌ Password change verification failed - couldn't log in with new password"
+  fi
+else
+  echo "⚠️ Skipping actual password change - no test user available"
+  curl -s -X POST http://localhost:8000/api/users/password/change/ \
+    -H "Authorization: Token $USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "current_password": "wrongpassword",
+      "new_password": "newpassword123",
+      "confirm_password": "newpassword123"
+    }' > api_test_results/password_change.json
+fi
 
 # 6. TEST PASSWORD RESET REQUEST
 echo -e "\n6. Testing password reset request..."
-curl -s -X POST http://localhost:8000/api/users/password/reset/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "bartoszjul@gmail.com"
-  }' > api_test_results/password_reset_request.json
-echo "Password reset request response saved to api_test_results/password_reset_request.json"
+if [[ -n "$TEST_USER_ID" ]]; then
+  curl -s -X POST http://localhost:8000/api/users/password/reset/ \
+    -H "Content-Type: application/json" \
+    -d '{
+      "email": "'$TEST_EMAIL'"
+    }' > api_test_results/password_reset_request.json
+  echo "Password reset request response saved to api_test_results/password_reset_request.json"
+else
+  echo "⚠️ Skipping actual password reset request - no test user available"
+  curl -s -X POST http://localhost:8000/api/users/password/reset/ \
+    -H "Content-Type: application/json" \
+    -d '{
+      "email": "test_nonexistent@example.com"
+    }' > api_test_results/password_reset_request.json
+fi
 
 # 7. TEST RESEND VERIFICATION EMAIL
 echo -e "\n7. Testing resend verification email..."
-curl -s -X POST http://localhost:8000/api/users/email/resend-verification/ \
-  -H "Authorization: Token $USER_TOKEN" \
-  -H "Content-Type: application/json" > api_test_results/resend_verification.json
+if [[ -n "$TEST_USER_TOKEN" ]]; then
+  curl -s -X POST http://localhost:8000/api/users/email/resend-verification/ \
+    -H "Authorization: Token $TEST_USER_TOKEN" \
+    -H "Content-Type: application/json" > api_test_results/resend_verification.json
+else
+  curl -s -X POST http://localhost:8000/api/users/email/resend-verification/ \
+    -H "Authorization: Token $USER_TOKEN" \
+    -H "Content-Type: application/json" > api_test_results/resend_verification.json
+fi
 echo "Resend verification response saved to api_test_results/resend_verification.json"
 
-# 8. TEST EMAIL CHANGE REQUEST (using wrong password)
+# 8. TEST EMAIL CHANGE REQUEST
 echo -e "\n8. Testing email change request..."
-curl -s -X POST http://localhost:8000/api/users/email/change/ \
-  -H "Authorization: Token $USER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "new_email": "new_test_email@example.com",
-    "password": "wrongpassword"
-  }' > api_test_results/email_change_request.json
+if [[ -n "$TEST_USER_TOKEN" ]]; then
+  NEW_TEST_EMAIL="changed_${TEST_EMAIL}"
+  curl -s -X POST http://localhost:8000/api/users/email/change/ \
+    -H "Authorization: Token $TEST_USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "new_email": "'$NEW_TEST_EMAIL'",
+      "password": "'$NEW_TEST_PASSWORD'"
+    }' > api_test_results/email_change_request.json
+else
+  curl -s -X POST http://localhost:8000/api/users/email/change/ \
+    -H "Authorization: Token $USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "new_email": "new_test_email@example.com",
+      "password": "wrongpassword"
+    }' > api_test_results/email_change_request.json
+fi
 echo "Email change request response saved to api_test_results/email_change_request.json"
 
 # 9. TEST GET EMAILS
 echo -e "\n9. Getting user emails..."
-curl -s -X GET http://localhost:8000/api/users/email/ \
-  -H "Authorization: Token $USER_TOKEN" \
-  -H "Content-Type: application/json" > api_test_results/user_emails.json
+if [[ -n "$TEST_USER_TOKEN" ]]; then
+  curl -s -X GET http://localhost:8000/api/users/email/ \
+    -H "Authorization: Token $TEST_USER_TOKEN" \
+    -H "Content-Type: application/json" > api_test_results/user_emails.json
+else
+  curl -s -X GET http://localhost:8000/api/users/email/ \
+    -H "Authorization: Token $USER_TOKEN" \
+    -H "Content-Type: application/json" > api_test_results/user_emails.json
+fi
 echo "User emails saved to api_test_results/user_emails.json"
 
 # 10. TEST SET PRIMARY EMAIL
 echo -e "\n10. Testing set primary email..."
-curl -s -X POST http://localhost:8000/api/users/email/set-primary/ \
-  -H "Authorization: Token $USER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "bartoszjul@gmail.com"
-  }' > api_test_results/set_primary_email.json
+if [[ -n "$TEST_USER_TOKEN" && -n "$TEST_EMAIL" ]]; then
+  curl -s -X POST http://localhost:8000/api/users/email/set-primary/ \
+    -H "Authorization: Token $TEST_USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "email": "'$TEST_EMAIL'"
+    }' > api_test_results/set_primary_email.json
+else
+  curl -s -X POST http://localhost:8000/api/users/email/set-primary/ \
+    -H "Authorization: Token $USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "email": "bartoszjul@gmail.com"
+    }' > api_test_results/set_primary_email.json
+fi
 echo "Set primary email response saved to api_test_results/set_primary_email.json"
 
 # 11. SOCIAL ACCOUNT TESTS
@@ -135,8 +278,8 @@ curl -s -X GET http://localhost:8000/api/users/social/ \
 echo "Social accounts saved to api_test_results/social_accounts.json"
 
 # Check if there are any social accounts available
-SOCIAL_ACCOUNT_ID=$(jq -r '.[0].id' api_test_results/social_accounts.json 2>/dev/null)
-if [[ "$SOCIAL_ACCOUNT_ID" != "null" && -n "$SOCIAL_ACCOUNT_ID" ]]; then
+SOCIAL_ACCOUNT_ID=$(jq -r '.[0].id // empty' api_test_results/social_accounts.json 2>/dev/null)
+if [[ -n "$SOCIAL_ACCOUNT_ID" && "$SOCIAL_ACCOUNT_ID" != "null" ]]; then
   echo -e "\n12. Testing social account disconnect with account ID: $SOCIAL_ACCOUNT_ID..."
   curl -s -X POST http://localhost:8000/api/users/social/disconnect/ \
     -H "Authorization: Token $USER_TOKEN" \
@@ -160,20 +303,19 @@ curl -s -X GET http://localhost:8000/api/users/admin/users/ \
   -H "Content-Type: application/json" > api_test_results/admin_users_list.json
 echo "Admin users list saved to api_test_results/admin_users_list.json"
 
-# Try to extract a user ID for admin operations
-USER_ID=$(jq -r '.[1].id // .[0].id' api_test_results/admin_users_list.json 2>/dev/null || echo "2")
-echo "Using user ID: $USER_ID for admin operations"
-
-# 14. GET USER DETAILS (admin endpoint)
+# 14. GET USER DETAILS (admin endpoint) - using test user ID if available
 echo -e "\n14. Getting user details by ID (admin endpoint)..."
-curl -s -X GET "http://localhost:8000/api/users/admin/users/$USER_ID/" \
+ADMIN_TARGET_ID=${TEST_USER_ID:-$(jq -r '.[1].id // .[0].id // "1"' api_test_results/admin_users_list.json 2>/dev/null)}
+echo "Using user ID: $ADMIN_TARGET_ID for admin operations"
+
+curl -s -X GET "http://localhost:8000/api/users/admin/users/$ADMIN_TARGET_ID/" \
   -H "Authorization: Token $ADMIN_TOKEN" \
   -H "Content-Type: application/json" > api_test_results/admin_user_detail.json
 echo "Admin user detail saved to api_test_results/admin_user_detail.json"
 
 # 15. UPDATE USER (admin endpoint)
 echo -e "\n15. Updating user (admin endpoint)..."
-curl -s -X PATCH "http://localhost:8000/api/users/admin/users/$USER_ID/" \
+curl -s -X PATCH "http://localhost:8000/api/users/admin/users/$ADMIN_TARGET_ID/" \
   -H "Authorization: Token $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -184,7 +326,7 @@ echo "Admin user update saved to api_test_results/admin_user_update.json"
 
 # 16. TEST ADMIN USER ACTIVATION
 echo -e "\n16. Activating user (admin endpoint)..."
-curl -s -X POST "http://localhost:8000/api/users/admin/users/$USER_ID/activate/" \
+curl -s -X POST "http://localhost:8000/api/users/admin/users/$ADMIN_TARGET_ID/activate/" \
   -H "Authorization: Token $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -194,7 +336,7 @@ echo "Admin user activate saved to api_test_results/admin_user_activate.json"
 
 # 17. TEST ADMIN RESET USER PASSWORD
 echo -e "\n17. Resetting user password (admin endpoint)..."
-curl -s -X POST "http://localhost:8000/api/users/admin/users/$USER_ID/reset-password/" \
+curl -s -X POST "http://localhost:8000/api/users/admin/users/$ADMIN_TARGET_ID/reset-password/" \
   -H "Authorization: Token $ADMIN_TOKEN" \
   -H "Content-Type: application/json" > api_test_results/admin_password_reset.json
 echo "Admin password reset saved to api_test_results/admin_password_reset.json"
@@ -210,64 +352,79 @@ echo -e "\n--- WEATHER AND LOCATION ENDPOINTS ---"
 
 # 19. GET USER WEATHER DATA
 echo -e "\n19. Getting user weather data..."
-curl -s -X GET http://localhost:8000/api/users/weather/ \
-  -H "Authorization: Token $USER_TOKEN" \
-  -H "Content-Type: application/json" > api_test_results/user_weather.json
+if [[ -n "$TEST_USER_TOKEN" ]]; then
+  curl -s -X GET http://localhost:8000/api/users/weather/ \
+    -H "Authorization: Token $TEST_USER_TOKEN" \
+    -H "Content-Type: application/json" > api_test_results/user_weather.json
+else
+  curl -s -X GET http://localhost:8000/api/users/weather/ \
+    -H "Authorization: Token $USER_TOKEN" \
+    -H "Content-Type: application/json" > api_test_results/user_weather.json
+fi
 echo "User weather data saved to api_test_results/user_weather.json"
 
 # 20. UPDATE USER LOCATION
 echo -e "\n20. Testing user location update..."
-curl -s -X POST http://localhost:8000/api/users/location/ \
-  -H "Authorization: Token $USER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "zip_code": "10001"
-  }' > api_test_results/user_location_update.json
+if [[ -n "$TEST_USER_TOKEN" ]]; then
+  curl -s -X POST http://localhost:8000/api/users/location/ \
+    -H "Authorization: Token $TEST_USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "zip_code": "10001"
+    }' > api_test_results/user_location_update.json
+else
+  curl -s -X POST http://localhost:8000/api/users/location/ \
+    -H "Authorization: Token $USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "zip_code": "10001"
+    }' > api_test_results/user_location_update.json
+fi
 echo "User location update saved to api_test_results/user_location_update.json"
 
 # 21. GET ADMIN USER WEATHER DATA
 echo -e "\n21. Getting admin user weather data..."
-curl -s -X GET "http://localhost:8000/api/users/admin/users/$USER_ID/weather_data/" \
+curl -s -X GET "http://localhost:8000/api/users/admin/users/$ADMIN_TARGET_ID/weather_data/" \
   -H "Authorization: Token $ADMIN_TOKEN" \
   -H "Content-Type: application/json" > api_test_results/admin_user_weather.json
 echo "Admin user weather data saved to api_test_results/admin_user_weather.json"
 
-# 22. CREATE NEW USER AS ADMIN
+# 22. CREATE ADDITIONAL TEST USER AS ADMIN
 echo -e "\n22. Testing admin user creation..."
-NEW_USER_EMAIL="testuser_$(date +%s)@example.com"
-NEW_USERNAME="testuser_$(date +%s)"
+SECOND_TEST_EMAIL="testuser2_$(date +%s)@example.com"
+SECOND_TEST_USERNAME="testuser2_$(date +%s)"
 
 curl -s -X POST "http://localhost:8000/api/users/admin/users/" \
   -H "Authorization: Token $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "'$NEW_USER_EMAIL'",
-    "username": "'$NEW_USERNAME'",
+    "email": "'$SECOND_TEST_EMAIL'",
+    "username": "'$SECOND_TEST_USERNAME'",
     "password": "securepassword123",
     "is_active": true
   }' > api_test_results/admin_user_create.json
 echo "Admin user creation saved to api_test_results/admin_user_create.json"
 
 # Extract created user ID if available
-CREATED_USER_ID=$(jq -r '.id' api_test_results/admin_user_create.json 2>/dev/null || echo "")
-if [[ -n "$CREATED_USER_ID" && "$CREATED_USER_ID" != "null" ]]; then
-  echo "Created new test user with ID: $CREATED_USER_ID"
+SECOND_TEST_USER_ID=$(jq -r '.id // empty' api_test_results/admin_user_create.json 2>/dev/null)
+if [[ -n "$SECOND_TEST_USER_ID" && "$SECOND_TEST_USER_ID" != "null" ]]; then
+  echo "Created second test user with ID: $SECOND_TEST_USER_ID"
 
   # 23. DEACTIVATE THE CREATED USER
   echo -e "\n23. Testing admin user deactivation..."
-  curl -s -X POST "http://localhost:8000/api/users/admin/users/$CREATED_USER_ID/deactivate/" \
+  curl -s -X POST "http://localhost:8000/api/users/admin/users/$SECOND_TEST_USER_ID/deactivate/" \
     -H "Authorization: Token $ADMIN_TOKEN" \
     -H "Content-Type: application/json" > api_test_results/admin_user_deactivate.json
   echo "Admin user deactivation saved to api_test_results/admin_user_deactivate.json"
 
   # 24. DELETE THE CREATED USER
   echo -e "\n24. Testing admin user deletion..."
-  curl -s -X DELETE "http://localhost:8000/api/users/admin/users/$CREATED_USER_ID/" \
+  curl -s -X DELETE "http://localhost:8000/api/users/admin/users/$SECOND_TEST_USER_ID/" \
     -H "Authorization: Token $ADMIN_TOKEN" \
     -H "Content-Type: application/json" -o /dev/null -w "%{http_code}" > api_test_results/admin_user_delete_status.txt
   echo "Admin user deletion status: $(cat api_test_results/admin_user_delete_status.txt)"
 else
-  echo "Failed to create test user, skipping user deactivation and deletion tests"
+  echo "Failed to create second test user, skipping user deactivation and deletion tests"
   echo '{"detail": "Test skipped - no user created"}' > api_test_results/admin_user_deactivate.json
   echo '{"detail": "Test skipped - no user created"}' > api_test_results/admin_user_delete_status.txt
 fi
@@ -301,12 +458,21 @@ echo "Invalid token test saved to api_test_results/invalid_token_test.json"
 
 # 28. TEST PROFILE UPDATE WITH INVALID ZIP CODE
 echo -e "\n28. Testing profile update with invalid ZIP code..."
-curl -s -X PATCH http://localhost:8000/api/users/me/profile/ \
-  -H "Authorization: Token $USER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "zip_code": "not-a-zip-code"
-  }' > api_test_results/invalid_zip_profile_update.json
+if [[ -n "$TEST_USER_TOKEN" ]]; then
+  curl -s -X PATCH http://localhost:8000/api/users/me/profile/ \
+    -H "Authorization: Token $TEST_USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "zip_code": "not-a-zip-code"
+    }' > api_test_results/invalid_zip_profile_update.json
+else
+  curl -s -X PATCH http://localhost:8000/api/users/me/profile/ \
+    -H "Authorization: Token $USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "zip_code": "not-a-zip-code"
+    }' > api_test_results/invalid_zip_profile_update.json
+fi
 echo "Invalid ZIP code test saved to api_test_results/invalid_zip_profile_update.json"
 
 # 29. TEST LOGIN WITH INVALID CREDENTIALS
@@ -328,6 +494,15 @@ curl -s -X POST "http://localhost:8000/api/users/admin/users/" \
     "username": "incomplete_user"
   }' > api_test_results/admin_user_create_invalid.json
 echo "Invalid user creation saved to api_test_results/admin_user_create_invalid.json"
+
+# --- CLEANUP - DELETE THE MAIN TEST USER ---
+if [[ -n "$TEST_USER_ID" ]]; then
+  echo -e "\n--- CLEANUP: DELETING TEST USER ---"
+  curl -s -X DELETE "http://localhost:8000/api/users/admin/users/$TEST_USER_ID/" \
+    -H "Authorization: Token $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" -o /dev/null -w "%{http_code}" > api_test_results/main_test_user_delete.txt
+  echo "Main test user deleted with status: $(cat api_test_results/main_test_user_delete.txt)"
+fi
 
 echo -e "\n--- SUMMARY ---"
 
