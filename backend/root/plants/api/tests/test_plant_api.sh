@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# filepath: /Users/julianbartosz/git/schoolwork/UPlant/backend/root/plants/api/tests/test_plant_api.sh
+# filepath: /UPlant/backend/root/plants/api/tests/test_plant_api.sh
 
 # Set up token
 TOKEN="9811995a3db487b9cd8d772aac66cacbf6dc861c" 
@@ -60,9 +60,10 @@ PLANT_ID=$(python3 extract_id.py api_test_results/plant_create.json)
 echo "Created plant with ID: $PLANT_ID"
 
 if [[ "$PLANT_ID" =~ ^[0-9]+$ ]]; then
+
     # 4. GET A SPECIFIC PLANT
     echo -e "\n4. Fetching plant details for ID: $PLANT_ID..."
-    curl -s -X GET "http://localhost:8000/api/plants/plants/$PLANT_ID/" \
+    curl -s -X GET "http://localhost:8000/api/v1/plants/10/" \
         -b "$SESSION_COOKIE" \ \
       -H "Content-Type: application/json" > "api_test_results/plant_detail_${PLANT_ID}.json"
     echo "Plant details saved to api_test_results/plant_detail_${PLANT_ID}.json"
