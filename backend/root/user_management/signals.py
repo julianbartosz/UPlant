@@ -1,4 +1,21 @@
 # backend/root/user_management/signals.py
+"""
+Django Signal Handlers for User Management in UPlant
+
+This module defines signal handlers that respond to user-related events throughout
+the application lifecycle. Django signals provide a way to execute code when certain
+events happen (like user creation, login, or profile updates).
+
+Signal handlers in this file handle:
+1. User creation and welcome emails
+2. Account changes and notifications
+3. Login/logout tracking and security
+4. Default garden creation for new users
+
+These handlers work in the background and don't require direct invocation from views.
+They help maintain data integrity, provide user notifications, and enhance security
+by monitoring account activities.
+"""
 
 import logging
 from django.db.models.signals import post_save, pre_save, post_delete
@@ -16,13 +33,33 @@ from gardens.models import Garden
 logger = logging.getLogger(__name__)
 
 # Track field changes to avoid duplicate notifications
+# These fields trigger specific notifications when changed
 SIGNIFICANT_FIELDS = ['email', 'username', 'is_active']
 
 # ==================== USER ACCOUNT SIGNALS ====================
 
 @receiver(pre_save, sender=User)
 def user_about_to_change(sender, instance, **kwargs):
-    """Track significant changes to user accounts"""
+    """
+    Track significant changes to user accounts before saving to database.
+    
+    This signal handler runs before a User model is saved, comparing the current
+    database state with the incoming changes. It stores detected changes as a 
+    property on the instance for use in post-save handlers.
+    
+    Args:
+        sender: The model class (User)
+        instance: The User instance being saved
+        **kwargs: Additional signal arguments
+        
+    Side Effects:
+        - Attaches _changed_fields list to the instance with tuples of (field_name, old_value, new_value)
+        - Sets _was_activated flag when user status changes from inactive to active
+        
+    Note:
+        This handler only runs for existing users (where instance.pk exists),
+        not for newly created users.
+    """
     if instance.pk:
         try:
             old_instance = User.objects.get(pk=instance.pk)
@@ -48,7 +85,32 @@ def user_about_to_change(sender, instance, **kwargs):
 
 @receiver(post_save, sender=User)
 def user_created_or_updated(sender, instance, created, **kwargs):
-    """Handle user creation and updates"""
+    """
+    Handle user creation and updates after the database save completes.
+    
+    This signal handler runs after a User model is saved, performing various
+    tasks based on whether the user was newly created or updated. It triggers
+    welcome emails, default garden creation, and change notifications.
+    
+    Args:
+        sender: The model class (User)
+        instance: The User instance that was saved
+        created: Boolean flag indicating if this is a new user (True) or update (False)
+        **kwargs: Additional signal arguments
+        
+    Side Effects:
+        - For new users:
+          - Sends welcome email
+          - Creates default garden
+          - Logs user creation
+        - For existing users:
+          - Sends reactivation notice if account was activated
+          - Sends email change notification if email was changed
+          - Logs significant field changes
+          
+    Note:
+        This handler is skipped during fixture loading (when raw=True)
+    """
     # Skip during fixtures loading
     if kwargs.get('raw', False):
         return
@@ -84,7 +146,28 @@ def user_created_or_updated(sender, instance, created, **kwargs):
 
 @receiver(user_logged_in)
 def user_logged_in_callback(sender, request, user, **kwargs):
-    """Track user login activity"""
+    """
+    Track user login activity and update last login timestamp.
+    
+    This signal is triggered whenever a user successfully logs in. It records
+    the login event with IP address and user agent information for security
+    monitoring and audit trails.
+    
+    Args:
+        sender: The class that sent the signal
+        request: The HTTP request object
+        user: The User instance who logged in
+        **kwargs: Additional signal arguments
+        
+    Side Effects:
+        - Updates user's last_login timestamp
+        - Logs login activity with IP address and user agent
+    
+    Security Notes:
+        - IP logging helps identify suspicious login patterns
+        - User agent tracking helps detect unusual devices/browsers
+        - This data is valuable for security audits and intrusion detection
+    """
     try:
         # Update last_login (should happen automatically, but just in case)
         user.last_login = timezone.now()
@@ -103,7 +186,25 @@ def user_logged_in_callback(sender, request, user, **kwargs):
 
 @receiver(user_logged_out)
 def user_logged_out_callback(sender, request, user, **kwargs):
-    """Track user logout activity"""
+    """
+    Track user logout activity for security monitoring.
+    
+    This signal is triggered whenever a user logs out. It records the logout
+    event with IP address information for security tracking and audit purposes.
+    
+    Args:
+        sender: The class that sent the signal
+        request: The HTTP request object
+        user: The User instance who logged out (may be None for anonymous users)
+        **kwargs: Additional signal arguments
+        
+    Side Effects:
+        - Logs logout activity with IP address
+        
+    Security Notes:
+        - Comparing login/logout IP addresses can help detect session hijacking
+        - Unexpected logouts might indicate security issues
+    """
     if user:
         try:
             ip_address = get_client_ip(request)
@@ -114,7 +215,26 @@ def user_logged_out_callback(sender, request, user, **kwargs):
 
 @receiver(user_login_failed)
 def user_login_failed_callback(sender, credentials, **kwargs):
-    """Track failed login attempts"""
+    """
+    Track failed login attempts for security monitoring.
+    
+    This signal is triggered whenever a login attempt fails. It logs the failed
+    attempt, which can be used to detect brute force attacks or account
+    enumeration attempts.
+    
+    Args:
+        sender: The class that sent the signal
+        credentials: Dict containing the credentials used for the login attempt
+        **kwargs: Additional signal arguments
+        
+    Side Effects:
+        - Logs failed login attempt with email/username
+        
+    Security Enhancement Opportunities:
+        - Could implement rate limiting based on failed attempts
+        - Could trigger account lockouts after multiple failures
+        - Could send admin notifications for suspicious activity
+    """
     try:
         # Get email from credentials
         email = credentials.get('email', credentials.get('username', 'unknown'))
@@ -132,7 +252,30 @@ def user_login_failed_callback(sender, credentials, **kwargs):
 # ==================== EMAIL FUNCTIONS ====================
 
 def send_welcome_email(user):
-    """Send welcome email to new users"""
+    """
+    Send welcome email to newly registered users.
+    
+    This function prepares and sends a personalized welcome email to users
+    who have just created an account. It uses HTML templates with plain text
+    fallback for better user experience across email clients.
+    
+    Args:
+        user: The User instance who just registered
+        
+    Side Effects:
+        - Sends welcome email to the user's registered email address
+        - Logs success or failure of email sending
+        
+    Template Context:
+        - user: The User instance
+        - app_url: The frontend application URL
+        - help_email: Email address for support
+        
+    Email Format:
+        - HTML version using welcome_email.html template
+        - Plain text fallback using welcome_email.txt template
+        - Further fallback to inline text if templates don't exist
+    """
     try:
         subject = "Welcome to UPlant"
         
@@ -174,7 +317,25 @@ def send_welcome_email(user):
 
 
 def send_account_reactivated_email(user):
-    """Send notification when account is reactivated"""
+    """
+    Send notification when user account is reactivated.
+    
+    This function sends an email notification when a previously deactivated
+    account is reactivated. It alerts the user that their account is now active
+    and they can log in again.
+    
+    Args:
+        user: The User instance whose account was reactivated
+        
+    Side Effects:
+        - Sends reactivation notification to the user's email address
+        - Logs success or failure of email sending
+        
+    Security Note:
+        This email is important as unexpected reactivations could indicate
+        account compromise. The message advises users to contact support
+        if they didn't expect the change.
+    """
     try:
         subject = "Your UPlant Account Has Been Reactivated"
         
@@ -210,7 +371,26 @@ def send_account_reactivated_email(user):
 
 
 def send_email_changed_notification(user, old_email):
-    """Send notification to previous email when address is changed"""
+    """
+    Send notification to previous email when address is changed.
+    
+    This function sends a security notice to the user's old email address when
+    they change their email. This helps alert users if someone else changed
+    their email without permission.
+    
+    Args:
+        user: The User instance whose email was changed
+        old_email: The previous email address
+        
+    Side Effects:
+        - Sends change notification to the user's old email address
+        - Logs success or failure of email sending
+        
+    Security Importance:
+        This is a critical security notification as changing an email address
+        could be used to take over an account. Sending to the old address
+        ensures the original account owner is notified.
+    """
     try:
         subject = "Your UPlant Email Address Has Been Changed"
         
@@ -237,12 +417,36 @@ def send_email_changed_notification(user, old_email):
 # ==================== HELPER FUNCTIONS ====================
 
 def get_from_email():
-    """Get sender email from settings or use default"""
+    """
+    Get sender email address from settings or use default.
+    
+    Returns:
+        str: Email address to use as the sender for all user management emails
+        
+    Note:
+        Using a consistent sender email helps with email deliverability and
+        allows for proper configuration of SPF, DKIM, and DMARC records.
+    """
     return getattr(settings, 'DEFAULT_FROM_EMAIL', 'uplant.notifications@gmail.com')
 
 
 def get_client_ip(request):
-    """Extract client IP address from request"""
+    """
+    Extract client IP address from request, handling proxy forwarding.
+    
+    This function attempts to get the real client IP even when behind load
+    balancers or proxies by checking the X-Forwarded-For header first.
+    
+    Args:
+        request: The HttpRequest object
+        
+    Returns:
+        str: The client's IP address
+        
+    Note:
+        X-Forwarded-For format is typically "client, proxy1, proxy2, ..."
+        so we take the first (leftmost) address as the client IP.
+    """
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]
@@ -252,7 +456,28 @@ def get_client_ip(request):
 
 
 def create_default_garden(user):
-    """Create default garden for new users"""
+    """
+    Create a starter garden for new users with sample plants.
+    
+    This function provisions a new user's account with a default garden
+    and optionally adds a starter plant to help them get started with
+    the application. It also creates welcome notifications.
+    
+    Args:
+        user: The newly created User instance
+        
+    Returns:
+        Garden: The created garden instance, or None if creation failed
+        
+    Side Effects:
+        - Creates a Garden object for the user
+        - Optionally adds a starter plant to the garden
+        - Creates welcome notifications
+        - Sets up plant care reminders
+        
+    Configuration:
+        Can be disabled by setting SKIP_DEFAULT_GARDEN_CREATION=True in settings
+    """
     try:
         # Check if settings has a flag to skip default garden creation
         if getattr(settings, 'SKIP_DEFAULT_GARDEN_CREATION', False):
