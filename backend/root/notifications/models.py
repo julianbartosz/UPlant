@@ -14,6 +14,7 @@ class NotifTypes(models.TextChoices):
     FE = "Fertilize"
     HA = "Harvest"
     WA = "Water"
+    WE = "Weather"
     OT = "Other"
 
 class Notification(models.Model):

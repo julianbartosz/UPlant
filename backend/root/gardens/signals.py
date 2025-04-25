@@ -174,7 +174,7 @@ def process_health_status_change(old_log, new_log):
                 garden=new_log.garden,
                 name="Plant needs attention",
                 type=NotifTypes.OT,
-                subtype="Health Alert",
+                subtype="health-alert",  # Changed to use lowercase with hyphen
                 interval=1  # One-time notification
             )
             notification.plants.add(new_log.plant)
@@ -194,6 +194,25 @@ def process_health_status_change(old_log, new_log):
         logger.info(f"Plant health improved to {new_log.health_status} in garden {new_log.garden.id}")
         
         # Could implement positive reinforcement notifications here
+        try:
+            notification = Notification.objects.create(
+                garden=new_log.garden,
+                name="Plant health improved",
+                type=NotifTypes.OT,
+                subtype="health-improvement",  # Added positive reinforcement
+                interval=1  # One-time notification
+            )
+            notification.plants.add(new_log.plant)
+            
+            # Create immediate notification instance
+            NotificationInstance.objects.create(
+                notification=notification,
+                next_due=timezone.now(),
+                status="PENDING",
+                message=f"Great job! Your {new_log.plant.common_name or 'plant'} is looking healthier!"
+            )
+        except Exception as e:
+            logger.error(f"Failed to create health improvement notification: {e}")
 
 
 def create_welcome_notification(garden):
@@ -202,7 +221,7 @@ def create_welcome_notification(garden):
         garden=garden,
         name="Welcome to your new garden!",
         type=NotifTypes.OT,
-        subtype="Welcome",
+        subtype="welcome",  # Changed to lowercase to match validation
         interval=1  # One-time notification
     )
     
@@ -237,9 +256,9 @@ def create_plant_care_notifications(garden_log):
         water_notif = Notification.objects.create(
             garden=garden,
             name=f"Water {plant.common_name or 'plant'}",
-            type=NotifTypes.OT,  # Could add a WA type as suggested
-            subtype="Watering",
+            type=NotifTypes.WA,  # Changed to use dedicated water type
             interval=water_days
+            # No subtype needed for standard notification types
         )
         water_notif.plants.add(plant)
         
@@ -309,9 +328,9 @@ def process_watering_event(garden_log):
     NotificationInstance.objects.filter(
         notification__garden=garden_log.garden,
         notification__plants=garden_log.plant,
-        notification__type=NotifTypes.OT,  # Use WA if implemented
-        notification__subtype="Watering",
+        notification__type=NotifTypes.WA,  # Changed to use dedicated water type
         status="PENDING"
+        # Removed subtype filter as it's not needed with WA type
     ).update(
         status="COMPLETED",
         completed_at=timezone.now()

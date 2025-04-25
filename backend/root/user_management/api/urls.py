@@ -19,7 +19,10 @@ from user_management.api.views import (
     SocialAccountDisconnectView,
     
     # Admin endpoints
-    AdminUserViewSet
+    AdminUserViewSet,
+
+    # Weather endpoints
+    UserWeatherView, UserLocationUpdateView,
 )
 
 # Create a router for ViewSets
@@ -31,6 +34,10 @@ urlpatterns = [
     # User profile endpoints
     path('me/', UserDetailView.as_view(), name='user-detail'),
     path('me/profile/', UserProfileView.as_view(), name='user-profile'),
+    
+    # Weather endpoints
+    path('me/profile/weather/', UserWeatherView.as_view(), name='user-weather'),
+    path('me/profile/update_location/', UserLocationUpdateView.as_view(), name='user-update-location'),
     
     # Password management endpoints
     path('password/change/', PasswordChangeView.as_view(), name='password-change'),

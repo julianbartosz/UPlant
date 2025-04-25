@@ -7,6 +7,7 @@ from plants.api.views import (
     PlantViewSet, PlantChangeRequestViewSet,
     PlantStatisticsAPIView,
     PlantSearchAPIView, PlantSuggestionsAPIView,
+    WeatherCompatiblePlantsAPIView,
 )
 
 # Create a router for ViewSets
@@ -15,6 +16,9 @@ router.register(r'plants', PlantViewSet, basename='plant')
 router.register(r'changes', PlantChangeRequestViewSet, basename='change-request')
 
 urlpatterns = [
+    # Weather Compatibility endpoints
+    path('plants/weather-compatible-plants/', WeatherCompatiblePlantsAPIView.as_view(), name='weather-compatible-plants'),
+
     # Search endpoints
     path('search/', PlantSearchAPIView.as_view(), name='plant-search'),
     path('search/suggestions/', PlantSuggestionsAPIView.as_view(), name='plant-search-suggestions'),
@@ -22,7 +26,6 @@ urlpatterns = [
     # Statistics and dashboards
     path('plants/statistics/', PlantStatisticsAPIView.as_view(), name='plant-statistics'),
 
-    
     # Trefle API integration endpoints
     path('trefle/plants/', ListPlantsAPIView.as_view(), name='trefle-list-plants'),
     path('trefle/plants/<str:id>/', RetrievePlantAPIView.as_view(), name='trefle-retrieve-plant'),

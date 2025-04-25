@@ -1,0 +1,25 @@
+{% extends 'basic_generic.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+    <h1 style="color: #4CAF50;">Account Reactivated</h1>
+    
+    <p>Hello {{ user.username }},</p>
+    
+    <p>Your UPlant account has been successfully reactivated. You can now log in and access all features again.</p>
+    
+    <div style="margin: 25px 0;">
+        <a href="{{ app_url }}/login" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">Log In Now</a>
+    </div>
+    
+    <p>If you didn't request this change or have any questions, please contact us immediately at {{ help_email|default:"support@uplant.app" }}.</p>
+    
+    <p>Happy gardening!</p>
+    
+    <p>The UPlant Team</p>
+    
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
+        <p>If you're having trouble with the button above, copy and paste this URL into your web browser: {{ app_url }}/login</p>
+    </div>
+</div>
+{% endblock %}

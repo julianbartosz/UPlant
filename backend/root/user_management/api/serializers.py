@@ -64,9 +64,9 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'zip_code', 'date_joined', 'last_login', 
+        fields = ['id', 'email', 'username', 'zip_code', 'created_at', 'last_login', 
                  'is_active', 'garden_count', 'is_email_verified', 'social_accounts']
-        read_only_fields = ['id', 'date_joined', 'last_login', 'is_active', 'is_email_verified']
+        read_only_fields = ['id', 'created_at', 'last_login', 'is_active', 'is_email_verified']
     
     def get_garden_count(self, obj):
         """Get count of user's gardens"""
@@ -199,7 +199,7 @@ class AdminUserSerializer(UserSerializer):
     class Meta:
         model = User
         fields = UserSerializer.Meta.fields + ['is_superuser']
-        read_only_fields = ['id', 'date_joined', 'last_login', 'is_email_verified']
+        read_only_fields = ['id', 'created_at', 'last_login', 'is_email_verified']
     
     def update(self, instance, validated_data):
         """Only allow admin users to update user status"""
