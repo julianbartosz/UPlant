@@ -509,25 +509,84 @@ def _generate_forecast_summary(forecast: Dict) -> Dict:
     }
 
 def get_weather_by_zip(zip_code: str) -> Dict[str, Any]:
-    """
-    Get current weather and forecast by ZIP code
-    
-    Args:
-        zip_code: ZIP/postal code
-        
-    Returns:
-        Dictionary with weather data
-    """
+    """Get weather by ZIP code"""
     lat, lon = get_coordinates_from_zip(zip_code)
-    current = get_current_weather(lat, lon)
-    forecast = get_daily_forecast(lat, lon, days=7)
     
-    return {
-        "current": current,
-        "forecast": forecast,
-        "location": {
-            "zip_code": zip_code,
-            "latitude": lat,
-            "longitude": lon
-        }
+    # Fixed daily parameters (removed soil_temperature_0cm)
+    daily_params = [
+        "temperature_2m_max", "temperature_2m_min",
+        "precipitation_sum", "rain_sum", "snowfall_sum",
+        "precipitation_hours", "precipitation_probability_max",
+        "wind_speed_10m_max", "wind_gusts_10m_max",
+        "sunshine_duration", "uv_index_max"
+    ]
+    
+    # Build the API URL with correct parameters
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": lat,
+        "longitude": lon,
+        "timezone": "auto",
+        "daily": ",".join(daily_params),
+        "forecast_days": 7
     }
+    
+    try:
+        # Make the API request
+        response = _make_api_request(url, params)
+        
+        # Process the API response into a standardized format
+        weather_data = {
+            "current": {
+                # Create a simplified current weather section
+                "temperature": {
+                    "value": response.get("daily", {}).get("temperature_2m_max", [None])[0],
+                    "unit": "°C"
+                },
+                "humidity": {"value": None, "unit": "%"},  # Not directly available in this API
+                "wind_speed": {
+                    "value": response.get("daily", {}).get("wind_speed_10m_max", [None])[0],
+                    "unit": "km/h"
+                },
+                "rainfall": {
+                    "value": response.get("daily", {}).get("rain_sum", [None])[0],
+                    "unit": "mm"
+                },
+                "time": datetime.now().isoformat()
+            },
+            "forecast": {
+                "daily": []
+            }
+        }
+        
+        # Process daily forecast
+        daily_data = response.get("daily", {})
+        days = len(daily_data.get("time", []))
+        
+        for i in range(days):
+            day_data = {
+                "date": daily_data.get("time", [])[i],
+                "temp_max": {
+                    "value": daily_data.get("temperature_2m_max", [])[i],
+                    "unit": "°C"
+                },
+                "temp_min": {
+                    "value": daily_data.get("temperature_2m_min", [])[i],
+                    "unit": "°C" 
+                },
+                "precipitation": {
+                    "value": daily_data.get("precipitation_sum", [])[i],
+                    "unit": "mm"
+                },
+                "wind_speed": {
+                    "value": daily_data.get("wind_speed_10m_max", [])[i],
+                    "unit": "km/h"
+                }
+            }
+            weather_data["forecast"]["daily"].append(day_data)
+            
+        return weather_data
+        
+    except Exception as e:
+        logger.error(f"Error getting weather data: {str(e)}")
+        raise WeatherServiceError(f"Weather service unavailable: {str(e)}")

@@ -4,6 +4,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
+from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from gardens.models import Garden, GardenLog
 from gardens.api.serializers import GardenSerializer, GardenLogSerializer, GardenGridSerializer
@@ -13,6 +14,8 @@ from django.db.models import Count, Sum, Q
 from django.utils import timezone
 import logging
 from django.core.exceptions import ValidationError, PermissionDenied
+from services.weather_service import get_garden_weather_insights, get_weather_by_zip, WeatherServiceError
+
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -384,56 +387,75 @@ class GardenViewSet(viewsets.ModelViewSet):
         """Get garden care recommendations based on weather and plants"""
         garden = self.get_object()
         
-        # Get weather insights
-        weather_insights = self._get_garden_weather_data(garden, request.user)
-        if not weather_insights:
+        # Try to get zip code from multiple sources
+        zip_code = request.query_params.get('zip_code')
+        
+        if not zip_code:
+            # Try to get from garden (if you implement garden.zip_code field)
+            if hasattr(garden, 'zip_code') and garden.zip_code:
+                zip_code = garden.zip_code
+            # Try to get from user profile
+            elif hasattr(request.user, 'profile') and hasattr(request.user.profile, 'zip_code') and request.user.profile.zip_code:
+                zip_code = request.user.profile.zip_code
+        
+        if not zip_code:
             return Response(
-                {"detail": "Couldn't get weather data for this garden. Please check your location settings."},
+                {"error": "Couldn't get weather data for this garden. Please check your location settings."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Generate garden-level recommendations
-        recommendations = {
-            "general": [],
-            "plants": []
-        }
-        
-        # Add general recommendations based on weather
-        if weather_insights['watering_needed']['should_water']:
-            recommendations["general"].append({
-                "type": "watering",
-                "priority": "high",
-                "message": f"Water your garden today: {weather_insights['watering_needed']['reason']}"
-            })
+        try:
+            # Get weather insights with the valid zip code
+            weather_insights = get_garden_weather_insights(zip_code)
             
-        if weather_insights['frost_warning']['frost_risk']:
-            recommendations["general"].append({
-                "type": "frost_protection",
-                "priority": "high",
-                "message": "Protect plants from frost in the next few days",
-                "details": f"Temperatures as low as {weather_insights['frost_warning']['min_temperature']}°C expected"
-            })
+            # Generate garden-level recommendations
+            recommendations = {
+                "general": [],
+                "plants": []
+            }
             
-        if weather_insights['extreme_heat_warning']['extreme_heat']:
-            recommendations["general"].append({
-                "type": "heat_protection",
-                "priority": "high",
-                "message": "Protect plants from heat in the next few days",
-                "details": f"Temperatures as high as {weather_insights['extreme_heat_warning']['max_temperature']}°C expected"
-            })
+            # Add general recommendations based on weather
+            if weather_insights['watering_needed']['should_water']:
+                recommendations["general"].append({
+                    "type": "watering",
+                    "priority": "high",
+                    "message": f"Water your garden today: {weather_insights['watering_needed']['reason']}"
+                })
+                    
+            if weather_insights['frost_warning']['frost_risk']:
+                recommendations["general"].append({
+                    "type": "frost_protection",
+                    "priority": "high",
+                    "message": "Protect plants from frost in the next few days",
+                    "details": f"Temperatures as low as {weather_insights['frost_warning']['min_temperature']}°C expected"
+                })
+                    
+            if weather_insights['extreme_heat_warning']['extreme_heat']:
+                recommendations["general"].append({
+                    "type": "heat_protection",
+                    "priority": "high",
+                    "message": "Protect plants from heat in the next few days",
+                    "details": f"Temperatures as high as {weather_insights['extreme_heat_warning']['max_temperature']}°C expected"
+                })
+                    
+            if weather_insights['high_wind_warning']['high_winds']:
+                recommendations["general"].append({
+                    "type": "wind_protection",
+                    "priority": "medium",
+                    "message": "Secure tall plants and structures against wind",
+                    "details": f"Wind speeds up to {weather_insights['high_wind_warning']['max_wind_speed']} km/h expected"
+                })
+                    
+            # Get plant-specific recommendations
+            recommendations["plants"] = self._generate_plant_weather_recommendations(garden, weather_insights)
             
-        if weather_insights['high_wind_warning']['high_winds']:
-            recommendations["general"].append({
-                "type": "wind_protection",
-                "priority": "medium",
-                "message": "Secure tall plants and structures against wind",
-                "details": f"Wind speeds up to {weather_insights['high_wind_warning']['max_wind_speed']} km/h expected"
-            })
-            
-        # Get plant-specific recommendations
-        recommendations["plants"] = self._generate_plant_weather_recommendations(garden, weather_insights)
-        
-        return Response(recommendations)
+            return Response(recommendations)
+        except WeatherServiceError as e:
+            logger.error(f"Weather service error: {str(e)}")
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
 
 
 class GardenLogViewSet(viewsets.ModelViewSet):
@@ -511,15 +533,20 @@ class GardenLogViewSet(viewsets.ModelViewSet):
         garden = garden_log.garden
         plant = garden_log.plant
         
-        # Get zip code from request params or user profile
+        # Get zip code from multiple sources
         zip_code = request.query_params.get('zip_code')
         
-        if not zip_code and hasattr(request.user, 'profile') and request.user.profile.zip_code:
-            zip_code = request.user.profile.zip_code
+        if not zip_code:
+            # Try garden (if you implement garden.zip_code field)
+            if hasattr(garden, 'zip_code') and garden.zip_code:
+                zip_code = garden.zip_code
+            # Try user profile
+            elif hasattr(request.user, 'profile') and hasattr(request.user.profile, 'zip_code') and request.user.profile.zip_code:
+                zip_code = request.user.profile.zip_code
         
         if not zip_code:
             return Response(
-                {"detail": "No location information available. Please provide a zip_code parameter or update your profile."},
+                {"error": "No location information available. Please provide a zip_code parameter or update your profile."},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -530,8 +557,9 @@ class GardenLogViewSet(viewsets.ModelViewSet):
             compatibility = {
                 "plant_id": plant.id,
                 "plant_name": plant.common_name,
-                "current_weather": weather_insights["current_weather"],
-                "forecast_summary": weather_insights["forecast_summary"],
+                "current_weather": weather_insights.get("current_weather", {}),
+                "forecast_summary": weather_insights.get("forecast_summary", {}),
+                "zip_code": zip_code,  # Include the zip code used
                 "alerts": [],
                 "care_tips": []
             }
@@ -564,10 +592,28 @@ class GardenLogViewSet(viewsets.ModelViewSet):
                     compatibility["care_tips"].append("Water thoroughly, ensuring the soil is moist but not waterlogged.")
             
             return Response(compatibility)
-            
+                
         except WeatherServiceError as e:
             logger.error(f"Weather service error: {str(e)}")
             return Response(
-                {"detail": "Unable to retrieve weather data. Please try again later."},
+                {"error": str(e)},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+    
+
+class WeatherByZipView(APIView):
+    """Get weather data for a specified zip code"""
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+    
+    def get(self, request, zip_code):
+        """Get direct weather data for a zip code"""
+        try:
+            weather_data = get_weather_by_zip(zip_code)
+            return Response(weather_data)
+        except WeatherServiceError as e:
+            logger.error(f"Weather service error: {str(e)}")
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
             )
