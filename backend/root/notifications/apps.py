@@ -26,6 +26,8 @@ class NotificationsConfig(AppConfig):
         3. Search indexing for notification models
         """
         try:
+            from services import notification_service
+
             # Import signal handlers to register them
             from notifications import signals
             logger.info("Notification signals registered successfully")

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'rest_framework.authtoken',
+    'services.apps.ServicesConfig',
     'user_management.apps.UserManagementConfig',
     'core.apps.CoreConfig',
     'plants.apps.PlantsConfig',

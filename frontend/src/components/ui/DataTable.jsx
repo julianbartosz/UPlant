@@ -20,9 +20,11 @@
 import { DeleteButton, AddButton } from '../buttons';
 import useNotifications from '../../hooks/useNotifications';
 import { PiEmptyBold } from "react-icons/pi";
+import { FidgetSpinner, TailSpin} from 'react-loader-spinner';
 
 import './styles/data-table.css';
-import { color } from 'framer-motion';
+
+
 
 const DataTable = ({ 
         selectedGardenIndex,    
@@ -33,7 +35,21 @@ const DataTable = ({
     const { mediateDeleteNotification, notificationsList} = useNotifications();
     
     if (!notificationsList) {
-        return null;
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <FidgetSpinner  
+                    visible={true}
+                    height="80"
+                    width="80"
+                    ariaLabel="fidget-spinner-loading"
+                    wrapperStyle={{}}
+                    wrapperClass="fidget-spinner-wrapper"
+                    ballColors={["#00BFFF", "#00BFFF", "#00BFFF"]}
+                    backgroundColor="#F4442D"
+                />
+                <div style={{ marginLeft: '20px', fontSize: 'small' }}>Loading...</div>
+            </div>
+        );
     }
     
     return (

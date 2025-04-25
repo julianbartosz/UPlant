@@ -18,7 +18,7 @@ MAX_SEARCH_RESULTS = getattr(settings, 'MAX_SEARCH_RESULTS', 100)
 # Dictionary to track models registered for search
 _SEARCH_REGISTRY = {}
 
-def register_search_models(model_class, fields=None, boost_fields=None, analyzer=None):
+def register_search_models(model_class, fields=None, boost_fields=None, analyzer=None, exclude_fields=None):
     """
     Register a model for search indexing.
     
@@ -27,6 +27,7 @@ def register_search_models(model_class, fields=None, boost_fields=None, analyzer
         fields (list): List of field names to include in search
         boost_fields (dict): Dictionary mapping field names to boost values
         analyzer (callable): Optional function to pre-process field data for search
+        exclude_fields (list): List of field names to exclude from search
     """
     app_label = model_class._meta.app_label
     model_name = model_class._meta.model_name
@@ -35,6 +36,10 @@ def register_search_models(model_class, fields=None, boost_fields=None, analyzer
         # Default to using common text fields if none specified
         fields = [f.name for f in model_class._meta.fields 
                  if f.get_internal_type() in ('CharField', 'TextField')]
+    
+    # Apply exclusions if provided
+    if exclude_fields:
+        fields = [f for f in fields if f not in exclude_fields]
     
     # Store the registration
     _SEARCH_REGISTRY[(app_label, model_name)] = {

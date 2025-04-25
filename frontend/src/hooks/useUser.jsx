@@ -46,12 +46,12 @@ export const useUser = () => {
     const mediateChangePassword = (oldPassword, newPassword, newPasswordConfirm) => {
         let result;
         let error;
-    
+        
         // Use an IIFE to handle the async operation
         (async () => {
             try {
                 // Define the API endpoint
-                const endpoint = '/password/change/';
+                const endpoint = '"http://localhost:8000/api/users/password/change/';
     
                 // Prepare the request body
                 const requestBody = {
@@ -63,9 +63,10 @@ export const useUser = () => {
                 // Make the API call
                 const response = await fetch(endpoint, {
                     method: 'POST',
+                    credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Token ${localStorage.getItem('authToken')}`, // Add the user's auth token
+                        // 'Authorization': `Token ${localStorage.getItem('authToken')}`, // Add the user's auth token
                     },
                     body: JSON.stringify(requestBody),
                 });

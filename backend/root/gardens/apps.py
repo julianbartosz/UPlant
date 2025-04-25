@@ -37,8 +37,8 @@ class GardensConfig(AppConfig):
         3. Integration with other system components
         """
         try:
+
             # Import signal handlers from signals.py to register them
-            from gardens import signals
             logger.info("Garden signals registered successfully")
             
             # Register any search indexing for gardens

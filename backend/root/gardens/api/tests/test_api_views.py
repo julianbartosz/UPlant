@@ -3,11 +3,9 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
-from django.test import TestCase
 from django.contrib.auth import get_user_model
 from gardens.models import Garden, GardenLog
 from plants.models import Plant
-import json
 from django.utils import timezone
 
 User = get_user_model()
@@ -35,6 +33,7 @@ class GardenAPITest(APITestCase):
             is_user_created=False,
             created_by=self.user
         )
+
         self.plant2 = Plant.objects.create(
             common_name="Test Plant 2",
             scientific_name="Testus secundus",

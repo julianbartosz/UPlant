@@ -95,8 +95,8 @@ class DashboardNotificationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Notification
-        fields = ['id', 'name', 'type', 'interval','type_display', 'subtype', 
-                 'garden', 'garden_name', 'plant_names', 'next_due', 
+        fields = ['id', 'name', 'type', 'type_display', 'subtype', 
+                 'garden', 'garden_name', 'interval', 'plant_names', 'next_due', 
                  'status', 'is_overdue', 'instance_id']
     
     def get_garden_name(self, obj):

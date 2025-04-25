@@ -12,6 +12,8 @@ const NotificationSection = ({ contentSize, selectedGardenIndex }) => {
         ...new Set(gardens[selectedGardenIndex]?.cells.flat().filter(item => item !== null))
       ];
 
+    
+
     return (
         <div className='notification-section-container'>
             {toggleForm ? (
