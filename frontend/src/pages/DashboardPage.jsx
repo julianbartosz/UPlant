@@ -5,8 +5,8 @@ import { NotificationSection, GardenBar, PlantSearchSideBar, NavBar } from '../c
 import './styles/dashboard-page.css';
 
 function DashboardPage() {
-  const { username, usernameError } = useUser();
-  const { gardens, setGardens, gardensLoading, gardensError, mediateAddPlantToGarden, mediateRemovePlantFromGarden } = useGardens();
+  const { username } = useUser();
+  const { gardens, mediateAddPlantToGarden, mediateRemovePlantFromGarden } = useGardens();
 
   const [squareSize, setSquareSize] = useState(1);
   const [fontSize, setFontSize] = useState(null);
@@ -63,11 +63,12 @@ function DashboardPage() {
       return;
       
     }
+    
     const currentGarden = gardens[selectedGardenIndexRef.current]
       selectedEmptyCellsRef.current.forEach(key => {
         const [row, col] = key.split('-').map(Number);
         console.log("ROW COL: ", row, col);
-        if (row < currentGarden.y && col < currentGarden.x) mediateAddPlantToGarden(gardens[selectedGardenIndexRef.current].id, item, row, col);
+        if (row < currentGarden.y && col < currentGarden.x) mediateAddPlantToGarden(selectedGardenIndexRef.current, item, row, col);
       });
   };
 
@@ -107,7 +108,7 @@ function DashboardPage() {
               selectedGardenIndex={selectedGardenIndex}
               setSelectedGardenIndex={setSelectedGardenIndex}
             />
-          {!gardensLoading && (
+          {gardens && (
           <GardenGrid
             selectedGardenIndex={selectedGardenIndex}
             fontSize={fontSize}

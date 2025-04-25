@@ -8,7 +8,6 @@ import { useNotifications } from '../../hooks';
 const NotificationSection = ({ contentSize, selectedGardenIndex }) => {
     const [toggleForm, setToggleForm] = useState(false);
     const { gardens } = useGardens();
-    const { notificationsList } = useNotifications();
     const plantOptions = [
         ...new Set(gardens[selectedGardenIndex]?.cells.flat().filter(item => item !== null))
       ];
@@ -16,10 +15,9 @@ const NotificationSection = ({ contentSize, selectedGardenIndex }) => {
     return (
         <div className='notification-section-container'>
             {toggleForm ? (
-                    <NotificationForm setToggleForm={setToggleForm}plantOptions={plantOptions} onBack={() => setToggleForm(false)} selectedGardenIndex={selectedGardenIndex} />
+                    <NotificationForm setToggleForm={setToggleForm} plantOptions={plantOptions} onBack={() => setToggleForm(false)} selectedGardenIndex={selectedGardenIndex} />
                 ) : (
                     <DataTable
-                        data={notificationsList[selectedGardenIndex]}
                         selectedGardenIndex={selectedGardenIndex}
                         onAdd={() => setToggleForm(true)}
                         setData={() => {}}

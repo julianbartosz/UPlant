@@ -5,12 +5,10 @@ from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 from datetime import timedelta
-from django.db import transaction
 from django.core.cache import cache
 
 from notifications.models import Notification, NotificationInstance, NotificationPlantAssociation, NotifTypes
-from gardens.models import GardenLog, Garden, PlantHealthStatus
-from services.search_service import reindex_model
+from gardens.models import GardenLog, PlantHealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -152,10 +150,11 @@ def process_garden_log_care_activities(sender, instance, created, **kwargs):
             logger.error(f"Error processing garden log care activities: {e}")
     elif created and instance.plant:
         # For new plants, see if we need to create care notifications
-        try:
-            create_plant_care_notifications(instance)
-        except Exception as e:
-            logger.error(f"Error creating plant care notifications: {e}")
+        pass
+        # try:
+        #     create_plant_care_notifications(instance)
+        # except Exception as e:
+        #     logger.error(f"Error creating plant care notifications: {e}")
 
 
 @receiver(pre_save, sender=GardenLog)

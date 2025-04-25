@@ -26,13 +26,15 @@ import './styles/data-table.css';
 const DataTable = ({ 
         selectedGardenIndex,    
         onAdd,
-        data=[],
         fontSize,
     }) => {
      
-    const { mediateDeleteNotification} = useNotifications();
-
-
+    const { mediateDeleteNotification, notificationsList} = useNotifications();
+    
+    if (!notificationsList) {
+        return null;
+    }
+    
     return (
         <>
             <table className="data-table" style={{ fontSize: fontSize }}>
@@ -47,23 +49,31 @@ const DataTable = ({
                     </tr>
                 </thead>
                 <tbody>
-                    {data.map((item, index) => (
+                    {notificationsList && notificationsList[selectedGardenIndex] ? (
+                    notificationsList[selectedGardenIndex].map((item, index) => (
+                        item && (
                         <tr key={item.id}>
                             <td>{item.name}</td>
                             <td>
-                                {item.plants.map((plant) => (
-                                    <div key={plant.id}>{plant.common_name}</div>
+                                {item && item.plant_names && item.plant_names.map(plant_name => (
+                                    <div key={item.id}>{plant_name}</div>
                                 ))}
                             </td>
                             <td style={{ textAlign: 'center' }}>{item.interval}</td>
                             <td style={{ textAlign: 'center' }}>
                                 <DeleteButton onClick={() => mediateDeleteNotification(selectedGardenIndex, index)} />
                             </td>
+                        </tr>)
+                    ))) : (
+                        <tr>
+                            <td colSpan="4" style={{ textAlign: 'center' }}>
+                                Loading...
+                            </td>
                         </tr>
-                    ))}
+                    )}
                 </tbody>
             </table>
-            {data.length === 0 && (
+            {notificationsList && notificationsList[selectedGardenIndex] && notificationsList[selectedGardenIndex].length === 0  && (
             <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 80px)', justifyContent: 'center', alignItems: 'center', fontSize: 'small' }}>
             <PiEmptyBold style={{height: "70px", width: "70px"}} />
             <ul>

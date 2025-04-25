@@ -9,7 +9,6 @@ SESSION_COOKIE="sessionid=iaw7sl43l7slynu4sxj6ozwie14lc1bs"
 
 # Create output directory
 mkdir -p api_test_results
-
 echo "=== Garden API Testing ==="
 echo "Testing all endpoints..."
 
