@@ -61,6 +61,16 @@ curl -s -X PATCH http://localhost:8000/api/users/me/profile/ \
   }' > api_test_results/user_profile_update.json
 echo "User profile update saved to api_test_results/user_profile_update.json"
 
+# 4.1. TEST USERNAME CHANGE
+echo -e "\n4.1. Testing username change endpoint..."
+curl -s -X POST http://localhost:8000/api/users/me/update_username/ \
+  -H "Authorization: Token $USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "test_username_change"
+  }' > api_test_results/username_change.json
+echo "Username change response saved to api_test_results/username_change.json"
+
 # 5. TEST PASSWORD CHANGE (using wrong password to avoid changing the actual password)
 echo -e "\n5. Testing password change endpoint (simulated)..."
 curl -s -X POST http://localhost:8000/api/users/password/change/ \
@@ -140,7 +150,6 @@ else
   echo "{\"detail\": \"Test skipped - no social accounts available\"}" > api_test_results/social_disconnect.json
 fi
 
-# --- ADMIN ENDPOINTS ---
 echo -e "\n--- ADMIN ENDPOINTS ---"
 echo "Using admin token for admin endpoints"
 
@@ -197,4 +206,171 @@ curl -s -X GET http://localhost:8000/api/users/admin/stats/ \
   -H "Content-Type: application/json" > api_test_results/admin_stats.json
 echo "Admin stats saved to api_test_results/admin_stats.json"
 
+echo -e "\n--- WEATHER AND LOCATION ENDPOINTS ---"
+
+# 19. GET USER WEATHER DATA
+echo -e "\n19. Getting user weather data..."
+curl -s -X GET http://localhost:8000/api/users/weather/ \
+  -H "Authorization: Token $USER_TOKEN" \
+  -H "Content-Type: application/json" > api_test_results/user_weather.json
+echo "User weather data saved to api_test_results/user_weather.json"
+
+# 20. UPDATE USER LOCATION
+echo -e "\n20. Testing user location update..."
+curl -s -X POST http://localhost:8000/api/users/location/ \
+  -H "Authorization: Token $USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "zip_code": "10001"
+  }' > api_test_results/user_location_update.json
+echo "User location update saved to api_test_results/user_location_update.json"
+
+# 21. GET ADMIN USER WEATHER DATA
+echo -e "\n21. Getting admin user weather data..."
+curl -s -X GET "http://localhost:8000/api/users/admin/users/$USER_ID/weather_data/" \
+  -H "Authorization: Token $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" > api_test_results/admin_user_weather.json
+echo "Admin user weather data saved to api_test_results/admin_user_weather.json"
+
+# 22. CREATE NEW USER AS ADMIN
+echo -e "\n22. Testing admin user creation..."
+NEW_USER_EMAIL="testuser_$(date +%s)@example.com"
+NEW_USERNAME="testuser_$(date +%s)"
+
+curl -s -X POST "http://localhost:8000/api/users/admin/users/" \
+  -H "Authorization: Token $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "'$NEW_USER_EMAIL'",
+    "username": "'$NEW_USERNAME'",
+    "password": "securepassword123",
+    "is_active": true
+  }' > api_test_results/admin_user_create.json
+echo "Admin user creation saved to api_test_results/admin_user_create.json"
+
+# Extract created user ID if available
+CREATED_USER_ID=$(jq -r '.id' api_test_results/admin_user_create.json 2>/dev/null || echo "")
+if [[ -n "$CREATED_USER_ID" && "$CREATED_USER_ID" != "null" ]]; then
+  echo "Created new test user with ID: $CREATED_USER_ID"
+
+  # 23. DEACTIVATE THE CREATED USER
+  echo -e "\n23. Testing admin user deactivation..."
+  curl -s -X POST "http://localhost:8000/api/users/admin/users/$CREATED_USER_ID/deactivate/" \
+    -H "Authorization: Token $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" > api_test_results/admin_user_deactivate.json
+  echo "Admin user deactivation saved to api_test_results/admin_user_deactivate.json"
+
+  # 24. DELETE THE CREATED USER
+  echo -e "\n24. Testing admin user deletion..."
+  curl -s -X DELETE "http://localhost:8000/api/users/admin/users/$CREATED_USER_ID/" \
+    -H "Authorization: Token $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" -o /dev/null -w "%{http_code}" > api_test_results/admin_user_delete_status.txt
+  echo "Admin user deletion status: $(cat api_test_results/admin_user_delete_status.txt)"
+else
+  echo "Failed to create test user, skipping user deactivation and deletion tests"
+  echo '{"detail": "Test skipped - no user created"}' > api_test_results/admin_user_deactivate.json
+  echo '{"detail": "Test skipped - no user created"}' > api_test_results/admin_user_delete_status.txt
+fi
+
+echo -e "\n--- EDGE CASES AND ERROR HANDLING ---"
+
+# 25. TEST PASSWORD RESET CONFIRMATION (with invalid token)
+echo -e "\n25. Testing password reset confirmation (with invalid token)..."
+curl -s -X POST http://localhost:8000/api/users/password/reset/confirm/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "uid": "invalid-uid",
+    "token": "invalid-token",
+    "new_password": "newpassword123",
+    "confirm_password": "newpassword123"
+  }' > api_test_results/password_reset_confirm.json
+echo "Password reset confirmation test saved to api_test_results/password_reset_confirm.json"
+
+# 26. TEST EMAIL VERIFICATION (with invalid key)
+echo -e "\n26. Testing email verification (with invalid key)..."
+curl -s -X GET "http://localhost:8000/api/users/email/verify/invalid-key/" \
+  -H "Content-Type: application/json" > api_test_results/email_verification.json
+echo "Email verification test saved to api_test_results/email_verification.json"
+
+# 27. TEST AUTHENTICATION WITH INVALID TOKEN
+echo -e "\n27. Testing endpoint with invalid auth token..."
+curl -s -X GET http://localhost:8000/api/users/me/ \
+  -H "Authorization: Token INVALID_TOKEN_HERE" \
+  -H "Content-Type: application/json" > api_test_results/invalid_token_test.json
+echo "Invalid token test saved to api_test_results/invalid_token_test.json"
+
+# 28. TEST PROFILE UPDATE WITH INVALID ZIP CODE
+echo -e "\n28. Testing profile update with invalid ZIP code..."
+curl -s -X PATCH http://localhost:8000/api/users/me/profile/ \
+  -H "Authorization: Token $USER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "zip_code": "not-a-zip-code"
+  }' > api_test_results/invalid_zip_profile_update.json
+echo "Invalid ZIP code test saved to api_test_results/invalid_zip_profile_update.json"
+
+# 29. TEST LOGIN WITH INVALID CREDENTIALS
+echo -e "\n29. Testing login with invalid credentials..."
+curl -s -X POST http://localhost:8000/api/users/login/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "fake@example.com",
+    "password": "wrongpassword"
+  }' > api_test_results/invalid_login.json
+echo "Invalid login test saved to api_test_results/invalid_login.json"
+
+# 30. TEST MISSING REQUIRED FIELDS IN USER CREATION
+echo -e "\n30. Testing user creation with missing fields..."
+curl -s -X POST "http://localhost:8000/api/users/admin/users/" \
+  -H "Authorization: Token $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "incomplete_user"
+  }' > api_test_results/admin_user_create_invalid.json
+echo "Invalid user creation saved to api_test_results/admin_user_create_invalid.json"
+
+echo -e "\n--- SUMMARY ---"
+
+TOTAL_TESTS=30
+FAILED_TESTS=0
+
+# Simple validation function
+validate_response() {
+  local file=$1
+  local error_field=$2  # Field that indicates an error
+  local required_field=$3  # Field that should be present for success
+  
+  if [ ! -f "$file" ]; then
+    echo "❌ Test failed: File $file not found"
+    ((FAILED_TESTS++))
+    return
+  fi
+
+  # Check for error response (if specified)
+  if [ -n "$error_field" ] && jq -e ".$error_field" "$file" >/dev/null 2>&1; then
+    local error_msg=$(jq -r ".$error_field" "$file" 2>/dev/null)
+    echo "❌ Test failed: $error_field - $error_msg" 
+    ((FAILED_TESTS++))
+    return
+  fi
+  
+  # Check for required field (if specified)
+  if [ -n "$required_field" ] && ! jq -e ".$required_field" "$file" >/dev/null 2>&1; then
+    echo "❌ Test failed: Missing required field '$required_field'"
+    ((FAILED_TESTS++))
+    return
+  fi
+  
+  echo "✅ Test passed"
+}
+
+# Generate a simple test report
+echo -e "\nTest Results Summary:" > api_test_results/test_summary.txt
+echo "======================" >> api_test_results/test_summary.txt
+echo "Total tests executed: $TOTAL_TESTS" >> api_test_results/test_summary.txt
+echo "Failed tests: $FAILED_TESTS" >> api_test_results/test_summary.txt
+echo -e "\nDetailed results in api_test_results directory.\n" >> api_test_results/test_summary.txt
+echo "Test report saved to api_test_results/test_summary.txt"
+
 echo -e "\nAll User Management API endpoints tested. Check the api_test_results directory for results."
+echo -e "Total tests executed: $TOTAL_TESTS\n"

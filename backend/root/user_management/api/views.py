@@ -27,7 +27,8 @@ from allauth.account.utils import send_email_confirmation
 from user_management.api.serializers import (
     UserSerializer, PasswordChangeSerializer, PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer, UserProfileSerializer, EmailChangeRequestSerializer,
-    AdminUserSerializer, DisconnectSocialAccountSerializer
+    AdminUserSerializer, DisconnectSocialAccountSerializer, UserLocationUpdateSerializer, 
+    UsernameChangeSerializer, EmailAddressSerializer
 )
 from user_management.api.permissions import IsUserOrAdmin, IsAdminOrReadOnly
 from services.weather_service import get_garden_weather_insights, WeatherServiceError
@@ -207,6 +208,28 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
         return Response(data)
 
 
+class UsernameChangeView(generics.GenericAPIView):
+    """
+    API endpoint to change a user's username.
+    """
+    serializer_class = UsernameChangeSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+    
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            user.username = serializer.validated_data['username']
+            user.save()
+            
+            return Response({
+                "success": True,
+                "username": user.username
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class UserWeatherView(APIView):
     """
     Get weather data for the current user's location
@@ -243,33 +266,28 @@ class UserLocationUpdateView(APIView):
     authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
     
     def post(self, request):
-        """Update user's location (ZIP code) and return weather data"""
-        user = request.user
-        zip_code = request.data.get('zip_code')
-        
-        if not zip_code:
-            return Response(
-                {"detail": "ZIP code is required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer = UserLocationUpdateSerializer(data=request.data)
+        if serializer.is_valid():
+            zip_code = serializer.validated_data['zip_code']
             
-        # Update user's ZIP code
-        user.zip_code = zip_code
-        user.save()
-        
-        # Get weather data for the new location
-        try:
-            weather_data = get_garden_weather_insights(zip_code)
+            # Update user's ZIP code
+            user = request.user
+            user.zip_code = zip_code
+            user.save()
             
-            return Response({
-                "detail": "Location updated successfully.",
-                "weather": weather_data
-            })
-        except WeatherServiceError as e:
-            logger.error(f"Weather service error: {str(e)}")
-            return Response({
-                "detail": "Location updated successfully but weather data could not be retrieved."
-            })
+            # Get weather data for the new location
+            try:
+                weather_data = get_garden_weather_insights(zip_code)
+                return Response({
+                    "detail": "Location updated successfully.",
+                    "weather": weather_data
+                })
+            except WeatherServiceError as e:
+                logger.error(f"Weather service error: {str(e)}")
+                return Response({
+                    "detail": "Location updated successfully but weather data could not be retrieved."
+                })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PasswordChangeView(generics.GenericAPIView):
@@ -489,6 +507,21 @@ class EmailChangeRequestView(generics.GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class EmailListView(APIView):
+    """
+    Lists all emails for the user.
+    
+    Returns all email addresses associated with the user's account.
+    """
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+    
+    def get(self, request):
+        email_addresses = EmailAddress.objects.filter(user=request.user)
+        serializer = EmailAddressSerializer(email_addresses, many=True)
+        return Response(serializer.data)
+    
+
 class SetPrimaryEmailView(APIView):
     """
     Set primary email.
@@ -576,6 +609,31 @@ class SocialAccountDisconnectView(generics.GenericAPIView):
                 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class SocialAccountListView(APIView):
+    """
+    Lists all connected social accounts.
+    
+    Returns all social accounts linked to the user's profile.
+    """
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+    
+    def get(self, request):
+        # Get all social accounts for the user
+        social_accounts = SocialAccount.objects.filter(user=request.user)
+        
+        # Format the response
+        accounts = [{
+            'id': account.id,
+            'provider': account.provider,
+            'name': account.extra_data.get('name', ''),
+            'last_login': account.last_login,
+            'date_joined': account.date_joined
+        } for account in social_accounts]
+        
+        return Response(accounts)
+    
 
 class AdminUserViewSet(viewsets.ModelViewSet):
     """
@@ -702,3 +760,56 @@ class AdminUserViewSet(viewsets.ModelViewSet):
                 {"detail": "Unable to retrieve weather data. Please try again later."},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
+        
+
+class AdminStatsView(APIView):
+    """
+    Provides admin statistics on users and system usage.
+    
+    Administrative endpoint for system metrics.
+    """
+    permission_classes = [IsAdminUser]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+    
+    def get(self, request):
+        # Get basic user stats
+        total_users = User.objects.count()
+        active_users = User.objects.filter(is_active=True).count()
+        staff_users = User.objects.filter(is_staff=True).count()
+        
+        # Get email verification stats
+        verified_emails = EmailAddress.objects.filter(verified=True).count()
+        unverified_emails = EmailAddress.objects.filter(verified=False).count()
+        
+        # Get social login stats
+        social_accounts = SocialAccount.objects.all().count()
+        social_by_provider = {}
+        
+        for provider_tuple in SocialAccount.objects.values_list('provider').annotate(count=models.Count('provider')):
+            social_by_provider[provider_tuple[0]] = provider_tuple[1]
+            
+        # Recent activity - users created in last 30 days
+        from django.utils import timezone
+        thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
+        new_users_30d = User.objects.filter(date_joined__gte=thirty_days_ago).count()
+        
+        # Return comprehensive stats
+        return Response({
+            'users': {
+                'total': total_users,
+                'active': active_users,
+                'inactive': total_users - active_users,
+                'staff': staff_users,
+                'new_last_30d': new_users_30d
+            },
+            'emails': {
+                'verified': verified_emails,
+                'unverified': unverified_emails,
+                'total': verified_emails + unverified_emails
+            },
+            'social': {
+                'total_accounts': social_accounts,
+                'by_provider': social_by_provider
+            },
+            'timestamp': timezone.now().isoformat()
+        })

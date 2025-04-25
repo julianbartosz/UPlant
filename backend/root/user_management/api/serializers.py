@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from rest_framework.exceptions import AuthenticationFailed
+import re
 
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
@@ -82,6 +83,45 @@ class UserSerializer(serializers.ModelSerializer):
         except:
             # If allauth isn't properly set up, assume verified
             return True
+
+
+class UsernameChangeSerializer(serializers.Serializer):
+    """Serializer for username change endpoint"""
+    username = serializers.CharField(required=True)
+    
+    def validate_username(self, value):
+        """Validate username is unique and properly formatted"""
+        user = self.context['request'].user
+            
+        if User.objects.filter(username=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError(_("A user with that username already exists."))
+        
+        if len(value) < 3:
+            raise serializers.ValidationError(_("Username must be at least 3 characters long."))
+            
+        return value
+
+
+class EmailAddressSerializer(serializers.ModelSerializer):
+    """Serializer for email addresses"""
+    
+    class Meta:
+        model = EmailAddress
+        fields = ['email', 'verified', 'primary']
+        read_only_fields = fields
+
+
+class UserLocationUpdateSerializer(serializers.Serializer):
+    """Serializer for updating user location"""
+    zip_code = serializers.CharField(required=True)
+    
+    def validate_zip_code(self, value):
+        """Validate ZIP code format"""
+        # Basic US ZIP code validation (can be extended for international formats)
+        if not re.match(r'^\d{5}(-\d{4})?$', value):
+            raise serializers.ValidationError(_("Enter a valid US ZIP code (XXXXX or XXXXX-XXXX)."))
+        return value
+
 
 class PasswordChangeSerializer(serializers.Serializer):
     """Serializer for password change endpoint"""
