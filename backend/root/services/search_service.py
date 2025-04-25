@@ -272,10 +272,30 @@ def reindex_model(model_class, instance_ids=None):
     else:
         # When using Django's built-in search, we don't need to manually index
         # We just need to clear any cached search results
-        cache_keys = cache.keys('search:*')
-        if cache_keys:
-            cache.delete_many(cache_keys)
-            logger.info(f"Cleared search cache for {model_class.__name__}")
+        try:
+            # Try to get keys and delete them
+            cache_keys = cache.keys('search:*')
+            if cache_keys:
+                cache.delete_many(cache_keys)
+                logger.info(f"Cleared search cache for {model_class.__name__}")
+        except (AttributeError, NotImplementedError):
+            # Fallback for cache backends that don't support keys() like DummyCache
+            logger.warning(f"Cache backend doesn't support keys() method. "
+                          f"Attempting alternative cache clearing for {model_class.__name__}")
+            
+            # Try to delete a predictable set of cache keys based on model name
+            try:
+                # Clear at least the model-specific cache entries
+                model_specific_key = f"search:{model_class.__name__}"
+                cache.delete(model_specific_key)
+                
+                # Add common variations of the key
+                cache.delete(f"search:{app_label}.{model_name}")
+                cache.delete(f"search:{model_name}")
+                
+                logger.info(f"Cleared specific cache keys for {model_class.__name__}")
+            except Exception as e:
+                logger.error(f"Failed to clear cache: {str(e)}")
     
     return True
 

@@ -9,7 +9,10 @@ from gardens.api.serializers import GardenSerializer, GardenLogSerializer, Garde
 from notifications.models import Notification, NotificationInstance
 from django.db.models import Count, Sum, Q
 from django.utils import timezone
+import logging
 
+# Set up logging
+logger = logging.getLogger(__name__)
 
 # Authentication class to handle CSRF exemption
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -39,6 +42,78 @@ class GardenViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Return only gardens belonging to the current user"""
         return Garden.objects.filter(user=self.request.user, is_deleted=False)
+    
+    def update(self, request, *args, **kwargs):
+        """Override the update method to handle garden dimension changes safely"""
+        try:
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+            
+            # Track the original dimensions
+            original_size_x = instance.size_x
+            original_size_y = instance.size_y
+            
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            
+            # Save the updated garden
+            garden = serializer.save()
+            
+            # Check if dimensions changed
+            size_changed = (original_size_x != garden.size_x or original_size_y != garden.size_y)
+            
+            if size_changed:
+                try:
+                    # Handle grid adjustment if dimensions changed
+                    self._adjust_grid_for_new_dimensions(
+                        garden, 
+                        original_size_x, 
+                        original_size_y
+                    )
+                except Exception as e:
+                    logger.error(f"Error adjusting grid after dimension change: {str(e)}")
+                    return Response(
+                        {
+                            "garden": serializer.data,
+                            "warning": "Garden was updated but grid adjustment failed. You may need to reset your garden grid."
+                        }, 
+                        status=status.HTTP_200_OK
+                    )
+            
+            if getattr(instance, '_prefetched_objects_cache', None):
+                instance._prefetched_objects_cache = {}
+            
+            return Response(serializer.data)
+            
+        except Exception as e:
+            logger.exception(f"Unexpected error in garden update: {str(e)}")
+            return Response(
+                {"detail": "Garden was updated but an error occurred in processing the response."},
+                status=status.HTTP_200_OK
+            )
+    
+    def partial_update(self, request, *args, **kwargs):
+        """Handle PATCH requests by setting partial=True"""
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
+    
+    def _adjust_grid_for_new_dimensions(self, garden, old_size_x, old_size_y):
+        """
+        Adjust the garden grid when dimensions change
+        This will keep plants that are still within bounds and remove those that are out of bounds
+        """
+        # Get all plant logs for this garden
+        logs = GardenLog.objects.filter(garden=garden)
+        
+        # Identify logs that are now out of bounds
+        out_of_bounds = logs.filter(
+            Q(x_coordinate__gte=garden.size_x) | Q(y_coordinate__gte=garden.size_y)
+        )
+        
+        # Delete out of bounds logs
+        if out_of_bounds.exists():
+            logger.warning(f"Deleting {out_of_bounds.count()} out-of-bounds plants due to garden resize")
+            out_of_bounds.delete()
     
     @action(detail=True, methods=['get'])
     def grid(self, request, pk=None):
@@ -114,8 +189,6 @@ class GardenViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
         
-        # Clear existing garden logs - note: this is destructive!
-        # Consider a more sophisticated approach to track changes if needed
         garden.logs.all().delete()
         
         # Create new garden logs based on grid data
