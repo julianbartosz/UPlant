@@ -146,9 +146,8 @@ def send_welcome_email(user):
             'help_email': getattr(settings, 'HELP_EMAIL', 'support@uplant.app'),
         }
         
-        # Render email templates
-        html_message = render_to_string('emails/welcome_email.html', context)
-        plain_message = render_to_string('emails/welcome_email.txt', context)
+        html_message = render_to_string('user_management/email/welcome_email.html', context)
+        plain_message = render_to_string('user_management/email/welcome_email.txt', context)
         
         # Use plain template fallback if HTML template doesn't exist
         if not html_message:
@@ -179,19 +178,30 @@ def send_account_reactivated_email(user):
     try:
         subject = "Your UPlant Account Has Been Reactivated"
         
-        message = (
-            f"Hello {user.username},\n\n"
-            f"Your UPlant account has been reactivated. "
-            f"You can now log in and access all features again.\n\n"
-            f"If you didn't expect this change, please contact support immediately."
-        )
+        context = {
+            'user': user,
+            'app_url': getattr(settings, 'FRONTEND_URL', 'https://uplant.app'),
+        }
+        
+        html_message = render_to_string('user_management/email/account_reactivated.html', context)
+        plain_message = render_to_string('user_management/email/account_reactivated.txt', context)
+        
+        # Fallback if templates don't exist yet
+        if not html_message:
+            plain_message = (
+                f"Hello {user.username},\n\n"
+                f"Your UPlant account has been reactivated. "
+                f"You can now log in and access all features again.\n\n"
+                f"If you didn't expect this change, please contact support immediately."
+            )
         
         send_mail(
             subject,
-            message,
+            plain_message,
             get_from_email(),
             [user.email],
             fail_silently=False,
+            html_message=html_message if html_message else None
         )
         
         logger.info(f"Account reactivation email sent to {user.email}")
@@ -248,14 +258,63 @@ def create_default_garden(user):
         if getattr(settings, 'SKIP_DEFAULT_GARDEN_CREATION', False):
             return
             
-        # Create a starter garden
-        Garden.objects.create(
+        # Import Garden model here to avoid circular imports
+        from gardens.models import Garden, GardenLog
+        from plants.models import Plant
+
+        # Create a starter garden with proper fields from gardens/models.py
+        garden = Garden.objects.create(
             user=user,
             name="My First Garden",
-            description="Get started by adding plants to your garden!",
+            description="Welcome to your first garden! Start adding plants and track their growth.",
             size_x=10,
             size_y=10,
+            is_public=False,
+            location="Home Garden",
+            garden_type="Mixed",
         )
+        
+        try:
+            # Find a beginner-friendly plant if available
+            starter_plant = Plant.objects.filter(
+                is_verified=True, 
+                care_instructions__isnull=False
+            ).order_by('?').first()
+            
+            if starter_plant:
+                # Add the plant to the garden at center position
+                garden_log = GardenLog.objects.create(
+                    garden=garden,
+                    plant=starter_plant,
+                    x_coordinate=5,  # Center of garden
+                    y_coordinate=5,  # Center of garden
+                    health_status='Healthy',  # Using PlantHealthStatus choices
+                    notes="Your starter plant! Water regularly and watch it grow."
+                )
+                
+                # Create care notifications for the starter plant
+                try:
+                    from services.notification_service import create_plant_care_notifications
+                    create_plant_care_notifications(garden_log)
+                except (ImportError, Exception) as e:
+                    logger.warning(f"Could not create plant care notifications: {str(e)}")
+        except Exception as e:
+            # Don't let starter plant creation failure stop the process
+            logger.warning(f"Could not create starter plant: {str(e)}")
+            
+        # Create a welcome notification for the garden using the notification service
+        try:
+            from services.notification_service import create_welcome_notification
+            
+            create_welcome_notification(garden)
+            logger.info(f"Welcome notification created for garden {garden.id}")
+        except (ImportError, Exception) as e:
+            # Don't let notification failure stop the process
+            logger.warning(f"Could not create welcome notification: {str(e)}")
+            
         logger.info(f"Default garden created for user {user.email}")
+        return garden
+        
     except Exception as e:
         logger.error(f"Failed to create default garden: {str(e)}")
+        return None

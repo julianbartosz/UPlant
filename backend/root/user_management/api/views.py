@@ -8,7 +8,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-
+from django.db import models
 
 from rest_framework import viewsets, generics, status, permissions, serializers
 from rest_framework.views import APIView
@@ -20,7 +20,6 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 
-
 from allauth.account.models import EmailAddress, EmailConfirmation
 from allauth.socialaccount.models import SocialAccount
 from allauth.account.utils import send_email_confirmation
@@ -31,6 +30,12 @@ from user_management.api.serializers import (
     AdminUserSerializer, DisconnectSocialAccountSerializer
 )
 from user_management.api.permissions import IsUserOrAdmin, IsAdminOrReadOnly
+from services.weather_service import get_garden_weather_insights, WeatherServiceError
+
+import logging
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -155,6 +160,116 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     
     def get_object(self):
         return self.request.user
+    
+    def retrieve(self, request, *args, **kwargs):
+        """Override retrieve to optionally include weather data"""
+        user = self.get_object()
+        serializer = self.get_serializer(user)
+        data = serializer.data
+        
+        # Check if weather data was requested
+        include_weather = request.query_params.get('include_weather', 'false').lower() == 'true'
+        
+        if include_weather and user.zip_code:
+            try:
+                weather_data = get_garden_weather_insights(user.zip_code)
+                # Add weather summary to response
+                data['weather_summary'] = {
+                    'current_temperature': weather_data['current_weather']['temperature'],
+                    'forecast_summary': weather_data['forecast_summary'],
+                    'watering_needed': weather_data['watering_needed']['should_water'],
+                    'alerts': []
+                }
+                
+                # Add relevant weather alerts
+                if weather_data['frost_warning']['frost_risk']:
+                    data['weather_summary']['alerts'].append({
+                        'type': 'frost',
+                        'message': f"Frost expected with temperatures as low as {weather_data['frost_warning']['min_temperature']}°C"
+                    })
+                    
+                if weather_data['extreme_heat_warning']['extreme_heat']:
+                    data['weather_summary']['alerts'].append({
+                        'type': 'heat',
+                        'message': f"Extreme heat expected with temperatures up to {weather_data['extreme_heat_warning']['max_temperature']}°C"
+                    })
+                    
+                if weather_data['high_wind_warning']['high_winds']:
+                    data['weather_summary']['alerts'].append({
+                        'type': 'wind',
+                        'message': f"High winds expected with speeds up to {weather_data['high_wind_warning']['max_wind_speed']} km/h"
+                    })
+                    
+            except WeatherServiceError as e:
+                # Don't fail the whole request if weather service is down
+                logger.error(f"Weather service error: {str(e)}")
+        
+        return Response(data)
+
+
+class UserWeatherView(APIView):
+    """
+    Get weather data for the current user's location
+    """
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+    
+    def get(self, request):
+        """Get weather for the user's location based on zip code"""
+        user = request.user
+        
+        if not user.zip_code:
+            return Response(
+                {"detail": "Please add a ZIP code to your profile to see weather information."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        try:
+            weather_data = get_garden_weather_insights(user.zip_code)
+            return Response(weather_data)
+        except WeatherServiceError as e:
+            logger.error(f"Weather service error: {str(e)}")
+            return Response(
+                {"detail": "Unable to retrieve weather data. Please try again later."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+
+
+class UserLocationUpdateView(APIView):
+    """
+    Update user's location and return weather data
+    """
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+    
+    def post(self, request):
+        """Update user's location (ZIP code) and return weather data"""
+        user = request.user
+        zip_code = request.data.get('zip_code')
+        
+        if not zip_code:
+            return Response(
+                {"detail": "ZIP code is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # Update user's ZIP code
+        user.zip_code = zip_code
+        user.save()
+        
+        # Get weather data for the new location
+        try:
+            weather_data = get_garden_weather_insights(zip_code)
+            
+            return Response({
+                "detail": "Location updated successfully.",
+                "weather": weather_data
+            })
+        except WeatherServiceError as e:
+            logger.error(f"Weather service error: {str(e)}")
+            return Response({
+                "detail": "Location updated successfully but weather data could not be retrieved."
+            })
 
 
 class PasswordChangeView(generics.GenericAPIView):
@@ -175,7 +290,7 @@ class PasswordChangeView(generics.GenericAPIView):
             user.set_password(serializer.validated_data['new_password'])
             user.save()
             
-            # Update token (optional - force re-login)
+            # Update token (force re-login)
             try:
                 request.user.auth_token.delete()
             except (AttributeError, ObjectDoesNotExist):
@@ -475,7 +590,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Optionally filter users"""
-        queryset = User.objects.all().order_by('-date_joined')
+        queryset = User.objects.all().order_by('-created_at')
         
         # Filter by active status
         is_active = self.request.query_params.get('active')
@@ -560,4 +675,30 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             return Response(
                 {'detail': f'Password reset but email failed: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+            
+    @action(detail=True, methods=['get'])
+    def weather_data(self, request, pk=None):
+        """Admin endpoint to get weather data for any user based on their ZIP code"""
+        user = self.get_object()
+        
+        if not user.zip_code:
+            return Response(
+                {"detail": "This user doesn't have a ZIP code set in their profile."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        try:
+            weather_data = get_garden_weather_insights(user.zip_code)
+            return Response({
+                "user_id": user.id,
+                "username": user.username,
+                "zip_code": user.zip_code,
+                "weather_data": weather_data
+            })
+        except WeatherServiceError as e:
+            logger.error(f"Weather service error: {str(e)}")
+            return Response(
+                {"detail": "Unable to retrieve weather data. Please try again later."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
             )

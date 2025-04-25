@@ -9,9 +9,64 @@ class GardenLogSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = GardenLog
-        fields = ['id', 'plant', 'plant_details', 'x_coordinate', 'y_coordinate', 
-                 'planted_date', 'notes', 'health_status', 'last_watered']
-
+        fields = ['id', 'garden', 'plant', 'plant_details', 'x_coordinate', 'y_coordinate', 
+                 'planted_date', 'notes', 'health_status', 'last_watered', 
+                 'last_fertilized', 'last_pruned', 'growth_stage']
+        read_only_fields = ['id']
+    
+    def validate(self, data):
+        """Validate garden log data."""
+        # Check if garden was provided
+        if 'garden' not in data:
+            raise serializers.ValidationError({"garden": "Garden is required"})
+            
+        # Check if plant was provided
+        if 'plant' not in data:
+            raise serializers.ValidationError({"plant": "Plant is required"})
+            
+        # Check coordinates
+        if 'x_coordinate' not in data:
+            raise serializers.ValidationError({"x_coordinate": "X coordinate is required"})
+            
+        if 'y_coordinate' not in data:
+            raise serializers.ValidationError({"y_coordinate": "Y coordinate is required"})
+        
+        # Validate coordinates are within garden boundaries
+        garden = data['garden']
+        x = data['x_coordinate']
+        y = data['y_coordinate']
+        
+        if x < 0 or x >= garden.size_x:
+            raise serializers.ValidationError(
+                {"x_coordinate": f"X coordinate must be between 0 and {garden.size_x - 1}"}
+            )
+            
+        if y < 0 or y >= garden.size_y:
+            raise serializers.ValidationError(
+                {"y_coordinate": f"Y coordinate must be between 0 and {garden.size_y - 1}"}
+            )
+            
+        # Check for existing plant at same position (excluding soft-deleted ones)
+        existing = GardenLog.objects.filter(
+            garden=garden,
+            x_coordinate=x,
+            y_coordinate=y,
+            is_deleted=False
+        )
+        
+        # If we're updating an existing log, exclude it from the check
+        instance = getattr(self, 'instance', None)
+        if instance:
+            existing = existing.exclude(id=instance.id)
+            
+        if existing.exists():
+            raise serializers.ValidationError(
+                {"position": f"A plant already exists at position ({x}, {y})"}
+            )
+        
+        return data
+    
+    
 class GardenSerializer(serializers.ModelSerializer):
     garden_logs = GardenLogSerializer(many=True, read_only=True, source='logs')
     total_plants = serializers.SerializerMethodField()

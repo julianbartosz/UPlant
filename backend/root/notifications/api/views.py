@@ -7,12 +7,17 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Q
+import logging
 
 from notifications.models import Notification, NotificationInstance, NotificationPlantAssociation
 from notifications.api.serializers import (
     NotificationSerializer, NotificationInstanceSerializer,
     NotificationPlantAssociationSerializer, DashboardNotificationSerializer
 )
+from services.weather_service import get_garden_weather_insights, WeatherServiceError
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 # Authentication class to handle CSRF exemption
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -170,13 +175,82 @@ class NotificationViewSet(viewsets.ModelViewSet):
         # Serialize the results
         serializer = DashboardNotificationSerializer
         
-        return Response({
+        # Get relevant weather alerts
+        weather_alerts = self._get_weather_alerts(request.user)
+        
+        response_data = {
             'overdue': serializer(overdue, many=True).data,
             'today': serializer(today_notifications, many=True).data,
             'tomorrow': serializer(tomorrow_notifications, many=True).data,
             'this_week': serializer(this_week_notifications, many=True).data,
-            'later': serializer(later_notifications, many=True).data
-        })
+            'later': serializer(later_notifications, many=True).data,
+        }
+        
+        # Add weather alerts if available
+        if weather_alerts:
+            response_data['weather_alerts'] = weather_alerts
+            
+        return Response(response_data)
+    
+    def _get_weather_alerts(self, user):
+        """Get weather alerts for the user's location"""
+        if not hasattr(user, 'profile') or not user.profile.zip_code:
+            return None
+            
+        try:
+            weather_data = get_garden_weather_insights(user.profile.zip_code)
+            
+            # Extract critical weather alerts
+            alerts = []
+            
+            # Check for frost
+            if weather_data['frost_warning']['frost_risk']:
+                days = [day['date'] for day in weather_data['frost_warning']['frost_days']]
+                alerts.append({
+                    'type': 'frost',
+                    'severity': 'high',
+                    'title': 'Frost Warning',
+                    'message': f"Protect your plants from frost expected on {', '.join(days)}.",
+                    'affected_days': days
+                })
+            
+            # Check for extreme heat
+            if weather_data['extreme_heat_warning']['extreme_heat']:
+                days = [day['date'] for day in weather_data['extreme_heat_warning']['hot_days']]
+                alerts.append({
+                    'type': 'heat',
+                    'severity': 'high',
+                    'title': 'Extreme Heat Warning',
+                    'message': f"Protect plants from high temperatures on {', '.join(days)}.",
+                    'affected_days': days
+                })
+            
+            # Check for high winds
+            if weather_data['high_wind_warning']['high_winds']:
+                days = [day['date'] for day in weather_data['high_wind_warning']['windy_days']]
+                alerts.append({
+                    'type': 'wind',
+                    'severity': 'medium',
+                    'title': 'High Wind Warning',
+                    'message': f"Secure plants and structures against strong winds on {', '.join(days)}.",
+                    'affected_days': days
+                })
+            
+            # Check for watering needs
+            if weather_data['watering_needed']['should_water']:
+                alerts.append({
+                    'type': 'watering',
+                    'severity': 'medium',
+                    'title': 'Watering Recommended',
+                    'message': weather_data['watering_needed']['reason'],
+                    'days_since_rain': 'N/A'
+                })
+            
+            return alerts if alerts else None
+            
+        except WeatherServiceError as e:
+            logger.error(f"Error fetching weather alerts: {str(e)}")
+            return None
     
     @action(detail=False, methods=['get'])
     def by_garden(self, request):
@@ -209,6 +283,259 @@ class NotificationViewSet(viewsets.ModelViewSet):
         
         # Convert to list
         return Response(list(result.values()))
+    
+    @action(detail=False, methods=['get'])
+    def weather(self, request):
+        """Get weather-based notifications for the user's gardens"""
+        garden_id = request.query_params.get('garden_id')
+        
+        # Filter gardens
+        if garden_id:
+            gardens = request.user.gardens.filter(id=garden_id, is_deleted=False)
+        else:
+            gardens = request.user.gardens.filter(is_deleted=False)
+            
+        if not gardens.exists():
+            return Response(
+                {"detail": "No gardens found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Get weather insights
+        weather_notifications = []
+        
+        for garden in gardens:
+            garden_data = {
+                'garden_id': garden.id,
+                'garden_name': garden.name or f"Garden {garden.id}",
+                'alerts': []
+            }
+            
+            # Try to get weather data
+            try:
+                if hasattr(request.user, 'profile') and request.user.profile.zip_code:
+                    weather_data = get_garden_weather_insights(request.user.profile.zip_code)
+                    
+                    # Process weather insights into notifications
+                    
+                    # 1. Frost warnings
+                    if weather_data['frost_warning']['frost_risk']:
+                        frost_days = weather_data['frost_warning']['frost_days']
+                        garden_data['alerts'].append({
+                            'type': 'FROST',
+                            'priority': 'high',
+                            'title': 'Frost Alert',
+                            'message': f"Protect sensitive plants from frost on {frost_days[0]['date']}",
+                            'due_date': frost_days[0]['date'],
+                            'temperature': frost_days[0]['temperature'],
+                            'actions': ['Apply frost cloth', 'Move potted plants indoors', 'Water plants before frost']
+                        })
+                    
+                    # 2. Extreme heat
+                    if weather_data['extreme_heat_warning']['extreme_heat']:
+                        hot_days = weather_data['extreme_heat_warning']['hot_days']
+                        garden_data['alerts'].append({
+                            'type': 'HEAT',
+                            'priority': 'high',
+                            'title': 'Heat Wave Alert',
+                            'message': f"Protect plants from extreme heat on {hot_days[0]['date']}",
+                            'due_date': hot_days[0]['date'],
+                            'temperature': hot_days[0]['temperature'],
+                            'actions': ['Water deeply in the morning', 'Provide shade', 'Mulch to retain moisture']
+                        })
+                    
+                    # 3. High winds
+                    if weather_data['high_wind_warning']['high_winds']:
+                        windy_days = weather_data['high_wind_warning']['windy_days']
+                        garden_data['alerts'].append({
+                            'type': 'WIND',
+                            'priority': 'medium',
+                            'title': 'High Wind Alert',
+                            'message': f"Secure plants against winds on {windy_days[0]['date']}",
+                            'due_date': windy_days[0]['date'],
+                            'wind_speed': windy_days[0]['wind_speed'],
+                            'actions': ['Stake tall plants', 'Move potted plants to sheltered areas', 'Secure garden structures']
+                        })
+                    
+                    # 4. Watering needs
+                    if weather_data['watering_needed']['should_water']:
+                        garden_data['alerts'].append({
+                            'type': 'WATER',
+                            'priority': 'medium',
+                            'title': 'Watering Needed',
+                            'message': weather_data['watering_needed']['reason'],
+                            'due_date': timezone.now().date().isoformat(),
+                            'next_rain': weather_data['watering_needed']['next_rain_forecast'],
+                            'actions': ['Water deeply at soil level', 'Apply mulch to retain moisture']
+                        })
+                    
+                    # Add garden data to results if it has alerts
+                    if garden_data['alerts']:
+                        weather_notifications.append(garden_data)
+            
+            except WeatherServiceError as e:
+                logger.error(f"Weather service error for garden {garden.id}: {str(e)}")
+        
+        if not weather_notifications:
+            return Response({"detail": "No weather alerts for your gardens at this time."})
+            
+        return Response(weather_notifications)
+    
+    @action(detail=False, methods=['post'])
+    def create_weather_notifications(self, request):
+        """Create actual notifications from weather alerts"""
+        garden_id = request.data.get('garden_id')
+        alert_type = request.data.get('alert_type')
+        
+        if not garden_id:
+            return Response(
+                {"error": "garden_id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        if not alert_type or alert_type not in ['FROST', 'HEAT', 'WIND', 'WATER']:
+            return Response(
+                {"error": "Valid alert_type is required (FROST, HEAT, WIND, or WATER)"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        try:
+            garden = request.user.gardens.get(id=garden_id, is_deleted=False)
+        except Exception:
+            return Response(
+                {"error": "Garden not found or access denied"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        # Get weather data
+        try:
+            if not hasattr(request.user, 'profile') or not request.user.profile.zip_code:
+                return Response(
+                    {"error": "Please add a ZIP code to your profile settings."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            weather_data = get_garden_weather_insights(request.user.profile.zip_code)
+            
+            # Create appropriate notification based on type
+            notification = None
+            
+            if alert_type == 'FROST' and weather_data['frost_warning']['frost_risk']:
+                frost_day = weather_data['frost_warning']['frost_days'][0]['date']
+                temp = weather_data['frost_warning']['frost_days'][0]['temperature']
+                
+                # Create or get frost warning notification
+                notification, created = Notification.objects.get_or_create(
+                    garden=garden,
+                    type='WE',  # Weather type
+                    subtype='FROST',
+                    defaults={
+                        'name': f"Frost Warning for {frost_day}",
+                        'interval': 0  # One-time alert
+                    }
+                )
+                
+                if created or not notification.instances.filter(status='PENDING').exists():
+                    # Create notification instance with the frost date as due date
+                    from datetime import datetime
+                    due_date = datetime.strptime(frost_day, '%Y-%m-%d')
+                    
+                    NotificationInstance.objects.create(
+                        notification=notification,
+                        next_due=due_date,
+                        status='PENDING'
+                    )
+                    
+            elif alert_type == 'HEAT' and weather_data['extreme_heat_warning']['extreme_heat']:
+                hot_day = weather_data['extreme_heat_warning']['hot_days'][0]['date']
+                temp = weather_data['extreme_heat_warning']['hot_days'][0]['temperature']
+                
+                notification, created = Notification.objects.get_or_create(
+                    garden=garden,
+                    type='WE',  # Weather type
+                    subtype='HEAT',
+                    defaults={
+                        'name': f"Extreme Heat Warning for {hot_day}",
+                        'interval': 0  # One-time alert
+                    }
+                )
+                
+                if created or not notification.instances.filter(status='PENDING').exists():
+                    from datetime import datetime
+                    due_date = datetime.strptime(hot_day, '%Y-%m-%d')
+                    
+                    NotificationInstance.objects.create(
+                        notification=notification,
+                        next_due=due_date,
+                        status='PENDING'
+                    )
+                    
+            elif alert_type == 'WIND' and weather_data['high_wind_warning']['high_winds']:
+                windy_day = weather_data['high_wind_warning']['windy_days'][0]['date']
+                wind_speed = weather_data['high_wind_warning']['windy_days'][0]['wind_speed']
+                
+                notification, created = Notification.objects.get_or_create(
+                    garden=garden,
+                    type='WE',  # Weather type
+                    subtype='WIND',
+                    defaults={
+                        'name': f"High Wind Warning for {windy_day}",
+                        'interval': 0  # One-time alert
+                    }
+                )
+                
+                if created or not notification.instances.filter(status='PENDING').exists():
+                    from datetime import datetime
+                    due_date = datetime.strptime(windy_day, '%Y-%m-%d')
+                    
+                    NotificationInstance.objects.create(
+                        notification=notification,
+                        next_due=due_date,
+                        status='PENDING'
+                    )
+                    
+            elif alert_type == 'WATER' and weather_data['watering_needed']['should_water']:
+                notification, created = Notification.objects.get_or_create(
+                    garden=garden,
+                    type='WA',  # Watering type
+                    subtype='WEATHER',
+                    defaults={
+                        'name': "Watering needed - Dry conditions",
+                        'interval': 0  # One-time alert
+                    }
+                )
+                
+                if created or not notification.instances.filter(status='PENDING').exists():
+                    # Create notification instance due today
+                    NotificationInstance.objects.create(
+                        notification=notification,
+                        next_due=timezone.now(),
+                        status='PENDING'
+                    )
+            
+            if notification:
+                return Response({
+                    "success": True,
+                    "notification": NotificationSerializer(notification).data
+                })
+            else:
+                return Response(
+                    {"error": f"No {alert_type} alert currently needed based on weather conditions"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        except WeatherServiceError as e:
+            logger.error(f"Weather service error: {str(e)}")
+            return Response(
+                {"error": "Unable to retrieve weather data. Please try again later."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+        except Exception as e:
+            logger.error(f"Error creating weather notification: {str(e)}")
+            return Response(
+                {"error": f"Failed to create notification: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class NotificationInstanceViewSet(viewsets.ModelViewSet):

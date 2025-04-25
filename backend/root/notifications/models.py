@@ -14,6 +14,7 @@ class NotifTypes(models.TextChoices):
     FE = "Fertilize"
     HA = "Harvest"
     WA = "Water"
+    WE = "Weather"
     OT = "Other"
 
 class Notification(models.Model):
@@ -79,8 +80,7 @@ class NotificationInstance(models.Model):
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE, related_name='instances')
     last_completed = models.DateTimeField(null=True, blank=True)
     next_due = models.DateTimeField()
-    
-    # Add metadata and additional fields
+    message = models.TextField(blank=True, null=True, help_text="Content of the notification")
     status = models.CharField(max_length=10, choices=[
         ('PENDING', 'Pending'),
         ('COMPLETED', 'Completed'),
@@ -89,6 +89,7 @@ class NotificationInstance(models.Model):
     ], default='PENDING')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(null=True, blank=True, help_text="When the notification was completed")
     
     class Meta:
         ordering = ['next_due']  # Sort by due date by default
@@ -192,6 +193,7 @@ class NotificationInstance(models.Model):
     def complete_task(self):
         """Record completion and calculate next due date"""
         self.last_completed = timezone.now()
+        self.completed_at = timezone.now()
         
         # For harvest notifications, only schedule next one if plant will be ready again
         if self.notification.type == NotifTypes.HA:

@@ -190,19 +190,19 @@ export const useGardens = () => {
                 g.id === gardenId ? garden : g
             )
         );
-        
-        const reqBody =  { "garden": gardenId, "plant": plant.id, "x_coordinate": x, "y_coordinate": y };
+        // "notes\": \"Test plant added via API\","health_status\": \"Healthy\"
+        const reqBody =  { notes: "NONE", health_status: "Healthy", garden: gardenId, plant: plant.id, x_coordinate: x, y_coordinate: y };
         console.log("Request body:", reqBody);
 
         // IIFE to handle async operation
         (async () => {
             try {
-                const response = await fetch(import.meta.env.VITE_GARDENLOGS_API_URL, {
+                const response = await fetch("http://localhost:8000/api/gardens/garden-logs/", {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Token 4c1775be909a3873ee6c23104d433adaf4cbde29`,
+                        // 'Authorization': `Token 4c1775be909a3873ee6c23104d433adaf4cbde29`,
                     },
                     body: JSON.stringify(reqBody),
                 });
@@ -395,6 +395,7 @@ export const useGardens = () => {
         //     size_x: 10,            // Width of the garden grid
         //     size_y: 5              // Height of the garden grid
         // };
+
         if (gardens.length >= 6) {
             alert("You cannot add more than 6 gardens. Or without premium at least.");
             return;
@@ -439,7 +440,7 @@ export const useGardens = () => {
         // setNotifications(prevNotifications => [...prevNotifications, []]);
 
         if (gardens.length > 0) {
-            setIndex(0);
+            setIndex(gardens.length);
         }
         
         const url = "http://localhost:8000/api/gardens/gardens/";
@@ -459,7 +460,7 @@ export const useGardens = () => {
 
             // If API assigns an ID or modifies data, update with the real data
             const savedGarden = await response.json();
-            setGardens(prevGardens => [{...newGarden, id: savedGarden.id}, ...prevGardens]);
+            setGardens(prevGardens => [...prevGardens, {...newGarden, id: savedGarden.id}]);
     
         } catch (error) {
             if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {

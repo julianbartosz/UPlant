@@ -1,0 +1,14 @@
+<!-- filepath: /UPlant/backend/root/templates/user_management/email/account_reactivated.txt -->
+{% autoescape off %}
+Hello {{ user.username }},
+
+Your UPlant account has been successfully reactivated.
+
+You can now log in and access all features again. Visit {{ app_url }}/login to log in to your account.
+
+If you didn't request this change or have any questions, please contact us immediately at {{ help_email|default:"uplant.notifications@gmail.com" }}.
+
+Happy gardening!
+
+The UPlant Team
+{% endautoescape %}

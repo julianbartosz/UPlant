@@ -2,14 +2,13 @@ import { useRef, useEffect, useState } from 'react';
 import { useGardens, useUser } from '../hooks';
 import { GardenGrid } from '../components/ui';
 import { NotificationSection, GardenBar, PlantSearchSideBar, NavBar } from '../components/layout';
-import { Grid } from 'react-loader-spinner';
+import { GridLoading } from '../components/widgets';
 import './styles/dashboard-page.css';
 
 function DashboardPage() {
 
   const { username } = useUser();
   const { gardens, mediateAddPlantToGarden, mediateRemovePlantFromGarden } = useGardens();
-
   const [squareSize, setSquareSize] = useState(1);
   const [fontSize, setFontSize] = useState(null);
   const [selectedGardenIndex, setSelectedGardenIndex] = useState(0);
@@ -38,7 +37,7 @@ function DashboardPage() {
         setSquareSize(newSquareSize);
       }
     };
-
+    
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -89,7 +88,7 @@ function DashboardPage() {
     }
   };
 
-  if (!gardens) return <div style={{width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center'}}><Grid color="black" height={150} width={150} /></div>;
+  if (!gardens) return <GridLoading />;
 
   return (
     <>
@@ -133,6 +132,7 @@ function DashboardPage() {
             contentSize={contentSize}
             selectedGardenIndex={selectedGardenIndex}
           />
+          
         </div>
     </div>
     </>

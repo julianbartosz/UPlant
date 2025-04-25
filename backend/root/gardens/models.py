@@ -123,6 +123,9 @@ class GardenLog(models.Model):
     updated_at = models.DateTimeField(auto_now=True, 
                                     help_text="Timestamp when this log was last updated")
     
+    is_deleted = models.BooleanField(default=False, 
+                               help_text="Flag for soft deletion")
+    
     # care tracking fields
     last_fertilized = models.DateTimeField(null=True, blank=True,
                                          help_text="When the plant was last fertilized")
