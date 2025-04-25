@@ -14,22 +14,17 @@ const NotificationForm = ({ setToggleForm, onBack, selectedGardenIndex, plantOpt
     };
 
     const handleSubmit = () => {
-        const initialLength = notificationsList[selectedGardenIndex].length;
         const nameInput = document.getElementById('name');
         const intervalInput = document.getElementById('interval');
         const name = nameInput?.value || '';
+        const plants = Array.from(selectedPlants).map((plant) => ({
+            common_name: plant.common_name,
+            id: plant.id,
+        }));
+        const interval = parseInt(intervalInput?.value, 10) || -1;
+        console.log("XXX",plants)
 
-        const notification = {
-            name: name,
-            description: `Notification for ${name}`,
-            interval: parseInt(intervalInput?.value, 10) || -1,
-            plants: Array.from(selectedPlants).map((plant) => ({
-                common_name: plant.common_name,
-                id: plant.id,
-            })),
-        };
-
-        mediateAddNotification(selectedGardenIndex, notification, () => { 
+        mediateAddNotification(selectedGardenIndex, name, interval, plants, () => { 
             setToggleForm(false); 
         });
     };

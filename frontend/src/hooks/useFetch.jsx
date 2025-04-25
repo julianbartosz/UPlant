@@ -29,7 +29,7 @@ const useGet = (url) => {
         throw new Error("The provided URL is not among the allowed endpoints");
     }
 
-    const [data, setData] = useState([]);
+    const [data, setData] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     

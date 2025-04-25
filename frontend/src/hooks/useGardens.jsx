@@ -1,8 +1,6 @@
 import { useContext } from 'react';
 import { UserContext }  from '../contexts/UserProvider';
 import { MAXSIZE_GARDEN } from '../constants';
-import patchGarden from './api/patching';
-import { PiWatch } from 'react-icons/pi';
 
 export const useGardens = () => {
     
@@ -12,11 +10,12 @@ export const useGardens = () => {
         throw new Error("useGardens must be used within a UserProvider");
     }
     
-    const { gardens, setGardens, gardensLoading, gardensError, setNotifications, token } = context;
+    const { gardens, setGardens, gardensLoading, gardensError, setNotifications } = context;
 
-    const mediateGridSizeChange = (axis, change, edge, gardenName) => {
-        const gardenIndex = gardens.findIndex(garden => garden.name === gardenName);
+    const mediateGridSizeChange = (axis, change, edge, gardenId) => {
+        const gardenIndex = gardens.findIndex(garden => garden.id === gardenId);
         const newGarden = { ...gardens[gardenIndex] };
+        const previousGardens = [...gardens];
 
         if (axis === 'x') {
             if (newGarden.x + change > MAXSIZE_GARDEN) {
@@ -112,6 +111,7 @@ export const useGardens = () => {
         
     const mediateRenameGarden = async (index) => {
         const garden = gardens[index];
+        const previousGardens = [...gardens];
 
         if (!garden) {
             alert("Invalid garden data. Please provide valid gardens.");
@@ -161,8 +161,15 @@ export const useGardens = () => {
         }
     };
     
-    const mediateAddPlantToGarden = (gardenId, plant, y, x) => {
-        const garden = { ...gardens.find(g => g.id === gardenId)};
+    const mediateAddPlantToGarden = (gardenIndex, plant, y, x) => {
+        const garden = { ...gardens[gardenIndex] };
+        const gardenId = garden.id;
+        console.log("garden", garden);
+        console.log("Garden ID:", gardenId);
+        console.log("Plant:", plant);
+        console.log("Coordinates:", y, x);
+        console.log("Garden cells:", garden.cells);
+        console.log("Garden cells at coordinates:", garden.cells[y][x]);
         const prevGardens = [...gardens];
         
         if (!garden) {
@@ -183,7 +190,7 @@ export const useGardens = () => {
             )
         );
 
-        const reqBody =  { "garden": gardenId, "plant": plant.id, "x_coordinate": x, "y_coordinate": y };
+        const reqBody =  { "garden": gardenId, "plant": plant.id, "planted_date": new Date().toISOString(), "x_coordinate": x, "y_coordinate": y };
 
         // IIFE to handle async operation
         (async () => {
@@ -200,14 +207,16 @@ export const useGardens = () => {
                 if (!response.ok) {
                     throw new Error("Failed to update gardens");
                 }
-
+                const data = await response.json();
+                
+        
             } catch (error) {
                 if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                     console.error("Using dummy fetch, no rollback needed.");
                     return;
                 }
                 console.error("Error updating gardens:", error);
-                setGardens(previousGardens); // Rollback UI
+                setGardens(prevGardens); // Rollback UI
                 alert("Failed to update gardens. Please try again.");
             }
         })();
@@ -404,6 +413,7 @@ export const useGardens = () => {
         }
 
         const cells = Array.from({ length: y }, () => Array(x).fill(null));
+
         const newGarden = { name: name, x: x, y: y, cells: cells };
         const requestBody = { name: name, size_x: x, size_y: y};
 
@@ -422,14 +432,13 @@ export const useGardens = () => {
         // Store the previous state in case we need to rollback
         const previousGardens = [...gardens];
     
-        // Optimistically update UI
-        setGardens(prevGardens => [...prevGardens, newGarden]);
-        setNotifications(prevNotifications => [...prevNotifications, []]);
-        setIndex(gardens.length);
+       
+        // setNotifications(prevNotifications => [...prevNotifications, []]);
 
-        console.log("ZZZZ", requestBody);
-        const cleanToken = token.replace(/[\n\r]/g, '').trim();
-
+        if (gardens.length > 0) {
+            setIndex(0);
+        }
+        
         const url = "http://localhost:8000/api/gardens/gardens/";
        
         try {
@@ -438,7 +447,6 @@ export const useGardens = () => {
                 credentials: 'include',
                 headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': `Token ${token}`, 
                 },
                 body: JSON.stringify(requestBody),
               });
@@ -448,8 +456,7 @@ export const useGardens = () => {
 
             // If API assigns an ID or modifies data, update with the real data
             const savedGarden = await response.json();
-
-            console.log("ZZZZCCCC", savedGarden);
+            setGardens(prevGardens => [{...newGarden, id: savedGarden.id}, ...prevGardens]);
     
         } catch (error) {
             if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {

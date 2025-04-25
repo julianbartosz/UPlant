@@ -74,12 +74,13 @@ function NotificationPage() {
     }
 
     const handleNotificationClick = (plants) => {
+        console.log('Selected plants:', plants);
         const garden = { ...gardens[selectedGardenIndex]};
         const redCells = new Set();
 
         garden.cells.forEach((row, i) => {
             row.forEach((cell, j) => {
-                if (cell && plants.some(p => p.id === cell.id)) {
+                if (cell && plants.some(p => p === cell.common_name)) {
                     redCells.add(`${i}-${j}`);
                 }
             });
@@ -105,10 +106,11 @@ function NotificationPage() {
                             style={{justifyContent: 'center'}} 
                         />
                     <div className="notification-buttons">
-                        {notificationsList[selectedGardenIndex]?.map((notification, index) => (
+                        {notificationsList && notificationsList[selectedGardenIndex]?.map((notification, index) => (
+                         
                             <button
                                 key={index}
-                                onClick={() => handleNotificationClick(notification.plants)}
+                                onClick={() => handleNotificationClick(notification.plant_names)}
                                 className="notification-button"
                             >
                                 {notification.name}
@@ -117,7 +119,7 @@ function NotificationPage() {
                     </div>
                     <GardenGrid
                         interactive={false}
-                        garden={gardens[selectedGardenIndex]}
+                        selectedGardenIndex={selectedGardenIndex}
                         fontSize={fontSize}
                         squareSize={squareSize}
                         contentSize={contentSize}

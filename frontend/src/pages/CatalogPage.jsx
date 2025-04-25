@@ -1,18 +1,46 @@
+import { useEffect, useState } from 'react';
 import  { NavBar, PlantSearchSideBar }  from '../components/layout';
 import { useUser } from '../hooks/useUser';
 import './styles/catalog-page.css';
 
 function Catalog() {
 
-    const { username, selectedPlant, setSelectedPlant } = useUser();
+    const { username } = useUser();
+
+    const [selectedPlant, setSelectedPlant] = useState(null);
     
-    if (!username) {
-        return <p>Loading user data...</p>;
-    }
 
     const handlePlantClick = (plant) => {
-        console.log(plant);
+        console.log("FETCHing, ", plant);
+        const fetchPlantDetails = async (plant) => {
+            console.log("FETCHing, ", plant);
+            if (selectedPlant) {
+                try {
+                    const response = await fetch(`http://localhost:8000/api/plants/plants/${plant.id}/`, {
+                        method: 'GET',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const data = await response.json();
+                    console.log(data);
+                    setSelectedPlant(data);
+                } catch (error) {
+                    console.error('Error fetching plant details:', error);
+                }
+            }
+        };
+        fetchPlantDetails(plant);
+        
     };
+
+    useEffect(() => {   
+    }, [selectedPlant]);
+
 
     return (
         <>

@@ -1,7 +1,7 @@
 import React, { createContext, useState } from 'react';
 import useGet from '../hooks/useFetch';
 import { useEffect } from 'react';
-import formatGardens from './utils/formatting';
+import {formatGardens,  formatNotificationsList } from './utils/formatting';
 
 export const UserContext = createContext(null);
 
@@ -20,10 +20,40 @@ export const UserProvider = ({ children }) => {
     const [notificationsList, setNotifications] = useState(null);
     const [plantsList, setPlantsList] = useState(null);
 
-    useEffect(() => {   
+    useEffect(() => {
+        if (gardens && !notificationsList) {
+            
+            const fetchNotifications = () => {
+                let userNotifications = Array(gardens.length).fill(null);
+                (async () => {
+                    for (let i = 0; i < gardens.length; i++) {
+                        try {
+                            const response = await fetch(`http://localhost:8000/api/notifications/notifications/by_garden/?garden_id=${gardens[i].id}`, {
+                                method: 'GET',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                }
+                            });
+                            const data = await response.json();
+                            console.log("Notifications data:", data);
+                            userNotifications[i] = data;
+                        } catch (error) {
+                            console.error("Error fetching notifications:", error);
+                        }
+                    }
+                    console.log("User notifications:", userNotifications);
+                const formattedNotifications = formatNotificationsList(userNotifications);
+                console.log("Formatted notifications:", formattedNotifications);
+                setNotifications(formattedNotifications);
+                })();
+            };
         
+            fetchNotifications();
+        }
     }
-    , [plantsList]);
+    , [gardens, notificationsList]);
+
 
     const {
         data: username,
@@ -31,18 +61,6 @@ export const UserProvider = ({ children }) => {
         error: usernameError,
         setData: setUsername,
     } = useGet(import.meta.env.VITE_USERNAME_API_URL);
-
-    const {
-        data: notificationsListData,
-    } = useGet(import.meta.env.VITE_NOTIFICATIONS_API_URL);
-
-    useEffect(() => {
-        console.log("Notifications data:", notificationsListData);
-        if (notificationsListData) {
-            setNotifications(notificationsListData);
-        }
-    }
-    , [notificationsListData]);
 
     const {
         data: gardensData,
