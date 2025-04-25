@@ -31,6 +31,7 @@ from user_management.api.serializers import (
     UsernameChangeSerializer, EmailAddressSerializer
 )
 from user_management.api.permissions import IsUserOrAdmin, IsAdminOrReadOnly
+from user_management.models import Roles
 from services.weather_service import get_garden_weather_insights, WeatherServiceError
 
 import logging
@@ -308,12 +309,6 @@ class PasswordChangeView(generics.GenericAPIView):
             user.set_password(serializer.validated_data['new_password'])
             user.save()
             
-            # Update token (force re-login)
-            try:
-                request.user.auth_token.delete()
-            except (AttributeError, ObjectDoesNotExist):
-                pass
-                
             token, created = Token.objects.get_or_create(user=user)
             
             return Response({
@@ -629,7 +624,7 @@ class SocialAccountListView(APIView):
             'provider': account.provider,
             'name': account.extra_data.get('name', ''),
             'last_login': account.last_login,
-            'date_joined': account.date_joined
+            'created_at': account.created_at
         } for account in social_accounts]
         
         return Response(accounts)
@@ -678,6 +673,38 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             
         return queryset
     
+    def perform_create(self, serializer):
+        """Ensure password is properly hashed when creating user"""
+        # First save the user instance
+        user = serializer.save()
+        
+        # Then get the password from request data and properly hash it
+        password = self.request.data.get('password')
+        print(f"Setting password for new user {user.username} (ID: {user.id})")
+        
+        if password:
+            user.set_password(password)
+            user.save()
+            print(f"Password set and hashed for user {user.username}")
+        else:
+            print(f"WARNING: No password provided for new user {user.username}")
+    
+    def perform_update(self, serializer):
+        """Handle password updates if included"""
+        # Get the original user object before changes
+        instance = self.get_object()
+        
+        # Save the updated user
+        user = serializer.save()
+        
+        # Check if password was included in the update
+        password = self.request.data.get('password')
+        if password:
+            print(f"Updating password for user {user.username} (ID: {user.id})")
+            user.set_password(password)
+            user.save()
+            print(f"Password updated and hashed for user {user.username}")
+    
     @action(detail=True, methods=['post'])
     def activate(self, request, pk=None):
         """Activate a user account"""
@@ -715,6 +742,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         # Set password
         user.set_password(password)
         user.save()
+        print(f"Admin reset password for user {user.username} (ID: {user.id})")
         
         # Email the password to the user
         try:
@@ -775,7 +803,9 @@ class AdminStatsView(APIView):
         # Get basic user stats
         total_users = User.objects.count()
         active_users = User.objects.filter(is_active=True).count()
-        staff_users = User.objects.filter(is_staff=True).count()
+        staff_users = User.objects.filter(
+            models.Q(role=Roles.AD) | models.Q(is_superuser=True)
+        ).count()
         
         # Get email verification stats
         verified_emails = EmailAddress.objects.filter(verified=True).count()
@@ -791,7 +821,7 @@ class AdminStatsView(APIView):
         # Recent activity - users created in last 30 days
         from django.utils import timezone
         thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
-        new_users_30d = User.objects.filter(date_joined__gte=thirty_days_ago).count()
+        new_users_30d = User.objects.filter(created_at__gte=thirty_days_ago).count()
         
         # Return comprehensive stats
         return Response({

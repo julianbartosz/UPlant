@@ -67,6 +67,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_staff(self):
+        """
+        Determines if user has staff permissions.
+        Note: This is a property, not a field. Don't use in QuerySet filters.
+        Use `role=Roles.AD OR is_superuser=True` instead.
+        """
         return self.role in [Roles.AD] or self.is_superuser
 
     def has_perm(self, perm, obj=None):
