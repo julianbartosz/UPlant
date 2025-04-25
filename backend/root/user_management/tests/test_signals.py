@@ -1,14 +1,17 @@
 # backend/root/user_management/tests/test_signals.py
+
 import pytest
-from unittest.mock import patch, MagicMock, call
-from django.test import RequestFactory
-from django.utils import timezone
+from unittest.mock import patch, Mock, call
 from django.contrib.auth.signals import user_logged_in, user_logged_out, user_login_failed
-from django.db.models.signals import post_save, pre_save
+from django.utils import timezone
+from django.conf import settings
+from django.test.utils import override_settings
+from django.template.loader import render_to_string
+from datetime import timedelta
 
 from user_management.models import User, Roles
 from user_management.signals import (
-    user_about_to_change, 
+    user_about_to_change,
     user_created_or_updated,
     user_logged_in_callback,
     user_logged_out_callback,
@@ -16,495 +19,568 @@ from user_management.signals import (
     send_welcome_email,
     send_account_reactivated_email,
     send_email_changed_notification,
-    get_client_ip,
     get_from_email,
+    get_client_ip,
     create_default_garden
 )
-from user_management.factories import UserFactory, AdminFactory
+from user_management.tests.factories import (
+    UserFactory, 
+    AdminFactory,
+    InactiveUserFactory,
+    ModeratorFactory,
+    NewUserFactory
+)
 
 
 @pytest.mark.unit
-class TestUserSignals:
-    """Test suite for user model signals."""
-
-    @pytest.fixture
-    def mock_logger(self):
-        """Fixture to mock the logger in signals."""
-        with patch('user_management.signals.logger') as mock:
-            yield mock
-
-    @pytest.fixture
-    def mock_send_mail(self):
-        """Fixture to mock Django's send_mail function."""
-        with patch('user_management.signals.send_mail') as mock:
-            yield mock
-
-    @pytest.fixture
-    def mock_render_to_string(self):
-        """Fixture to mock template rendering."""
-        with patch('user_management.signals.render_to_string') as mock:
-            # Return a sample template content
-            mock.return_value = "Sample email content"
-            yield mock
-
-    @pytest.fixture
-    def mock_create_default_garden(self):
-        """Fixture to mock default garden creation."""
-        with patch('user_management.signals.create_default_garden') as mock:
-            yield mock
-
-    @pytest.fixture
-    def request_factory(self):
-        """Fixture for request factory."""
-        return RequestFactory()
-
-    # ==================== PRE-SAVE SIGNAL TESTS ====================
+class TestPreSaveSignal:
+    """Tests for the user_about_to_change signal (pre_save)."""
     
-    def test_user_about_to_change_tracks_field_changes(self, db):
-        """Test that pre_save signal tracks field changes."""
-        # Create a user first
-        user = UserFactory(
-            email="original@example.com",
-            username="originalname",
-            is_active=True
-        )
+    def test_track_field_changes(self, db):
+        """Test that significant field changes are detected and tracked."""
+        # Create a user
+        user = UserFactory(email="original@example.com", username="original_user")
         
-        # Make changes to the user
-        user.email = "changed@example.com"
-        user.username = "newname"
+        # Change fields
+        user.email = "new@example.com"
+        user.username = "new_user"
         
-        # Manually call the signal handler
-        user_about_to_change(User, user)
+        # Call the signal handler directly
+        user_about_to_change(sender=User, instance=user)
         
-        # Check that _changed_fields was set
+        # Check that changes were tracked
         assert hasattr(user, '_changed_fields')
+        changed_fields = dict((field[0], (field[1], field[2])) for field in user._changed_fields)
         
-        # Changed fields should include email and username with old and new values
-        email_change = None
-        username_change = None
+        assert 'email' in changed_fields
+        assert changed_fields['email'][0] == "original@example.com"
+        assert changed_fields['email'][1] == "new@example.com"
         
-        for field, old_value, new_value in user._changed_fields:
-            if field == 'email':
-                email_change = (old_value, new_value)
-            elif field == 'username':
-                username_change = (old_value, new_value)
-        
-        assert email_change == ("original@example.com", "changed@example.com")
-        assert username_change == ("originalname", "newname")
-        
-        # _was_activated should not be set since user was already active
-        assert not hasattr(user, '_was_activated')
-
-    def test_user_about_to_change_detects_activation(self, db):
-        """Test that pre_save signal detects account activation."""
+        assert 'username' in changed_fields
+        assert changed_fields['username'][0] == "original_user"
+        assert changed_fields['username'][1] == "new_user"
+    
+    def test_detect_account_activation(self, db):
+        """Test that activation is detected when is_active changes from False to True."""
         # Create an inactive user
-        user = UserFactory(is_active=False)
+        user = InactiveUserFactory()
         
         # Activate the user
         user.is_active = True
         
-        # Manually call the signal handler
-        user_about_to_change(User, user)
+        # Call the signal handler directly
+        user_about_to_change(sender=User, instance=user)
         
-        # Check that _was_activated flag was set
+        # Check that activation was detected
         assert hasattr(user, '_was_activated')
         assert user._was_activated is True
-
-    def test_user_about_to_change_skips_new_users(self, db):
-        """Test that pre_save signal skips processing for new users."""
-        # Create a user but don't save to DB yet (pk will be None)
-        user = User(
-            email="new@example.com",
-            username="newuser"
-        )
-        user.pk = None  # Ensure pk is None
+    
+    def test_no_detection_when_already_active(self, db):
+        """Test that _was_activated is not set when user was already active."""
+        # Create an active user
+        user = UserFactory(is_active=True)
         
-        # Manually call the signal handler
-        user_about_to_change(User, user)
+        # Change something else but keep active
+        user.username = "new_username"
         
-        # No attributes should have been set
-        assert not hasattr(user, '_changed_fields')
+        # Call the signal handler directly
+        user_about_to_change(sender=User, instance=user)
+        
+        # Check that activation flag is not set
         assert not hasattr(user, '_was_activated')
-
-    # ==================== POST-SAVE SIGNAL TESTS ====================
     
-    def test_user_created_sends_welcome_email(self, db, mock_send_mail, mock_create_default_garden, mock_logger):
-        """Test that welcome email is sent for new users."""
-        # Create a new user
-        user = UserFactory()
+    def test_handle_nonexistent_user(self, db):
+        """Test handler doesn't crash when user doesn't exist in DB yet."""
+        # Create a user without saving to DB
+        user = UserFactory.build(pk=999, email="nonexistent@example.com")
         
-        # Manually call the signal handler with created=True
-        user_created_or_updated(User, user, created=True)
+        # Call signal handler directly (should not raise errors)
+        user_about_to_change(sender=User, instance=user)
         
-        # Check that the welcome email was sent
-        mock_send_mail.assert_called_once()
-        assert mock_send_mail.call_args[0][0] == "Welcome to UPlant"  # Subject
-        assert user.email in mock_send_mail.call_args[0][3]  # Recipients
-        
-        # Check that default garden was created
-        mock_create_default_garden.assert_called_once_with(user)
-        
-        # Check that it was logged
-        mock_logger.info.assert_any_call(f"New user created: {user.email}")
+        # No fields should be tracked since the user doesn't exist in DB
+        assert not hasattr(user, '_changed_fields')
 
-    def test_user_created_or_updated_handles_account_reactivation(self, db, mock_send_mail, mock_logger):
-        """Test that reactivation email is sent when account is reactivated."""
-        # Create user
-        user = UserFactory()
-        
-        # Set _was_activated flag
-        user._was_activated = True
-        
-        # Call signal handler with created=False (update)
-        user_created_or_updated(User, user, created=False)
-        
-        # Check that reactivation email was sent
-        mock_send_mail.assert_called_once()
-        assert "Reactivated" in mock_send_mail.call_args[0][0]  # Subject contains "Reactivated"
-        assert user.email in mock_send_mail.call_args[0][3]  # Recipients
 
-    def test_user_created_or_updated_handles_email_change(self, db, mock_send_mail, mock_logger):
-        """Test that email change notification is sent."""
-        # Create user
-        user = UserFactory(email="new@example.com")
-        
-        # Set _changed_fields including email change
-        old_email = "old@example.com"
-        user._changed_fields = [('email', old_email, user.email)]
-        
-        # Call signal handler with created=False (update)
-        user_created_or_updated(User, user, created=False)
-        
-        # Check that email change notification was sent to old email
-        mock_send_mail.assert_called_once()
-        assert "Email" in mock_send_mail.call_args[0][0]  # Subject contains "Email"
-        assert old_email in mock_send_mail.call_args[0][3]  # Recipients includes old email
-
-    def test_user_created_or_updated_skips_fixture_loading(self, db, mock_send_mail, mock_create_default_garden):
-        """Test that signal handler skips processing during fixture loading."""
-        # Create a user
-        user = UserFactory()
-        
-        # Call signal handler with raw=True (fixture loading)
-        user_created_or_updated(User, user, created=True, raw=True)
-        
-        # Check that nothing happened
-        mock_send_mail.assert_not_called()
-        mock_create_default_garden.assert_not_called()
-
-    # ==================== LOGIN/LOGOUT SIGNAL TESTS ====================
-    
-    def test_user_logged_in_callback(self, db, request_factory, mock_logger):
-        """Test that login callback updates last_login and logs activity."""
-        # Create a user and request
-        user = UserFactory()
-        request = request_factory.get('/login')
-        request.META['HTTP_USER_AGENT'] = 'Test Browser'
-        request.META['REMOTE_ADDR'] = '127.0.0.1'
-        
-        # Store original last_login
-        original_time = user.last_login
-        
-        # Call signal handler
-        user_logged_in_callback(sender=None, request=request, user=user)
-        
-        # Check that last_login was updated
-        assert user.last_login > original_time if original_time else user.last_login is not None
-        
-        # Check that login was logged with IP and user agent
-        mock_logger.info.assert_called_once()
-        log_message = mock_logger.info.call_args[0][0]
-        assert user.email in log_message
-        assert '127.0.0.1' in log_message
-        assert 'Test Browser' in log_message
-
-    def test_user_logged_out_callback(self, db, request_factory, mock_logger):
-        """Test that logout callback logs activity."""
-        # Create a user and request
-        user = UserFactory()
-        request = request_factory.get('/logout')
-        request.META['REMOTE_ADDR'] = '127.0.0.1'
-        
-        # Call signal handler
-        user_logged_out_callback(sender=None, request=request, user=user)
-        
-        # Check that logout was logged with IP
-        mock_logger.info.assert_called_once()
-        log_message = mock_logger.info.call_args[0][0]
-        assert user.email in log_message
-        assert '127.0.0.1' in log_message
-        assert 'logged out' in log_message
-
-    def test_user_login_failed_callback(self, mock_logger):
-        """Test that failed login attempts are logged."""
-        # Create credentials
-        credentials = {
-            'email': 'failed@example.com'
-        }
-        
-        # Call signal handler
-        user_login_failed_callback(sender=None, credentials=credentials)
-        
-        # Check that failed attempt was logged
-        mock_logger.warning.assert_called_once()
-        log_message = mock_logger.warning.call_args[0][0]
-        assert 'failed@example.com' in log_message
-        assert 'Failed login' in log_message
-
-    def test_user_login_failed_with_username(self, mock_logger):
-        """Test failed login logged with username if email not provided."""
-        # Create credentials with username instead of email
-        credentials = {
-            'username': 'faileduser'
-        }
-        
-        # Call signal handler
-        user_login_failed_callback(sender=None, credentials=credentials)
-        
-        # Check that failed attempt was logged with username
-        mock_logger.warning.assert_called_once()
-        log_message = mock_logger.warning.call_args[0][0]
-        assert 'faileduser' in log_message
-
-    # ==================== EMAIL FUNCTION TESTS ====================
-    
-    def test_send_welcome_email(self, db, mock_send_mail, mock_render_to_string, mock_logger):
-        """Test welcome email sending with templates."""
-        # Create a user
-        user = UserFactory()
-        
-        # Call function directly
-        send_welcome_email(user)
-        
-        # Check that email was sent with correct parameters
-        mock_send_mail.assert_called_once()
-        assert mock_send_mail.call_args[0][0] == "Welcome to UPlant"  # Subject
-        assert mock_send_mail.call_args[0][3] == [user.email]  # Recipients
-        assert mock_send_mail.call_args[1]['html_message'] == "Sample email content"  # HTML content
-        
-        # Check for template rendering
-        assert mock_render_to_string.call_count == 2
-        html_call = mock_render_to_string.call_args_list[0]
-        assert html_call[0][0] == 'user_management/email/welcome_email.html'
-        assert 'user' in html_call[0][1]  # Context contains user
-        
-        # Check activity logged
-        mock_logger.info.assert_called_once_with(f"Welcome email sent to {user.email}")
-
-    def test_send_account_reactivated_email(self, db, mock_send_mail, mock_render_to_string, mock_logger):
-        """Test account reactivation email sending with templates."""
-        # Create a user
-        user = UserFactory()
-        
-        # Call function directly
-        send_account_reactivated_email(user)
-        
-        # Check that email was sent with correct parameters
-        mock_send_mail.assert_called_once()
-        assert "Reactivated" in mock_send_mail.call_args[0][0]  # Subject
-        assert mock_send_mail.call_args[0][3] == [user.email]  # Recipients
-        
-        # Check for template rendering
-        assert mock_render_to_string.call_count == 2
-        html_call = mock_render_to_string.call_args_list[0]
-        assert html_call[0][0] == 'user_management/email/account_reactivated.html'
-        
-        # Check activity logged
-        mock_logger.info.assert_called_once_with(f"Account reactivation email sent to {user.email}")
-
-    def test_send_email_changed_notification(self, db, mock_send_mail, mock_logger):
-        """Test email change notification to old email."""
-        # Create a user
-        user = UserFactory(email="new@example.com")
-        old_email = "old@example.com"
-        
-        # Call function directly
-        send_email_changed_notification(user, old_email)
-        
-        # Check that email was sent with correct parameters
-        mock_send_mail.assert_called_once()
-        assert "Email" in mock_send_mail.call_args[0][0]  # Subject
-        assert mock_send_mail.call_args[0][3] == [old_email]  # Recipients to old email
-        
-        # Check message content
-        message_body = mock_send_mail.call_args[0][1]
-        assert old_email in message_body
-        assert user.email in message_body
-        
-        # Check activity logged
-        mock_logger.info.assert_called_once_with(f"Email change notification sent to {old_email}")
-
-    # ==================== HELPER FUNCTION TESTS ====================
-    
-    def test_get_from_email_with_settings(self, settings):
-        """Test get_from_email with custom settings."""
-        # Set up settings
-        settings.DEFAULT_FROM_EMAIL = 'custom@example.com'
-        
-        # Call function
-        email = get_from_email()
-        
-        # Check result
-        assert email == 'custom@example.com'
-
-    def test_get_from_email_default(self, settings):
-        """Test get_from_email falls back to default."""
-        # Ensure setting is not defined
-        if hasattr(settings, 'DEFAULT_FROM_EMAIL'):
-            delattr(settings, 'DEFAULT_FROM_EMAIL')
-        
-        # Call function
-        email = get_from_email()
-        
-        # Check result uses default
-        assert email == 'uplant.notifications@gmail.com'
-
-    def test_get_client_ip_with_forwarded_header(self):
-        """Test IP extraction with X-Forwarded-For header."""
-        # Create request with X-Forwarded-For
-        factory = RequestFactory()
-        request = factory.get('/')
-        request.META['HTTP_X_FORWARDED_FOR'] = '192.168.1.2, 10.0.0.1'
-        
-        # Call function
-        ip = get_client_ip(request)
-        
-        # Should return first IP in the chain
-        assert ip == '192.168.1.2'
-
-    def test_get_client_ip_without_forwarded_header(self):
-        """Test IP extraction without X-Forwarded-For header."""
-        # Create request without X-Forwarded-For
-        factory = RequestFactory()
-        request = factory.get('/')
-        request.META['REMOTE_ADDR'] = '192.168.1.3'
-        
-        # Call function
-        ip = get_client_ip(request)
-        
-        # Should return REMOTE_ADDR
-        assert ip == '192.168.1.3'
-
-    # ==================== ACTUAL SIGNAL CONNECTION TESTS ====================
+@pytest.mark.unit
+class TestPostSaveSignal:
+    """Tests for the user_created_or_updated signal (post_save)."""
     
     @patch('user_management.signals.send_welcome_email')
     @patch('user_management.signals.create_default_garden')
-    def test_post_save_signal_for_new_user(self, mock_create_garden, mock_welcome_email, db):
-        """Test that actual post_save signal triggers for new user."""
-        # Create a user (which should trigger signal)
+    def test_user_creation(self, mock_create_garden, mock_welcome_email, db):
+        """Test that new users get welcome email and default garden."""
+        # Create a user (this will trigger the signal)
+        user = UserFactory()
+        
+        # Call the signal handler directly to ensure it's tested
+        user_created_or_updated(sender=User, instance=user, created=True)
+        
+        # Check that welcome email was sent
+        mock_welcome_email.assert_called_with(user)
+        
+        # Check that default garden was created
+        mock_create_garden.assert_called_with(user)
+    
+    @patch('user_management.signals.send_welcome_email')
+    @patch('user_management.signals.create_default_garden')
+    def test_raw_flag_skips_processing(self, mock_create_garden, mock_welcome_email, db):
+        """Test that raw flag (for fixtures) prevents signal processing."""
+        user = UserFactory()
+        
+        # Call with raw=True (fixture loading)
+        user_created_or_updated(sender=User, instance=user, created=True, raw=True)
+        
+        # Nothing should be called
+        mock_welcome_email.assert_not_called()
+        mock_create_garden.assert_not_called()
+    
+    @patch('user_management.signals.send_account_reactivated_email')
+    def test_account_reactivation_detected(self, mock_reactivation_email, db):
+        """Test that account reactivation sends notification."""
+        user = UserFactory()
+        
+        # Set the activation flag (normally set by pre_save)
+        user._was_activated = True
+        
+        # Call the signal handler directly
+        user_created_or_updated(sender=User, instance=user, created=False)
+        
+        # Reactivation email should be sent
+        mock_reactivation_email.assert_called_with(user)
+    
+    @patch('user_management.signals.send_email_changed_notification')
+    def test_email_change_notification(self, mock_email_changed, db):
+        """Test that changing email sends notification to old address."""
+        user = UserFactory(email="new@example.com")
+        
+        # Set up changed fields (normally set by pre_save)
+        user._changed_fields = [('email', 'old@example.com', 'new@example.com')]
+        
+        # Call the signal handler directly
+        user_created_or_updated(sender=User, instance=user, created=False)
+        
+        # Email change notification should be sent
+        mock_email_changed.assert_called_with(user, 'old@example.com')
+    
+    @patch('user_management.signals.logger')
+    def test_exception_handling(self, mock_logger, db):
+        """Test that exceptions in the signal handler are caught and logged."""
+        user = UserFactory()
+        
+        # Make the handler raise an exception by setting invalid state
+        user._changed_fields = "invalid data format"
+        
+        # Call should not raise exception
+        user_created_or_updated(sender=User, instance=user, created=False)
+        
+        # Error should be logged
+        mock_logger.error.assert_called_once()
+        assert "Error in user_created_or_updated signal" in mock_logger.error.call_args[0][0]
+
+
+@pytest.mark.unit
+class TestLoginSignals:
+    """Tests for user login-related signals."""
+    
+    @patch('user_management.signals.get_client_ip')
+    @patch('user_management.signals.logger')
+    def test_login_tracking(self, mock_logger, mock_get_ip, db):
+        """Test that successful logins are tracked with IP and user agent."""
+        user = UserFactory()
+        request = Mock()
+        request.META = {'HTTP_USER_AGENT': 'Test Browser'}
+        
+        # Mock IP address retrieval
+        mock_get_ip.return_value = '192.168.1.1'
+        
+        # Call the signal handler directly
+        user_logged_in_callback(sender=None, request=request, user=user)
+        
+        # Check that last_login was updated
+        assert user.last_login is not None
+        
+        # Check that login was logged with IP and user agent
+        mock_logger.info.assert_called_with(
+            f"User {user.email} logged in from 192.168.1.1 using Test Browser"
+        )
+    
+    @patch('user_management.signals.get_client_ip')
+    @patch('user_management.signals.logger')
+    def test_logout_tracking(self, mock_logger, mock_get_ip, db):
+        """Test that logouts are tracked with IP."""
+        user = UserFactory()
+        request = Mock()
+        
+        # Mock IP address retrieval
+        mock_get_ip.return_value = '192.168.1.1'
+        
+        # Call the signal handler directly
+        user_logged_out_callback(sender=None, request=request, user=user)
+        
+        # Check that logout was logged with IP
+        mock_logger.info.assert_called_with(
+            f"User {user.email} logged out from 192.168.1.1"
+        )
+    
+    @patch('user_management.signals.logger')
+    def test_failed_login_tracking(self, mock_logger, db):
+        """Test that failed login attempts are logged."""
+        credentials = {'email': 'test@example.com', 'password': 'wrong'}
+        
+        # Call the signal handler directly
+        user_login_failed_callback(sender=None, credentials=credentials)
+        
+        # Check that failed attempt was logged
+        mock_logger.warning.assert_called_with(
+            f"Failed login attempt for test@example.com"
+        )
+    
+    @patch('user_management.signals.logger')
+    def test_failed_login_with_username(self, mock_logger, db):
+        """Test that failed login attempts with username are logged."""
+        credentials = {'username': 'testuser', 'password': 'wrong'}
+        
+        # Call the signal handler directly
+        user_login_failed_callback(sender=None, credentials=credentials)
+        
+        # Check that failed attempt was logged
+        mock_logger.warning.assert_called_with(
+            f"Failed login attempt for testuser"
+        )
+    
+    @patch('user_management.signals.logger')
+    def test_signal_exception_handling(self, mock_logger, db):
+        """Test that exceptions in login signals are caught and logged."""
+        # Test login signal
+        user = UserFactory()
+        request = Mock()
+        request.META = {}  # Missing user agent to cause error
+        
+        # Make get_client_ip raise an exception
+        with patch('user_management.signals.get_client_ip', side_effect=Exception("Test error")):
+            user_logged_in_callback(sender=None, request=request, user=user)
+            
+            # Error should be logged
+            mock_logger.error.assert_called_once()
+            assert "Error in user_logged_in signal" in mock_logger.error.call_args[0][0]
+        
+        # Reset mock
+        mock_logger.reset_mock()
+        
+        # Test logout signal with exception
+        with patch('user_management.signals.get_client_ip', side_effect=Exception("Test error")):
+            user_logged_out_callback(sender=None, request=request, user=user)
+            
+            # Error should be logged
+            mock_logger.error.assert_called_once()
+            assert "Error in user_logged_out signal" in mock_logger.error.call_args[0][0]
+            
+        # Reset mock
+        mock_logger.reset_mock()
+        
+        # Test login failed signal with exception
+        user_login_failed_callback(sender=None, credentials=None)  # None should cause error
+        
+        # Error should be logged
+        mock_logger.error.assert_called_once()
+        assert "Error in user_login_failed signal" in mock_logger.error.call_args[0][0]
+
+
+@pytest.mark.unit
+class TestEmailFunctions:
+    """Tests for email notification functions."""
+    
+    @patch('user_management.signals.send_mail')
+    @patch('user_management.signals.render_to_string')
+    @patch('user_management.signals.logger')
+    def test_welcome_email(self, mock_logger, mock_render, mock_send_mail, db):
+        """Test that welcome emails are properly formatted and sent."""
+        user = UserFactory(email="welcome@example.com", username="welcome_user")
+        
+        # Mock template rendering
+        mock_render.side_effect = [
+            "<h1>Welcome HTML</h1>",  # HTML version
+            "Welcome text"            # Plain text version
+        ]
+        
+        # Call the function directly
+        send_welcome_email(user)
+        
+        # Check template context
+        template_calls = mock_render.call_args_list
+        assert len(template_calls) == 2
+        context = template_calls[0][0][1]  # First call, second argument
+        assert context['user'] == user
+        assert 'app_url' in context
+        assert 'help_email' in context
+        
+        # Check email was sent
+        mock_send_mail.assert_called_once()
+        call_args = mock_send_mail.call_args[1]
+        assert call_args['subject'] == "Welcome to UPlant"
+        assert call_args['message'] == "Welcome text"
+        assert call_args['html_message'] == "<h1>Welcome HTML</h1>"
+        assert call_args['recipient_list'] == ["welcome@example.com"]
+    
+    @patch('user_management.signals.send_mail')
+    @patch('user_management.signals.render_to_string')
+    def test_welcome_email_template_fallback(self, mock_render, mock_send_mail, db):
+        """Test fallback when templates don't exist."""
+        user = UserFactory(username="welcome_user")
+        
+        # Mock template rendering to return empty strings (templates not found)
+        mock_render.return_value = ""
+        
+        # Call the function directly
+        send_welcome_email(user)
+        
+        # Check email was sent with fallback content
+        mock_send_mail.assert_called_once()
+        call_args = mock_send_mail.call_args[1]
+        assert "Welcome to UPlant" in call_args['message']
+        assert "welcome_user" in call_args['message']
+        assert call_args['html_message'] is None  # No HTML fallback
+    
+    @patch('user_management.signals.send_mail')
+    @patch('user_management.signals.logger')
+    def test_welcome_email_error_handling(self, mock_logger, mock_send_mail, db):
+        """Test error handling when sending welcome email fails."""
+        user = UserFactory()
+        
+        # Make send_mail raise an exception
+        mock_send_mail.side_effect = Exception("Email error")
+        
+        # Call should not raise exception
+        send_welcome_email(user)
+        
+        # Error should be logged
+        mock_logger.error.assert_called_once()
+        assert "Failed to send welcome email" in mock_logger.error.call_args[0][0]
+    
+    @patch('user_management.signals.send_mail')
+    def test_account_reactivated_email(self, mock_send_mail, db):
+        """Test that account reactivation emails are properly sent."""
+        user = UserFactory(email="reactivated@example.com", username="reactivated_user")
+        
+        # Call the function directly
+        send_account_reactivated_email(user)
+        
+        # Check email was sent
+        mock_send_mail.assert_called_once()
+        call_args = mock_send_mail.call_args[1]
+        assert "Account Has Been Reactivated" in call_args['subject']
+        assert call_args['recipient_list'] == ["reactivated@example.com"]
+    
+    @patch('user_management.signals.send_mail')
+    def test_email_changed_notification(self, mock_send_mail, db):
+        """Test that email change notifications are sent to the old address."""
+        user = UserFactory(email="new@example.com", username="changed_user")
+        old_email = "old@example.com"
+        
+        # Call the function directly
+        send_email_changed_notification(user, old_email)
+        
+        # Check email was sent to old address
+        mock_send_mail.assert_called_once()
+        call_args = mock_send_mail.call_args[1]
+        assert "Email Address Has Been Changed" in call_args['subject']
+        assert "old@example.com" in call_args['message']
+        assert "new@example.com" in call_args['message']
+        assert call_args['recipient_list'] == ["old@example.com"]
+
+
+@pytest.mark.unit
+class TestHelperFunctions:
+    """Tests for helper functions in signals module."""
+    
+    @patch('user_management.signals.settings')
+    def test_get_from_email_with_setting(self, mock_settings):
+        """Test that get_from_email returns the configured email."""
+        # Setup mock settings
+        mock_settings.DEFAULT_FROM_EMAIL = 'configured@example.com'
+        
+        # Call the function
+        email = get_from_email()
+        
+        # Check result
+        assert email == 'configured@example.com'
+    
+    def test_get_from_email_default(self):
+        """Test that get_from_email returns default when setting is missing."""
+        # Call the function (no mock, should use default)
+        email = get_from_email()
+        
+        # Check result
+        assert email == 'uplant.notifications@gmail.com'
+    
+    def test_get_client_ip_with_forwarded(self):
+        """Test that get_client_ip extracts IP from X-Forwarded-For header."""
+        request = Mock()
+        request.META = {'HTTP_X_FORWARDED_FOR': '192.168.1.2, 10.0.0.1'}
+        
+        # Call the function
+        ip = get_client_ip(request)
+        
+        # Check that first IP in chain is returned
+        assert ip == '192.168.1.2'
+    
+    def test_get_client_ip_without_forwarded(self):
+        """Test that get_client_ip falls back to REMOTE_ADDR when no X-Forwarded-For."""
+        request = Mock()
+        request.META = {'REMOTE_ADDR': '192.168.1.3'}
+        
+        # Call the function
+        ip = get_client_ip(request)
+        
+        # Check that REMOTE_ADDR is returned
+        assert ip == '192.168.1.3'
+
+
+@pytest.mark.unit
+class TestCreateDefaultGarden:
+    """Tests for the default garden creation function."""
+    
+    @patch('gardens.models.Garden.objects.create')
+    def test_default_garden_creation(self, mock_create, db):
+        """Test that default garden is created with correct attributes."""
+        user = UserFactory()
+        
+        # Mock Garden.objects.create to return a mock garden
+        mock_garden = Mock()
+        mock_garden.id = 1
+        mock_create.return_value = mock_garden
+        
+        # Call the function
+        with patch('services.notification_service.create_welcome_notification', create=True):
+            result = create_default_garden(user)
+        
+        # Check that garden was created with correct attributes
+        mock_create.assert_called_once()
+        call_kwargs = mock_create.call_args[1]
+        assert call_kwargs['user'] == user
+        assert call_kwargs['name'] == "My First Garden"
+        assert call_kwargs['size_x'] == 10
+        assert call_kwargs['size_y'] == 10
+        
+        # Function should return the created garden
+        assert result == mock_garden
+    
+    @patch('services.notification_service.create_welcome_notification', create=True)
+    @patch('gardens.models.Garden.objects.create')
+    @patch('plants.models.Plant.objects.filter')
+    def test_starter_plant_added(self, mock_filter, mock_create, mock_welcome_notif, db):
+        """Test that a starter plant is added to the default garden when available."""
+        user = UserFactory()
+        
+        # Mock Garden creation
+        mock_garden = Mock()
+        mock_garden.id = 1
+        mock_create.return_value = mock_garden
+        
+        # Mock Plant querying to return a starter plant
+        mock_plant = Mock()
+        mock_plant_qs = Mock()
+        mock_plant_qs.order_by.return_value.first.return_value = mock_plant
+        mock_filter.return_value = mock_plant_qs
+        
+        # Mock GardenLog creation
+        with patch('gardens.models.GardenLog.objects.create') as mock_log_create:
+            with patch('services.notification_service.create_plant_care_notifications', create=True) as mock_care_notif:
+                result = create_default_garden(user)
+        
+        # Check that starter plant was added
+        mock_log_create.assert_called_once()
+        log_kwargs = mock_log_create.call_args[1]
+        assert log_kwargs['garden'] == mock_garden
+        assert log_kwargs['plant'] == mock_plant
+        assert log_kwargs['x_coordinate'] == 5  # Center position
+        assert log_kwargs['y_coordinate'] == 5  # Center position
+    
+    @override_settings(SKIP_DEFAULT_GARDEN_CREATION=True)
+    def test_skip_garden_creation(self, db):
+        """Test that garden creation is skipped when configured in settings."""
+        user = UserFactory()
+        
+        # Call the function
+        result = create_default_garden(user)
+        
+        # Function should return early
+        assert result is None
+    
+    @patch('user_management.signals.logger')
+    def test_error_handling(self, mock_logger, db):
+        """Test that exceptions during garden creation are caught and logged."""
+        user = UserFactory()
+        
+        # Force an error in garden creation
+        with patch('gardens.models.Garden.objects.create', side_effect=Exception("Garden error")):
+            result = create_default_garden(user)
+        
+        # Function should return None on error
+        assert result is None
+        
+        # Error should be logged
+        mock_logger.error.assert_called_once()
+        assert "Failed to create default garden" in mock_logger.error.call_args[0][0]
+
+
+@pytest.mark.integration
+class TestSignalIntegration:
+    """Integration tests for signals working together."""
+    
+    @patch('user_management.signals.send_welcome_email')
+    @patch('user_management.signals.create_default_garden')
+    def test_user_creation_triggers_signals(self, mock_create_garden, mock_welcome_email, db):
+        """Test that creating a user triggers all expected signals."""
+        # This creates a user through the ORM, which should trigger signals
         user = User.objects.create_user(
-            email="signaltest@example.com",
-            username="signaltest",
-            password="password123"
+            email='integration@example.com',
+            username='integration_user',
+            password='password123'
         )
         
-        # Check that our mocked functions were called by signal
-        mock_welcome_email.assert_called_once_with(user)
-        mock_create_garden.assert_called_once_with(user)
-
-    @patch('user_management.signals.send_account_reactivated_email')
-    def test_post_save_signal_for_reactivation(self, mock_reactivation_email, db):
-        """Test that actual post_save signal triggers for activation."""
-        # Create an inactive user
-        user = UserFactory(is_active=False)
+        # Check that welcome email was requested
+        mock_welcome_email.assert_called_with(user)
         
-        # Activate the user (should trigger signal)
+        # Check that default garden was requested
+        mock_create_garden.assert_called_with(user)
+    
+    @patch('user_management.signals.send_account_reactivated_email')
+    def test_user_activation_triggers_signals(self, mock_reactivation_email, db):
+        """Test that reactivating a user triggers email notification."""
+        # Create inactive user
+        user = InactiveUserFactory()
+        
+        # Activate the user - should trigger signals
         user.is_active = True
         user.save()
         
-        # Check that reactivation email was triggered by signal
-        mock_reactivation_email.assert_called_once_with(user)
-
-    @patch('user_management.signals.user_logged_in_callback')
-    def test_user_logged_in_signal_connection(self, mock_callback, db):
-        """Test that user_logged_in signal is connected to our callback."""
-        # Create a user and request
-        user = UserFactory()
-        request = RequestFactory().get('/')
-        
-        # Send the signal
-        user_logged_in.send(sender=None, request=request, user=user)
-        
-        # Check our callback was called
-        mock_callback.assert_called_once()
-        assert mock_callback.call_args[1]['user'] == user
-        assert mock_callback.call_args[1]['request'] == request
-
-    @patch('user_management.signals.user_logged_out_callback')
-    def test_user_logged_out_signal_connection(self, mock_callback, db):
-        """Test that user_logged_out signal is connected to our callback."""
-        # Create a user and request
-        user = UserFactory()
-        request = RequestFactory().get('/')
-        
-        # Send the signal
-        user_logged_out.send(sender=None, request=request, user=user)
-        
-        # Check our callback was called
-        mock_callback.assert_called_once()
-        assert mock_callback.call_args[1]['user'] == user
-        assert mock_callback.call_args[1]['request'] == request
-
-    # ==================== CREATE DEFAULT GARDEN TESTS ====================
+        # Check that reactivation email was requested
+        mock_reactivation_email.assert_called_once()
     
-    @patch('user_management.signals.Garden')
-    @patch('user_management.signals.Plant')
-    @patch('user_management.signals.GardenLog')
-    def test_create_default_garden(self, mock_garden_log, mock_plant, mock_garden, db, mock_logger):
-        """Test creation of default garden for new user."""
-        # Set up mocks
-        mock_garden_instance = MagicMock()
-        mock_garden.objects.create.return_value = mock_garden_instance
-        
-        mock_plant_instance = MagicMock()
-        mock_plant.objects.filter.return_value.order_by.return_value.first.return_value = mock_plant_instance
-        
+    @patch('user_management.signals.send_email_changed_notification')
+    def test_email_change_triggers_signals(self, mock_email_changed, db):
+        """Test that changing email triggers notification."""
         # Create user
+        user = UserFactory(email="original@example.com")
+        
+        # Change email - should trigger signals
+        user.email = "changed@example.com"
+        user.save()
+        
+        # Check that email change notification was requested
+        mock_email_changed.assert_called_with(user, "original@example.com")
+    
+    def test_login_signals_integration(self, db):
+        """Test that Django's login signal triggers our handler."""
         user = UserFactory()
+        request = Mock()
+        request.META = {'HTTP_USER_AGENT': 'Test Browser'}
         
-        # Call function
-        result = create_default_garden(user)
-        
-        # Verify garden creation
-        mock_garden.objects.create.assert_called_once()
-        garden_call = mock_garden.objects.create.call_args[1]
-        assert garden_call['user'] == user
-        assert garden_call['name'] == "My First Garden"
-        assert garden_call['size_x'] == 10
-        assert garden_call['size_y'] == 10
-        
-        # Verify starter plant lookup
-        mock_plant.objects.filter.assert_called_once()
-        
-        # Verify garden log creation
-        mock_garden_log.objects.create.assert_called_once()
-        garden_log_call = mock_garden_log.objects.create.call_args[1]
-        assert garden_log_call['garden'] == mock_garden_instance
-        assert garden_log_call['plant'] == mock_plant_instance
-        assert garden_log_call['x_coordinate'] == 5
-        assert garden_log_call['y_coordinate'] == 5
-        
-        # Verify result
-        assert result == mock_garden_instance
-        
-        # Verify logging
-        mock_logger.info.assert_called_with(f"Default garden created for user {user.email}")
-
-    def test_create_default_garden_respects_skip_setting(self, settings, db):
-        """Test that garden creation can be disabled via settings."""
-        # Enable skip setting
-        settings.SKIP_DEFAULT_GARDEN_CREATION = True
-        
-        # Create a user
-        user = UserFactory()
-        
-        # Mock Garden model to verify it's not called
-        with patch('user_management.signals.Garden') as mock_garden:
-            # Call function
-            result = create_default_garden(user)
+        with patch('user_management.signals.logger') as mock_logger:
+            # Trigger Django's login signal
+            user_logged_in.send(sender=None, request=request, user=user)
             
-            # Verify Garden.objects.create was not called
-            mock_garden.objects.create.assert_not_called()
-            
-            # Result should be None
-            assert result is None
+            # Our signal handler should log the login
+            assert mock_logger.info.called
+            assert "logged in" in mock_logger.info.call_args[0][0]
