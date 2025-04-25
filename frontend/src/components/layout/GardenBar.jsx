@@ -50,7 +50,7 @@ const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex, dynamic = true
                         }}
                         text={garden.name}
                         style={{
-                            
+                            color: 'black',
                             backgroundColor: selectedGardenIndex === index ? 'green' : 'lightgreen',
                         }}
                     />

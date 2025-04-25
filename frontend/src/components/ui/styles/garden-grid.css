@@ -106,7 +106,7 @@ border-radius: 10px 0 0 0;
 
 .garden-grid-container {
     width: 65%;
-    outline: 2px solid white;
+    outline: 2px solid black;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -117,7 +117,7 @@ display: flex;
 justify-content: center;
 height: 500px;
 width: 35%;
-border-top: 2px solid white;
+border-top: 2px solid black;
 align-self: end;
 
 }

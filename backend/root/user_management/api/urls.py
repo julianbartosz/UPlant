@@ -53,3 +53,5 @@ urlpatterns = [
 
 # Named URL patterns for this app
 app_name = 'user_api'
+
+

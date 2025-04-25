@@ -8,12 +8,12 @@
     align-items: end;
     background: linear-gradient(to bottom, #156082,rgb(83, 118, 83));
     flex-direction: column;
+    border: 2px solid black;
   }
 
-  /* notifications-page.css */
 
 .notification-page-container {
-    background-color: white;
+    background: url('/public/garden_background.jpg') no-repeat center center;
     width: 100vw;
     height: 100vh;
     position: relative;
@@ -45,4 +45,12 @@
     border: 1px solid #ccc;
     border-radius: 5px;
   }
+
+  .garden-grid-container-static {
+
+
+    display: flex;
+    justify-content: center;
+    align-items: anchor-center;
+}
   

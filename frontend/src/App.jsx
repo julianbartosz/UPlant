@@ -9,46 +9,58 @@ import { useState, useEffect } from 'react';
 import LoginModal from './pages/LoginModal';
 import SignupPage from './pages/SignupModal';
 
-const getCSRFToken = async () => {
-  const response = await fetch('http://localhost:8000/api/notifications/notifications/', {  // Updated endpoint to match the CSRF token route
-    'credentials': 'include',
-  });
-  console.log(response.status);
-  const data = await response.json();
-  console.log(data);
-};
 
 function App() {
-  const [csrfToken, setCsrfToken] = useState('');
 
-  const handleGetCsrfToken = async () => {
-    const token = await getCSRFToken();
-    setCsrfToken(token);
-  };
-
-  useEffect(() => {
-    if (csrfToken) {
-      console.log(`CSRF Token: ${csrfToken}`);
+  function handlePasswordChange(old, newP, newConfirm) {
+    if (newP !== newConfirm) {
+      alert("New password and confirmation do not match.");
+      return;
     }
-    else {
-      console.log('CSRF Token not set');
+    if (newP.length < 8) {
+      alert("New password must be at least 8 characters long.");
+      return;
     }
+    if (old === newP) {
+      alert("New password cannot be the same as the old password.");
+      return;
+    }
+    // Proceed with password change logic
+    fetch('http://localhost:8000/api/users/password/change/', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+      'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+      current_password: old,
+      new_password: newP,
+      confirm_password: newConfirm,
+      }),
+    })
+    .then(response => {
+      if (!response.ok) {
+      throw new Error('Failed to change password');
+      }
+      return response.json();
+    })
+    .then(data => {
+      alert('Password changed successfully!');
+      console.log(data);
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('An error occurred while changing the password.');
+    });
   }
-  , [csrfToken]);
 
+  // handlePasswordChange("asdfghjkl;'", "asdfghjkl;", "asdfghjkl;");
+
+ 
   return (
     <UserProvider>
       <Router basename='/app'>
         <Routes>
-          <Route 
-            path="/csrf-token" 
-            element={
-              <div>
-                <button onClick={handleGetCsrfToken}>Get CSRF Token</button>
-                {csrfToken && <p>CSRF Token: {csrfToken}</p>}
-              </div>
-            } 
-          />
           <Route path="/" element={<LoadingAnimation redirect="/dashboard"/>} />
           <Route path="/login" element={<LoginModal />} />
           <Route path="/signup" element={<SignupPage />} />

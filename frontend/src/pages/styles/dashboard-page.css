@@ -1,22 +1,22 @@
 
+
   .garden-grid-container {
       width: 65%;
-      outline: 2px solid white;
+      outline: 2px solid black;
       display: flex;
       justify-content: center;
         align-items: center;
   }
   
-  .garden-notification-container{
-    
+.garden-notification-container{
     display: flex;
     justify-content: center;
     height: 500px;
     width: 35%;
-    border-top: 2px solid white;
+    border-top: 2px solid black;
     align-self: end;
-    
   }
+
 .grid-container {
     padding: 30px;
     background-image: url("/app/wood-texture.jpg");
@@ -26,7 +26,6 @@
     position: relative;
     box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds subtle depth */
 }
-
 
   .grid {
     display: grid;
@@ -38,17 +37,13 @@
   }
   
   .dashboard-content {
+    border: 2px solid black;
     position: fixed;
     top: 60px;
     left: 240px;
     width: calc(100vw - 240px);
     height: calc(100vh - 60px);
-    /* background: white; */
-    /* display: flex; */
-    /* justify-content: center; */
-    /* align-items: center; */
-    /* position: relative; */
-    /* width: 100%; */
+ 
     display: flex;
     /* justify-content: center; */
     align-items: end;

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "framer-motion": "^12.9.1",
+    "react-loader-spinner": "^6.1.6"
+  }
+}

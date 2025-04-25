@@ -35,8 +35,10 @@
 .username-form{
     justify-content: center;
     flex-direction: column;
-    /* align-self: center; */
-    height: 100vh;
     display: flex;
     align-items: center;
-    }
+
+    background: rgba(255, 253, 253, 0.8);
+    border-radius: 10px;
+    padding: 40px;
+}

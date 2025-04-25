@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-const GenericButton = ({ onClick, label, style }) => {
+const GenericButton = ({ onClick, label, style, disableMouseOver=false }) => {
 
     const buttonStyle = {
         color: 'white',
@@ -14,13 +14,18 @@ const GenericButton = ({ onClick, label, style }) => {
     };
 
     const handleMouseOver = (e) => {
-        e.target.style.transform = 'scale(1.1)';
-        e.target.style.transition = 'transform 0.2s ease-in-out';
+        if (!disableMouseOver) {
+            e.target.style.transform = 'scale(1.1)';
+            e.target.style.transition = 'transform 0.2s ease-in-out';
+        }
+    };
+    
+    const handleMouseOut = (e) => {
+        if (!disableMouseOver) {
+            e.target.style.transform = 'scale(1)';
+        }
     };
 
-    const handleMouseOut = (e) => {
-        e.target.style.transform = 'scale(1)';
-    };
 
     return (
         <button
