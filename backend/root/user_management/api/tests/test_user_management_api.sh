@@ -495,6 +495,51 @@ curl -s -X POST "http://localhost:8000/api/users/admin/users/" \
   }' > api_test_results/admin_user_create_invalid.json
 echo "Invalid user creation saved to api_test_results/admin_user_create_invalid.json"
 
+# 31. TEST USER ACCOUNT SELF-DELETION
+echo -e "\n31. Testing user account self-deletion..."
+if [[ -n "$TEST_USER_TOKEN" ]]; then
+  # First verify the user is active
+  curl -s -X GET http://localhost:8000/api/users/me/ \
+    -H "Authorization: Token $TEST_USER_TOKEN" \
+    -H "Content-Type: application/json" > api_test_results/user_before_deletion.json
+  
+  IS_ACTIVE_BEFORE=$(jq -r '.is_active // "null"' api_test_results/user_before_deletion.json 2>/dev/null)
+  echo "User active status before deletion: $IS_ACTIVE_BEFORE"
+  
+  # Now perform the account deletion (soft delete via POST)
+  curl -s -X POST http://localhost:8000/api/users/me/delete/ \
+    -H "Authorization: Token $TEST_USER_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "password": "'$NEW_TEST_PASSWORD'"
+    }' > api_test_results/user_self_delete.json
+  echo "User self-deletion response saved to api_test_results/user_self_delete.json"
+  
+  # Check if token is still valid (should be invalidated after deletion)
+  curl -s -X GET http://localhost:8000/api/users/me/ \
+    -H "Authorization: Token $TEST_USER_TOKEN" \
+    -H "Content-Type: application/json" > api_test_results/user_after_deletion.json
+  
+  # Verify the account is now deactivated by checking admin endpoint
+  if [[ -n "$TEST_USER_ID" ]]; then
+    curl -s -X GET "http://localhost:8000/api/users/admin/users/$TEST_USER_ID/" \
+      -H "Authorization: Token $ADMIN_TOKEN" \
+      -H "Content-Type: application/json" > api_test_results/user_deactivation_check.json
+    
+    IS_ACTIVE_AFTER=$(jq -r '.is_active // "null"' api_test_results/user_deactivation_check.json 2>/dev/null)
+    echo "User active status after deletion: $IS_ACTIVE_AFTER"
+    
+    if [[ "$IS_ACTIVE_AFTER" == "false" ]]; then
+      echo "✅ User was successfully deactivated"
+    else
+      echo "❌ User deactivation failed - user is still active"
+    fi
+  fi
+else
+  echo "⚠️ Skipping user self-deletion test - no test user token available"
+  echo '{"detail": "Test skipped - no test user available"}' > api_test_results/user_self_delete.json
+fi
+
 # --- CLEANUP - DELETE THE MAIN TEST USER ---
 if [[ -n "$TEST_USER_ID" ]]; then
   echo -e "\n--- CLEANUP: DELETING TEST USER ---"
@@ -506,7 +551,7 @@ fi
 
 echo -e "\n--- SUMMARY ---"
 
-TOTAL_TESTS=30
+TOTAL_TESTS=31
 FAILED_TESTS=0
 
 # Simple validation function
