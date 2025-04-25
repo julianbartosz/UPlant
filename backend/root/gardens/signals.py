@@ -10,7 +10,6 @@ from django.db.models import Q
 from django.conf import settings
 
 from gardens.models import Garden, GardenLog, PlantHealthStatus
-from notifications.models import Notification, NotificationInstance, NotifTypes
 from services.search_service import reindex_model
 
 logger = logging.getLogger(__name__)
@@ -27,6 +26,8 @@ def garden_saved_handler(sender, instance, created, **kwargs):
         # Initialize welcome notification for new gardens
         if not kwargs.get('raw', False):  # Skip during fixtures loading
             try:
+                # Lazy import to avoid circular import
+                from services.notification_service import create_welcome_notification
                 create_welcome_notification(instance)
             except Exception as e:
                 logger.error(f"Failed to create welcome notification: {e}")
@@ -89,6 +90,8 @@ def garden_log_saved_handler(sender, instance, created, **kwargs):
         # Create care notifications for this plant if plant has care requirements
         if not kwargs.get('raw', False):  # Skip during fixtures loading
             try:
+                # Lazy import
+                from services.notification_service import create_plant_care_notifications
                 create_plant_care_notifications(instance)
             except Exception as e:
                 logger.error(f"Failed to create plant care notifications: {e}")
@@ -99,7 +102,12 @@ def garden_log_saved_handler(sender, instance, created, **kwargs):
             
             # Check if health status changed
             if old_log.health_status != instance.health_status:
-                process_health_status_change(old_log, instance)
+                try:
+                    # Lazy import
+                    from services.notification_service import handle_health_change
+                    handle_health_change(old_log.health_status, instance.health_status, garden, plant)
+                except Exception as e:
+                    logger.error(f"Failed to handle health change: {e}")
                 
             # Check if plant was moved
             if (old_log.x_coordinate != instance.x_coordinate or 
@@ -108,14 +116,20 @@ def garden_log_saved_handler(sender, instance, created, **kwargs):
                            f"({instance.x_coordinate}, {instance.y_coordinate}) in garden {garden.id}")
             
             # Check if care activities were performed
-            if old_log.last_watered != instance.last_watered and instance.last_watered:
-                process_watering_event(instance)
+            try:
+                # Lazy import
+                from services.notification_service import handle_plant_care_event
                 
-            if old_log.last_fertilized != instance.last_fertilized and instance.last_fertilized:
-                process_fertilizing_event(instance)
-                
-            if old_log.last_pruned != instance.last_pruned and instance.last_pruned:
-                process_pruning_event(instance)
+                if old_log.last_watered != instance.last_watered and instance.last_watered:
+                    handle_plant_care_event(instance, 'watering')
+                    
+                if old_log.last_fertilized != instance.last_fertilized and instance.last_fertilized:
+                    handle_plant_care_event(instance, 'fertilizing')
+                    
+                if old_log.last_pruned != instance.last_pruned and instance.last_pruned:
+                    handle_plant_care_event(instance, 'pruning')
+            except Exception as e:
+                logger.error(f"Failed to handle plant care event: {e}")
                 
         except GardenLog.DoesNotExist:
             # Shouldn't happen, but handle just in case
@@ -141,7 +155,9 @@ def garden_log_deleted_handler(sender, instance, **kwargs):
     
     # Clear related notifications for this plant in this garden
     try:
-        clear_plant_notifications(instance)
+        # Lazy import
+        from services.notification_service import cleanup_plant_notifications
+        cleanup_plant_notifications(garden, plant)
     except Exception as e:
         logger.error(f"Failed to clear plant notifications: {e}")
     
@@ -161,214 +177,3 @@ def clear_garden_cache(garden):
     
     # Clear dashboard cache
     cache.delete(f"user:{garden.user.id}:garden_dashboard")
-
-
-def process_health_status_change(old_log, new_log):
-    """Process a change in plant health status"""
-    if new_log.health_status == PlantHealthStatus.POOR:
-        logger.warning(f"Plant health declined to Poor in garden {new_log.garden.id}")
-        
-        # Create health alert notification
-        try:
-            notification = Notification.objects.create(
-                garden=new_log.garden,
-                name="Plant needs attention",
-                type=NotifTypes.OT,
-                subtype="health-alert",  # Changed to use lowercase with hyphen
-                interval=1  # One-time notification
-            )
-            notification.plants.add(new_log.plant)
-            
-            # Create immediate notification instance
-            NotificationInstance.objects.create(
-                notification=notification,
-                next_due=timezone.now(),
-                status="PENDING",
-                message=f"Your {new_log.plant.common_name or 'plant'} needs attention - health is declining"
-            )
-        except Exception as e:
-            logger.error(f"Failed to create health alert notification: {e}")
-    
-    elif (old_log.health_status in [PlantHealthStatus.POOR, PlantHealthStatus.DYING] and 
-          new_log.health_status in [PlantHealthStatus.HEALTHY, PlantHealthStatus.EXCELLENT]):
-        logger.info(f"Plant health improved to {new_log.health_status} in garden {new_log.garden.id}")
-        
-        # Could implement positive reinforcement notifications here
-        try:
-            notification = Notification.objects.create(
-                garden=new_log.garden,
-                name="Plant health improved",
-                type=NotifTypes.OT,
-                subtype="health-improvement",  # Added positive reinforcement
-                interval=1  # One-time notification
-            )
-            notification.plants.add(new_log.plant)
-            
-            # Create immediate notification instance
-            NotificationInstance.objects.create(
-                notification=notification,
-                next_due=timezone.now(),
-                status="PENDING",
-                message=f"Great job! Your {new_log.plant.common_name or 'plant'} is looking healthier!"
-            )
-        except Exception as e:
-            logger.error(f"Failed to create health improvement notification: {e}")
-
-
-def create_welcome_notification(garden):
-    """Create welcome notification for a newly created garden"""
-    notification = Notification.objects.create(
-        garden=garden,
-        name="Welcome to your new garden!",
-        type=NotifTypes.OT,
-        subtype="welcome",  # Changed to lowercase to match validation
-        interval=1  # One-time notification
-    )
-    
-    # Create immediate notification instance
-    NotificationInstance.objects.create(
-        notification=notification,
-        next_due=timezone.now(),
-        status="PENDING",
-        message=f"Your new garden '{garden.name or 'Unnamed'}' is ready for planting!"
-    )
-
-
-def create_plant_care_notifications(garden_log):
-    """Create care notifications for a newly added plant"""
-    plant = garden_log.plant
-    garden = garden_log.garden
-    
-    # Skip if plant is None
-    if not plant:
-        return
-    
-    # Get plant care requirements (if available)
-    water_days = getattr(plant, 'watering_frequency', None)
-    fertilize_days = getattr(plant, 'fertilizing_frequency', None)
-    
-    plant_name = plant.common_name or 'plant'
-    if len(plant_name) > 85:  # Leave room for "Water " (6 chars) + safety margin
-        plant_name = plant_name[:82] + '...'
-
-    # Create watering notification if water_days is available
-    if water_days and water_days > 0:
-        water_notif = Notification.objects.create(
-            garden=garden,
-            name=f"Water {plant.common_name or 'plant'}",
-            type=NotifTypes.WA,  # Changed to use dedicated water type
-            interval=water_days
-            # No subtype needed for standard notification types
-        )
-        water_notif.plants.add(plant)
-        
-        # Create first notification instance due in water_days
-        NotificationInstance.objects.create(
-            notification=water_notif,
-            next_due=timezone.now() + timezone.timedelta(days=water_days),
-            status="PENDING",
-            message=f"Time to water your {plant.common_name or 'plant'}"
-        )
-    
-    # Create fertilizing notification if fertilize_days is available
-    if fertilize_days and fertilize_days > 0:
-        fert_notif = Notification.objects.create(
-            garden=garden,
-            name=f"Fertilize {plant.common_name or 'plant'}",
-            type=NotifTypes.FE,
-            interval=fertilize_days
-        )
-        fert_notif.plants.add(plant)
-        
-        # Create first notification instance due in fertilize_days
-        NotificationInstance.objects.create(
-            notification=fert_notif,
-            next_due=timezone.now() + timezone.timedelta(days=fertilize_days),
-            status="PENDING",
-            message=f"Time to fertilize your {plant.common_name or 'plant'}"
-        )
-
-
-def clear_plant_notifications(garden_log):
-    """Clear notifications for a plant when it's removed from garden"""
-    plant = garden_log.plant
-    garden = garden_log.garden
-    
-    if not plant:
-        return
-        
-    # Find notifications for this specific plant in this garden
-    from django.db.models import Count
-    from notifications.models import NotificationPlantAssociation
-    
-    # Get notifications that only have this plant
-    plant_assocs = NotificationPlantAssociation.objects.filter(
-        plant=plant,
-        notification__garden=garden
-    )
-    
-    # For each association, count how many plants are in that notification
-    for assoc in plant_assocs:
-        notification = assoc.notification
-        plant_count = notification.plants.count()
-        
-        if plant_count <= 1:
-            # This is the only plant in the notification, delete the notification
-            notification.delete()
-            logger.info(f"Deleted notification {notification.id} after plant removal")
-        else:
-            # Remove just this plant from the notification
-            notification.plants.remove(plant)
-            logger.info(f"Removed plant from notification {notification.id}")
-
-
-def process_watering_event(garden_log):
-    """Process a watering event"""
-    # Mark related watering notifications as completed
-    NotificationInstance.objects.filter(
-        notification__garden=garden_log.garden,
-        notification__plants=garden_log.plant,
-        notification__type=NotifTypes.WA,  # Changed to use dedicated water type
-        status="PENDING"
-        # Removed subtype filter as it's not needed with WA type
-    ).update(
-        status="COMPLETED",
-        completed_at=timezone.now()
-    )
-    
-    logger.info(f"Plant {garden_log.plant.id if garden_log.plant else 'Unknown'} "
-               f"watered in garden {garden_log.garden.id}")
-
-
-def process_fertilizing_event(garden_log):
-    """Process a fertilizing event"""
-    # Mark related fertilizing notifications as completed
-    NotificationInstance.objects.filter(
-        notification__garden=garden_log.garden,
-        notification__plants=garden_log.plant,
-        notification__type=NotifTypes.FE,
-        status="PENDING"
-    ).update(
-        status="COMPLETED",
-        completed_at=timezone.now()
-    )
-    
-    logger.info(f"Plant {garden_log.plant.id if garden_log.plant else 'Unknown'} "
-               f"fertilized in garden {garden_log.garden.id}")
-
-
-def process_pruning_event(garden_log):
-    """Process a pruning event"""
-    # Mark related pruning notifications as completed
-    NotificationInstance.objects.filter(
-        notification__garden=garden_log.garden,
-        notification__plants=garden_log.plant,
-        notification__type=NotifTypes.PR,
-        status="PENDING"
-    ).update(
-        status="COMPLETED",
-        completed_at=timezone.now()
-    )
-    
-    logger.info(f"Plant {garden_log.plant.id if garden_log.plant else 'Unknown'} "
-               f"pruned in garden {garden_log.garden.id}")

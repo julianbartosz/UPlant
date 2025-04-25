@@ -41,9 +41,19 @@ def _make_api_request(url: str, params: Dict[str, Any]) -> Dict:
     Raises:
         WeatherServiceError: If request fails after retries
     """
+    # Add proper headers for OpenStreetMap Nominatim API
+    headers = {}
+    
+    if "nominatim.openstreetmap.org" in url:
+        headers = {
+            'User-Agent': 'UPlant/1.0 (http://localhost:5173; uplant.notifications@gmail.com)',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Referer': 'http://localhost:5173'
+        }
+    
     for attempt in range(MAX_RETRIES):
         try:
-            response = requests.get(url, params=params, timeout=10)
+            response = requests.get(url, params=params, headers=headers, timeout=10)
             response.raise_for_status()
             return response.json()
         except requests.RequestException as e:
@@ -53,7 +63,7 @@ def _make_api_request(url: str, params: Dict[str, Any]) -> Dict:
             else:
                 logger.error(f"API request failed after {MAX_RETRIES} attempts: {str(e)}")
                 raise WeatherServiceError(f"Weather service unavailable: {str(e)}")
-
+            
 def get_coordinates_from_zip(zip_code: str, country: str = "us") -> Tuple[float, float]:
     """
     Convert ZIP code to coordinates (latitude, longitude)

@@ -146,7 +146,6 @@ def send_welcome_email(user):
             'help_email': getattr(settings, 'HELP_EMAIL', 'support@uplant.app'),
         }
         
-        # Changed template paths to match your directory structure
         html_message = render_to_string('user_management/email/welcome_email.html', context)
         plain_message = render_to_string('user_management/email/welcome_email.txt', context)
         
@@ -268,14 +267,13 @@ def create_default_garden(user):
             user=user,
             name="My First Garden",
             description="Welcome to your first garden! Start adding plants and track their growth.",
-            size_x=10,  # Using required field
-            size_y=10,  # Using required field
-            is_public=False,  # Default visibility
-            location="Home Garden",  # Using optional field
-            garden_type="Mixed",  # Using optional field from garden_type choices
+            size_x=10,
+            size_y=10,
+            is_public=False,
+            location="Home Garden",
+            garden_type="Mixed",
         )
         
-        # Optionally add a starter plant to the garden
         try:
             # Find a beginner-friendly plant if available
             starter_plant = Plant.objects.filter(
@@ -285,7 +283,7 @@ def create_default_garden(user):
             
             if starter_plant:
                 # Add the plant to the garden at center position
-                GardenLog.objects.create(
+                garden_log = GardenLog.objects.create(
                     garden=garden,
                     plant=starter_plant,
                     x_coordinate=5,  # Center of garden
@@ -293,31 +291,22 @@ def create_default_garden(user):
                     health_status='Healthy',  # Using PlantHealthStatus choices
                     notes="Your starter plant! Water regularly and watch it grow."
                 )
+                
+                # Create care notifications for the starter plant
+                try:
+                    from services.notification_service import create_plant_care_notifications
+                    create_plant_care_notifications(garden_log)
+                except (ImportError, Exception) as e:
+                    logger.warning(f"Could not create plant care notifications: {str(e)}")
         except Exception as e:
             # Don't let starter plant creation failure stop the process
             logger.warning(f"Could not create starter plant: {str(e)}")
             
-        # Create a welcome notification for the garden
+        # Create a welcome notification for the garden using the notification service
         try:
-            from notifications.models import Notification, NotificationInstance, NotifTypes
+            from services.notification_service import create_welcome_notification
             
-            # Create the notification properly with correct model fields
-            notification = Notification.objects.create(
-                garden=garden,
-                name="Welcome to Your New Garden!",
-                type=NotifTypes.OT,
-                subtype="welcome",  # lowercase, consistent with validation
-                interval=1  # One-time notification
-            )
-            
-            # Create immediate notification instance
-            NotificationInstance.objects.create(
-                notification=notification,
-                next_due=timezone.now(),
-                status="PENDING",
-                message=f"Your garden '{garden.name}' has been created. Start adding plants and setting up your garden layout!"
-            )
-            
+            create_welcome_notification(garden)
             logger.info(f"Welcome notification created for garden {garden.id}")
         except (ImportError, Exception) as e:
             # Don't let notification failure stop the process

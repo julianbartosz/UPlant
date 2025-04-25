@@ -3,6 +3,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import APIException
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from gardens.models import Garden, GardenLog
 from gardens.api.serializers import GardenSerializer, GardenLogSerializer, GardenGridSerializer
@@ -11,7 +12,7 @@ from services.weather_service import get_garden_weather_insights, WeatherService
 from django.db.models import Count, Sum, Q
 from django.utils import timezone
 import logging
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -453,20 +454,38 @@ class GardenLogViewSet(viewsets.ModelViewSet):
         return queryset
     
     def perform_create(self, serializer):
-        garden = serializer.validated_data.get('garden')
-        x_coordinate = serializer.validated_data.get('x_coordinate')
-        y_coordinate = serializer.validated_data.get('y_coordinate')
-        
-        # Check for existing plant at this position
-        if GardenLog.objects.filter(garden=garden, 
-                                x_coordinate=x_coordinate, 
-                                y_coordinate=y_coordinate,
-                                is_deleted=False).exists():
-            raise ValidationError(
-                {"position": f"A plant already exists at position ({x_coordinate}, {y_coordinate})"}
-            )
-        
-        serializer.save(garden=garden)
+        """Create a new garden log entry (plant in garden)"""
+        try:
+            # Garden should already be validated by the serializer
+            garden = serializer.validated_data.get('garden')
+            
+            # Extra verification that the garden belongs to the current user
+            if garden.user != self.request.user:
+                raise PermissionDenied("You don't have permission to add plants to this garden")
+            
+            # The serializer validation already checks for position conflicts,
+            # but let's add a safety check here as well
+            x_coordinate = serializer.validated_data.get('x_coordinate')
+            y_coordinate = serializer.validated_data.get('y_coordinate')
+            
+            if GardenLog.objects.filter(
+                garden=garden, 
+                x_coordinate=x_coordinate, 
+                y_coordinate=y_coordinate,
+                is_deleted=False
+            ).exists():
+                raise ValidationError(
+                    {"position": f"A plant already exists at position ({x_coordinate}, {y_coordinate})"}
+                )
+            
+            # Save the garden log
+            serializer.save()
+            
+        except Garden.DoesNotExist:
+            raise ValidationError({"garden": "Garden does not exist"})
+        except Exception as e:
+            logger.error(f"Error creating garden log: {e}")
+            raise APIException(f"Error creating garden log: {str(e)}")
     
     @action(detail=True, methods=['post'])
     def update_health(self, request, pk=None):
