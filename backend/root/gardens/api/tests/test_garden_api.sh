@@ -250,24 +250,52 @@ if [[ "$GARDEN_ID" =~ ^[0-9]+$ ]]; then
           }' > "api_test_results/user_set_zip_code.json"
         echo "User ZIP code updated"
         
+        # Test the weather service directly to check if it's working
+        echo -e "\n14.1. Directly testing weather service..."
+        curl -s "http://localhost:8000/api/gardens/weather/10001/" \
+          -H "Authorization: Token $TOKEN" \
+          -H "Content-Type: application/json" > "api_test_results/direct_weather_test.json"
+          
+        # Check if the response contains an error
+        if grep -q "\"error\"" "api_test_results/direct_weather_test.json"; then
+          echo "⚠️  Weather service returned an error. Weather-dependent tests may fail."
+          cat "api_test_results/direct_weather_test.json" | python3 -m json.tool | head -n 10
+        else
+          echo "✅ Weather service appears to be working correctly."
+        fi
+        
         # Note about weather API tests
         echo -e "\n⚠️ NOTE: Weather API tests may fail due to external API rate limits or restrictions."
         echo "This is expected in test environments. The following tests verify the endpoints exist,"
         echo "but might return error responses depending on API availability."
         
-        # 15. Weather test with fallback
+        # 15. Garden recommendations test - FIXED: Now saves both status code AND JSON
         echo -e "\n15. Getting garden recommendations..."
+        # Save status code
         curl -s -o /dev/null -w "%{http_code}" "http://localhost:8000/api/gardens/gardens/$GARDEN_ID/recommendations/" \
           -H "Authorization: Token $TOKEN" \
           -H "Content-Type: application/json" > "api_test_results/garden_recommendations_status.txt"
-        echo "Garden recommendations endpoint status: $(cat api_test_results/garden_recommendations_status.txt)"
           
-        # 16. TEST PLANT WEATHER COMPATIBILITY (status check only)
+        # Save actual JSON response
+        curl -s "http://localhost:8000/api/gardens/gardens/$GARDEN_ID/recommendations/" \
+          -H "Authorization: Token $TOKEN" \
+          -H "Content-Type: application/json" > "api_test_results/garden_recommendations.json"
+          
+        echo "Garden recommendations endpoint status: $(cat api_test_results/garden_recommendations_status.txt)"
+        
+        # 16. Weather compatibility test - FIXED: Now saves both status code AND JSON
         echo -e "\n16. Testing plant weather compatibility endpoint..."
+        # Save status code
         curl -s -o /dev/null -w "%{http_code}" "http://localhost:8000/api/gardens/garden-logs/$GARDEN_LOG_ID/weather_compatibility/" \
           -H "Authorization: Token $TOKEN" \
-          -H "Content-Type: application/json" > "api_test_results/plant_weather_compatibility_status.txt"
-        echo "Weather compatibility endpoint status: $(cat api_test_results/plant_weather_compatibility_status.txt)"
+          -H "Content-Type: application/json" > "api_test_results/weather_compatibility_status.txt"
+          
+        # Save actual JSON response with the correct filename expected by validate_tests.py
+        curl -s "http://localhost:8000/api/gardens/garden-logs/$GARDEN_LOG_ID/weather_compatibility/" \
+          -H "Authorization: Token $TOKEN" \
+          -H "Content-Type: application/json" > "api_test_results/weather_compatibility.json"
+          
+        echo "Weather compatibility endpoint status: $(cat api_test_results/weather_compatibility_status.txt)"
         
         # 17. DELETE A GARDEN LOG
         echo -e "\n17. Deleting garden log..."
@@ -317,5 +345,12 @@ echo "2. Garden grid and plant placement functions as expected"
 echo "3. Duplicate plant placement is correctly prevented"
 echo "4. Garden resizing handles out-of-bounds plants appropriately"
 echo "5. Weather API calls may fail due to external service limitations"
+
+# Check if any errors were found with the weather service
+if [ -f "api_test_results/direct_weather_test.json" ] && grep -q "\"error\"" "api_test_results/direct_weather_test.json"; then
+    echo -e "\n⚠️ WEATHER SERVICE ISSUE DETECTED:"
+    grep -A 3 "\"error\"" "api_test_results/direct_weather_test.json" | head -n 4
+    echo "Consider checking weather_service.py configuration and API keys."
+fi
 
 echo -e "\nAll endpoints tested. Check the api_test_results directory for results."
