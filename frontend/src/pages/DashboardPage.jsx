@@ -1,10 +1,12 @@
 import { useRef, useEffect, useState } from 'react';
-import { useGardens, useUser, useNotifications } from '../hooks';
+import { useGardens, useUser } from '../hooks';
 import { GardenGrid } from '../components/ui';
 import { NotificationSection, GardenBar, PlantSearchSideBar, NavBar } from '../components/layout';
+import { Grid } from 'react-loader-spinner';
 import './styles/dashboard-page.css';
 
 function DashboardPage() {
+
   const { username } = useUser();
   const { gardens, mediateAddPlantToGarden, mediateRemovePlantFromGarden } = useGardens();
 
@@ -63,7 +65,7 @@ function DashboardPage() {
       return;
       
     }
-    
+
     const currentGarden = gardens[selectedGardenIndexRef.current]
       selectedEmptyCellsRef.current.forEach(key => {
         const [row, col] = key.split('-').map(Number);
@@ -87,7 +89,7 @@ function DashboardPage() {
     }
   };
 
-  if (!gardens) return null;
+  if (!gardens) return <div style={{width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center'}}><Grid color="black" height={150} width={150} /></div>;
 
   return (
     <>
@@ -95,7 +97,7 @@ function DashboardPage() {
         title="Dashboard"
         buttonOptions={['back', 'settings', 'bell']}
         username={username}
-        onBack={() => { window.location.href = process.env.VITE_HOME_URL}}
+        onBack={() => { window.location.href = import.meta.env.VITE_BACKEND_URL; }}
       />
       <PlantSearchSideBar
         page="dashboard"
@@ -103,7 +105,6 @@ function DashboardPage() {
         onShearClick={() => { handlePlantClick({ type: 'SHEAR' }); }}
       />
         <div className="dashboard-content" ref={containerRef}>
-         
             <GardenBar
               selectedGardenIndex={selectedGardenIndex}
               setSelectedGardenIndex={setSelectedGardenIndex}
@@ -118,14 +119,14 @@ function DashboardPage() {
             selectedPlantCells={selectedPlantCells}
             cellClickHandler={cellClickHandler}
           />
+
           )}
           <div
             className="garden-notification-container"
             style={{
-              borderTop: '2px solid white',
+              borderTop: '2px solid black',
               alignSelf: 'end',
               height: `${contentSize}px`,
-
             }}
           >
           <NotificationSection

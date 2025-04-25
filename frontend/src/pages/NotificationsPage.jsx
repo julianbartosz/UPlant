@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useNotifications, useGardens, useUser } from '../hooks';
 import { NavBar, GardenBar } from '../components/layout';
 import { GardenGrid } from '../components/ui';
+import { Grid } from 'react-loader-spinner';
 import './styles/notifications-page.css';
 
 function NotificationPage() {
+    
     const { username, usernameError } = useUser();
     const { notificationsList, notificationsListLoading, notificationsListError } = useNotifications();
     const { gardens, gardensLoading, gardensError } = useGardens();
@@ -64,14 +66,9 @@ function NotificationPage() {
         return () => observer.disconnect();
     }, []);
 
-    if (notificationsListLoading) return <p>Loading notificationsList...</p>;
-    if (gardensLoading) return <p>Loading gardens...</p>;
-    if (!gardens) return <p>No gardens available.</p>;
+    if (!gardens) return <div style={{width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center'}}><Grid color="black" height={150} width={150} /></div>;    
 
-    if (gardensError || notificationsListError || usernameError) {
-        console.error('Error fetching data:', gardensError, notificationsListError, usernameError);
-        return <p>Error fetching data.</p>;
-    }
+
 
     const handleNotificationClick = (plants) => {
         console.log('Selected plants:', plants);

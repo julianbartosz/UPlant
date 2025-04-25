@@ -6,7 +6,6 @@ from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from rest_framework.exceptions import AuthenticationFailed
 
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount

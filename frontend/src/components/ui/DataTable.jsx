@@ -22,6 +22,7 @@ import useNotifications from '../../hooks/useNotifications';
 import { PiEmptyBold } from "react-icons/pi";
 
 import './styles/data-table.css';
+import { color } from 'framer-motion';
 
 const DataTable = ({ 
         selectedGardenIndex,    
@@ -40,9 +41,9 @@ const DataTable = ({
             <table className="data-table" style={{ fontSize: fontSize }}>
                 <thead className="data-table-header">
                     <tr>
-                        <th style={{ fontSize: 'small' }}>Name</th>
-                        <th style={{ fontSize: 'small' }}>Plants</th>
-                        <th style={{ fontSize: 'small' }}>Interval</th>
+                        <th style={{ textAlign: 'center', fontSize: 'small' }}>Name</th>
+                        <th style={{ textAlign: 'center',fontSize: 'small' }}>Plants</th>
+                        <th style={{ textAlign: 'center', fontSize: 'small' }}>Interval</th>
                         <th style={{ textAlign: 'center', fontSize: 'small' }}>
                             <AddButton onClick={onAdd} />
                         </th>
@@ -75,10 +76,10 @@ const DataTable = ({
             </table>
             {notificationsList && notificationsList[selectedGardenIndex] && notificationsList[selectedGardenIndex].length === 0  && (
             <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 80px)', justifyContent: 'center', alignItems: 'center', fontSize: 'small' }}>
-            <PiEmptyBold style={{height: "70px", width: "70px"}} />
+            <PiEmptyBold style={{color: 'black', height: "70px", width: "70px"}} />
             <ul>
-                <li>You have zero configured notifications.</li>
-                <li>Click the green "+" button to add a notification for your garden.</li>
+                <li style={{color: 'black'}}>You have zero configured notifications.</li>
+                <li style={{color: 'black'}}>Click the green "+" button to add a notification for your garden.</li>
             </ul>
             </div>)}
             </>

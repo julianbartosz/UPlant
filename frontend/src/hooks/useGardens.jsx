@@ -181,6 +181,7 @@ export const useGardens = () => {
             alert("Cannot add plant: Cell is already occupied.");
             return;
         }
+
         garden.cells[y][x] = plant;
 
         // Optimistically update UI
@@ -189,8 +190,9 @@ export const useGardens = () => {
                 g.id === gardenId ? garden : g
             )
         );
-
-        const reqBody =  { "garden": gardenId, "plant": plant.id, "planted_date": new Date().toISOString(), "x_coordinate": x, "y_coordinate": y };
+        
+        const reqBody =  { "garden": gardenId, "plant": plant.id, "x_coordinate": x, "y_coordinate": y };
+        console.log("Request body:", reqBody);
 
         // IIFE to handle async operation
         (async () => {
@@ -200,6 +202,7 @@ export const useGardens = () => {
                     credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Token 4c1775be909a3873ee6c23104d433adaf4cbde29`,
                     },
                     body: JSON.stringify(reqBody),
                 });

@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from gardens.models import Garden, GardenLog
 from gardens.api.serializers import GardenSerializer, GardenLogSerializer, GardenGridSerializer
-from notifications.models import Notification, NotificationInstance
-from django.db.models import Count, Sum, Q
+from notifications.models import NotificationInstance
+from django.db.models import Count, Q
 from django.utils import timezone
 import logging
 

@@ -52,7 +52,7 @@ const PlantSearchSideBar = ({ page, onShearClick = null, onPlantClick = null }) 
               <div className="item-container" key={plant.id}>
                 <PlantItem
                   plant={plant}
-                  onClick={onPlantClick}
+                  onClick={() => {console.log(onPlantClick); onPlantClick(plant);}}
                 />
               </div>
             ))
