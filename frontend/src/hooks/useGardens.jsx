@@ -359,6 +359,7 @@ export const useGardens = () => {
 
         // Optimistically update UI
         setGardens(prevGardens => prevGardens.filter((_, i) => i !== index));
+        setNotifications(prevNotifications => prevNotifications.filter((_, i) => i !== index));
 
         try {
             const response = await fetch(`${import.meta.env.VITE_GARDENS_API_URL}${garden.id}`, {
