@@ -14,15 +14,15 @@
  */
 
 import { useState, useEffect } from "react";
-import { DummyFetch } from "../debugger";
+// import { DummyFetch } from "../debugger";
 
-const useFetch = (url) => {
+const useGet = (url) => {
 
     if (!url) {
         throw new Error("URL is required");
     }
 
-    const allowedEndpoints = import.meta.env.VITE__ALLOWED_ENDPOINTS?.split(',') || [];
+    const allowedEndpoints = import.meta.env.VITE_ALLOWED_ENDPOINTS?.split(',') || [];
     const isValidEndpoint = allowedEndpoints.some(endpoint => url.startsWith(endpoint));
 
     if (!isValidEndpoint) {
@@ -31,37 +31,43 @@ const useFetch = (url) => {
 
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
 
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
-                console.log("Using dummy fetch");
-                console.log("Dummy fetch URL:", url);
-                const dummyData = await DummyFetch(url);
-                console.log("Dummy data:", dummyData);
+            // if (import.meta.env.VITE_GARDENS_API_URL !== url && import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
+            //     console.log("Using dummy fetch");
+            //     console.log("Dummy fetch URL:", url);
+            //     const dummyData = await DummyFetch(url);
+            //     console.log("Dummy data:", dummyData);
 
-                setData(dummyData.data);
-                setLoading(false);
-                return;
-            }
+            //     setData(dummyData.data);
+            //     setLoading(false);
+            //     return;
+            // }
 
             try {
                 const response = await fetch(url,  {
                     method: 'GET',
+                    credentials: 'include',
                     headers: {
+                        // Alternative client-side token storage
+                        // 'Authorization': `Token ${localStorage.getItem('token')}`,
                         'Content-Type': 'application/json',
-                        'credentials': 'include',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+
                     }
                 });
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                
                 const result = await response.json();
                 setData(result);
+                setLoading(false);
+
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -75,4 +81,4 @@ const useFetch = (url) => {
     return { data, setData, error, loading };
 };
 
-export default useFetch;
+export default useGet;

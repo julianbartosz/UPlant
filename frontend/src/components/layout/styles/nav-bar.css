@@ -1,15 +1,9 @@
 .navbar {
     position: fixed;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 60px;
-    background: white;
+    background: transparent;
     display: flex;
-    align-items: center;
-    /* padding: 0 20px 0 20px; */
-    z-index: 10;
-    justify-content: space-between;
 }
 
 .navbar h1 {
@@ -19,23 +13,46 @@
     font-weight: bold;
 }
 
-.username-container {
+.left-container {
+    display: flex;
+    width: 500px;
+    align-items: center;
+    justify-content: flex-start;
+    margin-left: 10px;
+}
+
+.title-container {
+    text-align: center;
+    flex: 1;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.right-container {
+    display: flex;
+    width: 500px;
+    align-items: center;
+    justify-content: flex-end;
+    margin-right: 10px;
+}
+
+.username {
     color: black;
-    font-size: 20px;
-    margin-right: 20px;
     border: 1px dotted gray;
     padding: 0 10px;
     display: flex;
-    height: 60px;
+    height: 40px;
     align-items: center;
 }
 
-.settings-icon {
+.right-option-icon {
     color: black;
     font-size: 50px;
     cursor: pointer;
-    margin-right: 20px;
+    margin-left: 20px;
     align-self: center;
 }
+
 
 

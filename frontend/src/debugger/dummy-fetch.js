@@ -9,10 +9,10 @@
  * @throws {Object}
  * 
  * Mock Data Endpoints:
- * - `import.meta.env.VITE__GARDENS_API_URL`: Returns a list of gardens with their dimensions and cell structures.
- * - `import.meta.env.VITE__PLANTS_API_URL`: Returns a list of plants with their common names, IDs, and families.
- * - `import.meta.env.VITE__NOTIFICATIONS_API_URL`: Returns a list of grouped notifications with details about reminders and associated plants.
- * - `import.meta.env.VITE__USERNAME_API_URL`: Returns a mock username.
+ * - `import.meta.env.VITE_GARDENS_API_URL`: Returns a list of gardens with their dimensions and cell structures.
+ * - `import.meta.env.VITE_PLANTS_API_URL`: Returns a list of plants with their common names, IDs, and families.
+ * - `import.meta.env.VITE_NOTIFICATIONS_API_URL`: Returns a list of grouped notificationsList with details about reminders and associated plants.
+ * - `import.meta.env.VITE_USERNAME_API_URL`: Returns a mock username.
  */
 
 const DummyFetch = async (url) => {
@@ -21,7 +21,7 @@ const DummyFetch = async (url) => {
 
     switch (url) {
 
-        case import.meta.env.VITE__GARDENS_API_URL:
+        case import.meta.env.VITE_GARDENS_API_URL:
             return {
 
                 data: [
@@ -29,32 +29,32 @@ const DummyFetch = async (url) => {
                 ]
             };
 
-        case import.meta.env.VITE__PLANTS_API_URL:
+        case import.meta.env.VITE_PLANTS_API_URL:
             return { 
                 data: [
-                    { common_name: 'Rose', id: 4, family: 'Rosaceae' },
-                    { common_name: 'Tulip', id: 5, family: 'Liliaceae' },
-                    { common_name: 'Orchid', id: 7, family: 'Orchidaceae' },
-                    { common_name: 'Cactus', id: 8, family: 'Cactaceae' },
-                    { common_name: 'Bamboo', id: 10, family: 'Poaceae' },
-                    { common_name: 'Maple', id: 11, family: 'Sapindaceae' },
-                    { common_name: 'Oak', id: 12, family: 'Fagaceae' },
-                    { common_name: 'Pine', id: 13, family: 'Pinaceae' },
-                    { common_name: 'Lavender', id: 14, family: 'Lamiaceae' },
-                    { common_name: 'Mint', id: 15, family: 'Lamiaceae' },
-                    { common_name: 'Sunflower', id: 16, family: 'Asteraceae' },
-                    { common_name: 'Daisy', id: 17, family: 'Asteraceae' },
-                    { common_name: 'Tomato', id: 18, family: 'Solanaceae' },
-                    { common_name: 'Pepper', id: 19, family: 'Solanaceae' },
-                    { common_name: 'Strawberry', id: 20, family: 'Rosaceae' },
-                    { common_name: 'Blueberry', id: 21, family: 'Ericaceae' }
+                    // { common_name: 'Rose', id: 4, family: 'Rosaceae' },
+                    // { common_name: 'Tulip', id: 5, family: 'Liliaceae' },
+                    // { common_name: 'Orchid', id: 7, family: 'Orchidaceae' },
+                    // { common_name: 'Cactus', id: 8, family: 'Cactaceae' },
+                    // { common_name: 'Bamboo', id: 10, family: 'Poaceae' },
+                    // { common_name: 'Maple', id: 11, family: 'Sapindaceae' },
+                    // { common_name: 'Oak', id: 12, family: 'Fagaceae' },
+                    // { common_name: 'Pine', id: 13, family: 'Pinaceae' },
+                    // { common_name: 'Lavender', id: 14, family: 'Lamiaceae' },
+                    // { common_name: 'Mint', id: 15, family: 'Lamiaceae' },
+                    // { common_name: 'Sunflower', id: 16, family: 'Asteraceae' },
+                    // { common_name: 'Daisy', id: 17, family: 'Asteraceae' },
+                    // { common_name: 'Tomato', id: 18, family: 'Solanaceae' },
+                    // { common_name: 'Pepper', id: 19, family: 'Solanaceae' },
+                    // { common_name: 'Strawberry', id: 20, family: 'Rosaceae' },
+                    // { common_name: 'Blueberry', id: 21, family: 'Ericaceae' }
                 ] 
             };
 
-        case import.meta.env.VITE__NOTIFICATIONS_API_URL:
-            console.log("Fetching notifications from dummy data");
+        case import.meta.env.VITE_NOTIFICATIONS_API_URL:
+            console.log("Fetching notificationsList from dummy data");
             return { 
-                data: [
+                data: { 33:
                     [
                         { 
                             name: 'Water', 
@@ -81,10 +81,10 @@ const DummyFetch = async (url) => {
                             ] 
                         }
                     ]
-                ] 
+                }
             };
 
-        case import.meta.env.VITE__USERNAME_API_URL:
+        case import.meta.env.VITE_USERNAME_API_URL:
             return { data: 'Johnny Appleseed' };
             
         default:

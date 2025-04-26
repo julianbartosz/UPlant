@@ -8,6 +8,19 @@ import django.utils.encoding
 django.utils.encoding.smart_text = force_str
 django.utils.encoding.force_text = force_str
 
+# Patch missing ORDER_PATTERN in Django 4.2+ for DRF compatibility
+import re
+from django.db.models.sql import constants
+
+if not hasattr(constants, 'ORDER_PATTERN'):
+    # This pattern matches what Django used to have in older versions
+    ORDER_PATTERN = re.compile(r'(-)?(\w+)') 
+    setattr(constants, 'ORDER_PATTERN', ORDER_PATTERN)
+    
+    # Also patch the module for direct imports
+    import sys
+    sys.modules['django.db.models.sql.constants'].ORDER_PATTERN = ORDER_PATTERN
+    
 # Patch timezone utc attribute missing in Django 4.2 for DRF compatibility
 from django.utils import timezone
 if not hasattr(timezone, 'utc'):

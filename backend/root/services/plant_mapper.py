@@ -13,31 +13,6 @@ def extract_string(value):
     return value
 
 def map_api_to_plant(api_data: dict) -> dict:
-    """
-    Map processed API data to a dictionary suitable for creating/updating a Django Plant instance.
-    
-    Basic fields (from top-level):
-      - id → api_id
-      - common_name, slug, scientific_name, rank,
-        family_common_name, genus_id, image_url, synonyms, vegetable
-      
-    For 'family' and 'genus', use a fallback:
-      1. Check top-level fields.
-      2. If missing or if the value is a dict, check in the 'main_species' object.
-
-    Additionally, map extra fields from the nested 'main_species' object:
-      - duration, edible, edible_part
-      - Growth: days_to_harvest, sowing, row_spacing_cm, spread_cm, ph_minimum, ph_maximum,
-                light, atmospheric_humidity, minimum_precipitation, maximum_precipitation,
-                minimum_root_depth, growth_months, bloom_months, fruit_months
-      - Flower: flower_color, flower_conspicuous
-      - Foliage: foliage_texture, foliage_color, foliage_retention
-      - Fruit/Seed: fruit_or_seed_conspicuous, fruit_or_seed_color, fruit_or_seed_shape, fruit_or_seed_persistence
-      - Specifications: growth_rate, average_height, maximum_height, toxicity
-
-    Raises:
-      MappingError: If any critical field (id, slug, scientific_name, rank, or family/genus) is missing.
-    """
     try:
         # Critical fields from top-level
         api_id = api_data.get("id")
@@ -47,7 +22,7 @@ def map_api_to_plant(api_data: dict) -> dict:
         if api_id is None or slug is None or scientific_name is None or rank is None:
             raise MappingError("Missing one or more critical fields: id, slug, scientific_name, or rank.")
         
-        # Direct mappings
+        # Direct mappings from top-level (with possibility of fallbacks)
         common_name = api_data.get("common_name")
         family_common_name = api_data.get("family_common_name")
         genus_id = api_data.get("genus_id")
@@ -55,46 +30,63 @@ def map_api_to_plant(api_data: dict) -> dict:
         synonyms = api_data.get("synonyms", [])
         vegetable = api_data.get("vegetable", False)
         
+        # Extract main_species from the API data to use as fallback if necessary.
+        main_species = api_data.get("main_species", {})
+
         # Fallback mechanism for family and genus:
         family = extract_string(api_data.get("family"))
-        genus = extract_string(api_data.get("genus"))
-        status = api_data.get("status")
-        main_species = api_data.get("main_species", {})
         if not family:
             family = extract_string(main_species.get("family"))
+        genus = extract_string(api_data.get("genus"))
         if not genus:
             genus = extract_string(main_species.get("genus"))
-        if not status:
-            status = main_species.get("status")
-        # Make sure status is not null
-        if not api_data.get("status"):
-            api_data["status"] = "unknown"
-        if not family or not genus:
-            raise MappingError("Missing 'family', 'genus', or 'status' in both top-level and nested 'main_species' data.")
-        
-        # Additional fields from main_species
+        # Status and rank should preferably come from the detailed main_species.
+        status = main_species.get("status") or api_data.get("status")
+        rank = main_species.get("rank") or rank
+
+        # Use fallback values for common_name, family_common_name, synonyms, and vegetable.
+        common_name = common_name or main_species.get("common_name")
+        family_common_name = family_common_name or main_species.get("family_common_name")
+        synonyms = main_species.get("synonyms") if main_species.get("synonyms") is not None else synonyms
+        if vegetable is None:
+            vegetable = main_species.get("vegetable", False)
+
+        # Additional fields from main_species for detailed mapping
         duration = main_species.get("duration")
         edible = main_species.get("edible")
-        if edible is None:
-            edible = False
         edible_part = main_species.get("edible_part")
-        
+
+        # For growth values, extract from main_species.growth if available.
         growth = main_species.get("growth", {})
         days_to_harvest = growth.get("days_to_harvest")
         sowing = growth.get("sowing")
-        row_spacing_cm = growth.get("row_spacing", {}).get("cm")
-        spread_cm = growth.get("spread", {}).get("cm")
+        # row_spacing and spread are nested objects; for example:
+        row_spacing_cm = None
+        if "row_spacing" in growth and isinstance(growth["row_spacing"], dict):
+            row_spacing_cm = growth["row_spacing"].get("cm")
+        spread_cm = None
+        if "spread" in growth and isinstance(growth["spread"], dict):
+            spread_cm = growth["spread"].get("cm")
         ph_minimum = growth.get("ph_minimum")
         ph_maximum = growth.get("ph_maximum")
         light = growth.get("light")
         atmospheric_humidity = growth.get("atmospheric_humidity")
-        minimum_precipitation = growth.get("minimum_precipitation", {}).get("mm")
-        maximum_precipitation = growth.get("maximum_precipitation", {}).get("mm")
-        minimum_root_depth = growth.get("minimum_root_depth", {}).get("cm")
+        min_temperature = growth.get("minimum_temperature", {}).get("deg_c")
+        max_temperature = growth.get("maximum_temperature", {}).get("deg_c")
+        minimum_precipitation = None
+        if "minimum_precipitation" in growth and isinstance(growth["minimum_precipitation"], dict):
+            minimum_precipitation = growth["minimum_precipitation"].get("mm")
+        maximum_precipitation = None
+        if "maximum_precipitation" in growth and isinstance(growth["maximum_precipitation"], dict):
+            maximum_precipitation = growth["maximum_precipitation"].get("mm")
+        minimum_root_depth = None
+        if "minimum_root_depth" in growth and isinstance(growth["minimum_root_depth"], dict):
+            minimum_root_depth = growth["minimum_root_depth"].get("cm")
         growth_months = growth.get("growth_months")
         bloom_months = growth.get("bloom_months")
         fruit_months = growth.get("fruit_months")
-        
+
+        # Extract details for flower, foliage, fruit, and specifications from main_species:
         flower = main_species.get("flower", {})
         flower_color = flower.get("color")
         flower_conspicuous = flower.get("conspicuous")
@@ -112,8 +104,12 @@ def map_api_to_plant(api_data: dict) -> dict:
         
         specifications = main_species.get("specifications", {})
         growth_rate = specifications.get("growth_rate")
-        average_height = specifications.get("average_height", {}).get("cm")
-        maximum_height = specifications.get("maximum_height", {}).get("cm")
+        average_height = None
+        if "average_height" in specifications and isinstance(specifications["average_height"], dict):
+            average_height = specifications["average_height"].get("cm")
+        maximum_height = None
+        if "maximum_height" in specifications and isinstance(specifications["maximum_height"], dict):
+            maximum_height = specifications["maximum_height"].get("cm")
         toxicity = specifications.get("toxicity")
         
         plant_data = {
@@ -121,8 +117,8 @@ def map_api_to_plant(api_data: dict) -> dict:
             "common_name": common_name,
             "slug": slug,
             "scientific_name": scientific_name,
-            "rank": rank,
             "status": status,
+            "rank": rank,
             "family_common_name": family_common_name,
             "family": family,
             "genus_id": genus_id,
@@ -130,7 +126,6 @@ def map_api_to_plant(api_data: dict) -> dict:
             "image_url": image_url,
             "synonyms": synonyms,
             "vegetable": vegetable,
-            # Additional fields from main_species
             "duration": duration,
             "edible": edible,
             "edible_part": edible_part,
@@ -142,6 +137,8 @@ def map_api_to_plant(api_data: dict) -> dict:
             "ph_maximum": ph_maximum,
             "light": light,
             "atmospheric_humidity": atmospheric_humidity,
+            "min_temperature": min_temperature,
+            "max_temperature": max_temperature,
             "minimum_precipitation": minimum_precipitation,
             "maximum_precipitation": maximum_precipitation,
             "minimum_root_depth": minimum_root_depth,

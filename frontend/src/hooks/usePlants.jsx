@@ -11,17 +11,12 @@ export const usePlants = () => {
     const { 
         plantsList, 
         setPlantsList, 
-        plantsListLoading, 
-        setPlantsListLoading,
         plantsListError,
-        setPlantsListError,
         selectedPlant,
         selectedPlantLoading,
         selectedPlantError,
         setSelectedPlantLoading,
         setSelectedPlantError,
-        setSelectedPlant,
-        
     } = context;
     
 
@@ -31,29 +26,33 @@ export const usePlants = () => {
             return;
         }
 
-        setPlantsListLoading(true);
+        console.log("Searching for plants with query:", query);
+
+
 
         try {
-            const response = await fetch(`/api/plants/search?q=${encodeURIComponent(query)}`, {
-                method: 'GET',
+            const response = await fetch(`${import.meta.env.VITE_PLANT_SEARCH_API_URL}?q=${query}&limit=10`, {
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
-                    'credentials': 'include',
                 },
             });
+
+            console.log("Response status:", response.status);
 
             if (!response.ok) {
                 throw new Error("Failed to search plants");
             }
 
             const results = await response.json();
-            setPlantsList(results);
+            setPlantsList(results.results.filter(plant => plant.common_name && plant.id && plant.family));
+            console.log("Filtered plants list set successfully.");
+
         } catch (error) {
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }
-            setPlantsListError(error);
             console.error("Error searching plants:", error);
             alert("Failed to search plants. Please try again.");
         }
@@ -68,7 +67,7 @@ export const usePlants = () => {
         setSelectedPlantLoading(true);
 
         try {
-            const response = await fetch(`/api/plants/${plantId}`, {
+            const response = await fetch(`${import.meta.env.VITE_PLANT_RETRIEVAL_API_URL}${plantId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -83,7 +82,7 @@ export const usePlants = () => {
             const plantDetails = await response.json();
             return plantDetails;
         } catch (error) {
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }
@@ -95,7 +94,6 @@ export const usePlants = () => {
 
     return {
         plantsList,
-        plantsListLoading,
         plantsListError,
         selectedPlant,
         selectedPlantLoading,

@@ -118,56 +118,57 @@ def _make_request_query_auth(url: str, params: Optional[Dict] = None) -> Dict:
     raise TrefleAPIError("Exceeded maximum retries due to rate limiting.")
 
 def _process_single_plant(plant: Dict) -> Dict:
-    """
-    Process and simplify a single plant object.
-    Validates and transforms the raw plant data using the PlantModel.
-    """
-    # Ensure required keys have default values
+    # Ensure required top-level keys have defaults
     plant.setdefault("id", None)
     plant.setdefault("slug", None)
     plant.setdefault("scientific_name", None)
+    # Use the top-level common_name if provided, else fallback in main_species later
     plant.setdefault("common_name", "")
-    # IMPORTANT: Always make sure status is set to a valid value
-    if "status" not in plant or plant["status"] is None or plant["status"] == "":
+    
+    # Set default for status and rank; prefer values in main_species later if available
+    if not plant.get("status"):
         plant["status"] = "unknown"
-    # Handle rank field required validation
-    if "rank" not in plant or plant["rank"] is None or plant["rank"] == "":
-        plant["rank"] = "species"  # Default rank
-    # Add default value for edible field (missing in API)
+    if not plant.get("rank"):
+        plant["rank"] = "species"
+    
+    # Default edible to False if not specified
     if "edible" not in plant or plant["edible"] is None:
         plant["edible"] = False
-    plant.setdefault("family_common_name", "")
-
-    # Extract names from complex objects
+    
+    # For family and genus, if they are dicts then extract the string (if available)
     if "family" in plant:
-        if isinstance(plant["family"], dict) and "name" in plant["family"]:
-            plant["family"] = plant["family"]["name"]
+        if isinstance(plant["family"], dict):
+            plant["family"] = plant["family"].get("name", "")
         elif plant["family"] is None:
             plant["family"] = ""
     else:
         plant.setdefault("family", "")
-
+    
     if "genus" in plant:
-        if isinstance(plant["genus"], dict) and "name" in plant["genus"]:
-            plant["genus"] = plant["genus"]["name"]
+        if isinstance(plant["genus"], dict):
+            plant["genus"] = plant["genus"].get("name", "")
         elif plant["genus"] is None:
             plant["genus"] = ""
     else:
         plant.setdefault("genus", "")
-
+    
+    # Set default for family_common_name; allow top-level or rely on main_species later
+    plant.setdefault("family_common_name", "")
+    
+    # Default for genus_id and image_url
     plant.setdefault("genus_id", None)
     plant.setdefault("image_url", "")
+
+    # Ensure 'synonyms' is a list and 'links' is a dict (do not overwrite detailed data that might be in nested objects)
     if not isinstance(plant.get("synonyms"), list):
         plant["synonyms"] = []
     if not isinstance(plant.get("links"), dict):
         plant["links"] = {}
 
-    try:
-        validated = PlantModel(**plant)
-        return validated.dict()
-    except ValidationError as e:
-        logger.error(f"Validation error processing plant data: {e.json()}")
-        raise TrefleAPIError("Received invalid plant data from API.")
+    # IMPORTANT: Do not remove keys related to main_species, growth, specifications, etc.
+    # We assume that the raw API response has the nested structure we require.
+    # Return the complete dictionary as-is, with defaults applied.
+    return plant
     
 def _process_plant_data(raw_data: Dict) -> Dict:
     """
