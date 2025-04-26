@@ -14,12 +14,19 @@ const formatGardens = (gardens) => {
 }
 
 const formatNotificationsList = (notificationsList) => { 
-    console.log("Notifications list9999:", notificationsList[1]);
     
     return notificationsList.map(notification => {
-        return notification && notification.length === 0 ? [] : notification[0]['notifications'].map(item => { 
-            return { ...item };
-        });
+        if (!notification || notification.length === 0) {
+            return [];
+        }
+        if (notification[0]['notifications'] === undefined) {
+            return notification;
+        }
+        return notification[0]['notifications']
+            .filter(item => !item.subtype || item.subtype !== 'welcome')
+            .map(item => {
+                return { ...item };
+            });
     });
 }
 

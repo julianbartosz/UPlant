@@ -19,13 +19,18 @@ export const UserProvider = ({ children }) => {
     const [weather, setWeather] = useState(null);
      
     useEffect(() => {
-
-        if (gardens && !notificationsList) {
             
-            const fetchNotifications = () => {
+            if (!gardens) return;
+
+            const fetchNotifications = (lowerBoundIndex) => {
                 let userNotifications = Array(gardens.length).fill(null);
+                
                 (async () => {
                     for (let i = 0; i < gardens.length; i++) {
+                        if (i < lowerBoundIndex) {
+                            userNotifications[i] = notificationsList[i];
+                            continue;
+                        }
                         try {
                             const response = await fetch(`${import.meta.env.VITE_NOTIFICATIONS_API_URL}by_garden/?garden_id=${gardens[i].id}`, {
                                 method: 'GET',
@@ -47,10 +52,21 @@ export const UserProvider = ({ children }) => {
                 setNotifications(formattedNotifications);
                 })();
             };
-        
-            fetchNotifications();
-        }
-    }, [gardens, notificationsList]);
+
+            let bound;
+            if (!notificationsList) {
+                bound = 0;
+            } else if (notificationsList.length === gardens.length) {
+                bound = gardens.length - 1;
+            } else if (notificationsList.length < gardens.length) {
+                bound = notificationsList.length;
+            } else {
+                return;
+            }
+
+            fetchNotifications(bound);
+       
+    }, [gardens]);
     
     const {
         data: gardensData,

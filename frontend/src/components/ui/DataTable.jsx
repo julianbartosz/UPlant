@@ -34,23 +34,23 @@ const DataTable = ({
      
     const { mediateDeleteNotification, notificationsList} = useNotifications();
     
-    if (!notificationsList) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                <FidgetSpinner  
-                    visible={true}
-                    height="80"
-                    width="80"
-                    ariaLabel="fidget-spinner-loading"
-                    wrapperStyle={{}}
-                    wrapperClass="fidget-spinner-wrapper"
-                    ballColors={["#00BFFF", "#00BFFF", "#00BFFF"]}
-                    backgroundColor="#F4442D"
-                />
-                <div style={{ marginLeft: '20px', fontSize: 'small' }}>Loading...</div>
-            </div>
-        );
-    }
+    // if (!notificationsList) {
+    //     return (
+    //         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+    //             <FidgetSpinner  
+    //                 visible={true}
+    //                 height="80"
+    //                 width="80"
+    //                 ariaLabel="fidget-spinner-loading"
+    //                 wrapperStyle={{}}
+    //                 wrapperClass="fidget-spinner-wrapper"
+    //                 ballColors={["#00BFFF", "#00BFFF", "#00BFFF"]}
+    //                 backgroundColor="#F4442D"
+    //             />
+    //             <div style={{ marginLeft: '20px', fontSize: 'small' }}>Loading...</div>
+    //         </div>
+    //     );
+    // }
     
     return (
         <>
@@ -82,11 +82,21 @@ const DataTable = ({
                             </td>
                         </tr>)
                     ))) : (
-                        <tr>
-                            <td colSpan="4" style={{ textAlign: 'center' }}>
-                                Loading...
-                            </td>
-                        </tr>
+
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <FidgetSpinner  
+                    visible={true}
+                    height="80"
+                    width="80"
+                    ariaLabel="fidget-spinner-loading"
+                    wrapperStyle={{}}
+                    wrapperClass="fidget-spinner-wrapper"
+                    ballColors={["#00BFFF", "#00BFFF", "#00BFFF"]}
+                    backgroundColor="#F4442D"
+                />
+                <div style={{ marginLeft: '20px', fontSize: 'small' }}>Loading...</div>
+            </div>
+                 
                     )}
                 </tbody>
             </table>
