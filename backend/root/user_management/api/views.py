@@ -2,6 +2,7 @@
 
 from django.contrib.auth import get_user_model, login, logout, authenticate
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
@@ -134,7 +135,103 @@ class LoginView(ObtainAuthToken):
                 {'detail': 'Authentication error occurred.'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+class UserDeleteView(APIView):
+    """
+    Delete user account endpoint.
     
+    This endpoint allows users to delete their own account.
+    The deletion can be soft (deactivation) or hard (complete removal)
+    depending on configuration.
+    """
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CsrfExemptSessionAuthentication, TokenAuthentication]
+    
+    def post(self, request):
+        """Soft-delete the user account by deactivating it."""
+        user = request.user
+        
+        # Verify password for security
+        password = request.data.get('password')
+        if not password or not user.check_password(password):
+            return Response(
+                {'detail': _('Current password is required to delete your account.')},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        try:
+            # Deactivate the user (soft-delete)
+            user.is_active = False
+            user.save()
+            
+            # Delete auth tokens to force logout
+            Token.objects.filter(user=user).delete()
+            
+            # Optional: Record deletion time
+            user.profile_notes = f"Account deactivated on {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            user.save(update_fields=['profile_notes'])
+            
+            # Log the event
+            logger.info(f"User {user.email} (ID: {user.id}) deactivated their account")
+            
+            return Response(
+                {'detail': _('Your account has been successfully deactivated.')},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            logger.error(f"Error deactivating user {user.email}: {str(e)}")
+            return Response(
+                {'detail': _('An error occurred while deactivating your account.')},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def delete(self, request):
+        """
+        Hard-delete the user account if allowed by settings.
+        
+        This completely removes the user and all their data.
+        """
+        user = request.user
+        email = user.email  # Store for logging
+        
+        # Check if hard deletion is allowed (this should be a setting)
+        hard_delete_allowed = getattr(settings, 'ALLOW_USER_HARD_DELETE', False)
+        
+        if not hard_delete_allowed:
+            return Response(
+                {'detail': _('Hard deletion is not allowed. Use POST to deactivate your account instead.')},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Verify password for security
+        password = request.data.get('password')
+        if not password or not user.check_password(password):
+            return Response(
+                {'detail': _('Current password is required to delete your account.')},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        try:
+            # Delete all tokens first
+            Token.objects.filter(user=user).delete()
+            
+            # Delete the user
+            user.delete()
+            
+            # Log the event
+            logger.info(f"User {email} completely deleted their account")
+            
+            return Response(
+                {'detail': _('Your account and all associated data have been permanently deleted.')},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            logger.error(f"Error deleting user {email}: {str(e)}")
+            return Response(
+                {'detail': _('An error occurred while deleting your account.')},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 class UserDetailView(generics.RetrieveAPIView):
     """
     Get details of the current user.

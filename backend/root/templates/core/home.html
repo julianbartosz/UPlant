@@ -1,5 +1,4 @@
-<!-- backend/root/templates/core/home.html -->
- 
+
 {% extends 'basic_generic.html' %}
 
 {% load static %}
@@ -7,34 +6,74 @@
 {% block title %}Welcome to UPlant{% endblock %}
 
 {% block content %}
-<!-- Remove the container div from basic_generic.html -->
-</div> <!-- Close the container from basic_generic.html -->
+</div> 
+
+<link rel="stylesheet" href="{% static 'admin/css/home.css' %}">
 
 <div class="home-section">
     <div class="home-background">
         <div class="container">
-            <div class="jumbotron shadow-sm rounded">
-                <h1 class="display-4">Welcome to UPlant</h1>
-                <p class="lead"></p>
+            <div class="welcome-box">
+                <h1 class="display-4">Welcome to U-Plant</h1>
                 {% if user.is_authenticated %}
-                    <p>Hello! Ready to garden?</p>
-                    <!-- Buttons -->
-                    {% if user.role == 'Supervisor' %}
-                        <a href="{% url 'user_management:user_list' %}" class="btn btn-primary btn-lg" role="button">My Garden</a>
-                        <a href="{% url 'user_management:user_list' %}" class="btn btn-secondary btn-lg" role="button">Share Produce</a>
-                        <a href="{% url 'user_management:user_list' %}" class="btn btn-secondary btn-lg" role="button">Start Discussion</a>
-                    {% endif %}
+                    <p class="lead">Hello! Ready to garden?</p>
                 {% else %}
-                    <hr class="my-4">
-                    <p>Sign in to access your dashboard and start managing or participating in gardening activities.</p>
-                    <p class="lead">
-                        <a href="{% url 'login' %}" class="btn btn-primary btn-lg" role="button">Login</a>
-                    </p>
+                    <p class="lead">Sign in to access your dashboard and start managing or participating in gardening activities.</p>
                 {% endif %}
             </div>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <h3>To Plant a Garden:</h3>
+                    <ul>
+                        <li>Navigate to the Garden Dashboard</li>
+                        <li>Create a garden if you haven't already</li>
+                        <li>Select your planting plots</li>
+                        <li>Search for your desired plant on the left</li>
+                        <li>Click your desired plant from the drop down menu</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h3>To Search for a Plant:</h3>
+                    <ul>
+                        <li>Navigate to the Plant Catalog</li>
+                        <li>Use the search bar on the left</li>
+                        <li>Click on a search result</li>
+                        <li>Plant info appears on the right</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h3>Notifications:</h3>
+                    <ul>
+                        <li>Navigate to the Plant Dashboard</li>
+                        <li>On the right hand side you will see a box with a grid inside, these are your notifications</li>
+                        <li>Click the green plus to create a notification, a red X to delete it</li>
+                        <li>Click the green plus then select the plants the notification applies to, its name, and the time interval in days you would like to be notified</li>
+                        <li>After doing so, you may view your notifications and their color code by toggling the switch above box </li>
+
+                    </ul>
+                </div>
+            </div>
+
+            {% if not user.is_authenticated %}
+                <div class="get-started-box">
+                    <h4>To get started:</h4>
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg">Login</a>
+                </div>
+            {% else %}
+                <div class="btn-group mt-4">
+                    {% if user.role == 'Supervisor' %}
+                        <a href="{% url 'user_management:user_list' %}" class="btn btn-primary btn-lg">My Garden</a>
+                        <a href="{% url 'user_management:user_list' %}" class="btn btn-secondary btn-lg">Share Produce</a>
+                        <a href="{% url 'user_management:user_list' %}" class="btn btn-secondary btn-lg">Start Discussion</a>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
-<div class="container py-4"> <!-- Reopen container for the rest of the content -->
+<div class="container py-4">
 {% endblock %}

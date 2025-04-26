@@ -2,11 +2,13 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from user_management.api.views import LoginView
 
 from user_management.api.views import (
     # User account endpoints
-    UserDetailView, UserProfileView, UsernameChangeView,
+    UserDetailView, UserProfileView, UsernameChangeView, UserDeleteView,
     
     # Password management
     PasswordChangeView, PasswordResetRequestView, PasswordResetConfirmView,
@@ -34,6 +36,7 @@ urlpatterns = [
     # User profile endpoints
     path('me/', UserDetailView.as_view(), name='user-detail'),
     path('me/profile/', UserProfileView.as_view(), name='user-profile'),
+    path('me/delete/', UserDeleteView.as_view(), name='user-delete'),
     path('me/update_username/', UsernameChangeView.as_view(), name='update-username'),
     
     # Weather endpoints

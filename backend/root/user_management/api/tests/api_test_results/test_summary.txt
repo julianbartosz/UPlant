@@ -1,8 +1,0 @@
-
-Test Results Summary:
-======================
-Total tests executed: 30
-Failed tests: 0
-
-Detailed results in api_test_results directory.
-

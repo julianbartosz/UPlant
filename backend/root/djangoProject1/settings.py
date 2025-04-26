@@ -267,12 +267,22 @@ LOGGING = {
 
 import sys
 if 'test' in sys.argv:
+    # Existing settings
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',  # Using in-memory database
+            'NAME': ':memory:',
         }
     }
+    
+    # Add these additional test optimizations:
+    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
+    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+    
+    # Skip signals during testing for cleaner tests
+    SKIP_SIGNAL_HANDLERS = True
+    # Disable default garden creation in tests
+    SKIP_DEFAULT_GARDEN_CREATION = True
 
      # Skip migrations when testing
     class DisableMigrations:
