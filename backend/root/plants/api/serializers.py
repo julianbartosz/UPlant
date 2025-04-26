@@ -251,7 +251,7 @@ class TreflePlantSerializer(serializers.Serializer):
     synonyms = serializers.ListField(
         child=serializers.CharField(), allow_empty=True, required=False
     )
-    # Expose a simplified links dictionary
+    # Expose a simplified links dictionary.
     links = serializers.DictField(child=serializers.CharField(), required=False)
 
 class TreflePlantListResponseSerializer(serializers.Serializer):

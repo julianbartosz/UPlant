@@ -66,8 +66,11 @@
     height: 40px;
     border-radius: 50%;
     background-color: green;
-    border: 4px solid black;
     transition: transform 0.2s ease, background-color 0.3s ease;
+    display: flex;
+    align-items: left;
+    margin: auto;
+    outline: 2px solid black;
   }
 
   .add-garden-btn:focus {

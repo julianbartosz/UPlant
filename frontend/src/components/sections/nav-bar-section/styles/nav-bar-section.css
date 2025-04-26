@@ -7,7 +7,7 @@
     background: white;
     display: flex;
     align-items: center;
-    padding: 0 20px;
+    /* padding: 0 20px 0 20px; */
     z-index: 10;
     justify-content: space-between;
 }
@@ -27,19 +27,22 @@
 .username-container {
     color: black;
     font-size: 20px;
-    margin-right: 50px;
+    margin-right: 20px;
     border: 1px dotted gray;
     padding: 0 10px;
     display: flex;
+    height: 60px;
     align-items: center;
 }
 
-.navbar .settings-icon {
+.settings-icon {
     color: black;
     font-size: 50px;
     cursor: pointer;
-    margin-right: 30px;
+    margin-right: 20px;
+    align-self: center;
 }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 .navbar-logo {
@@ -51,3 +54,7 @@
 }
 =======
 >>>>>>> origin/catalog-bf
+=======
+
+
+>>>>>>> origin/Squibb5

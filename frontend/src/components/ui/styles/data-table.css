@@ -1,0 +1,34 @@
+
+.container {
+  width: 100%;
+}
+
+.table-wrapper {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: 5px;
+  }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+}
+
+.data-table th, .data-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+
+}
+
+.data-table th {
+  background-color: #f4f4f4;
+}
+
+.data-table-header {
+  color: black;
+}
+ 
+  

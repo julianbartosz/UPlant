@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
 import plantFamilyIcons from '../../../assets/constants/icons'; 
+<<<<<<< HEAD
 import './styles/plant-search-section.css';
 
 const API_BASE_URL = 'http://localhost:8000/api/v1';
 
+=======
+import usePlants from '../../../hooks/usePlants';
+
+import './styles/plant-search-section.css';
+
+>>>>>>> origin/Squibb5
 const PlantSearchSection = ({ draggable = true, onPlantClick = () => {} }) => {
     const [searchTerm, setSearchTerm] = useState('');
+<<<<<<< HEAD
     const [filteredPlants, setFilteredPlants] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -70,6 +78,10 @@ const PlantSearchSection = ({ draggable = true, onPlantClick = () => {} }) => {
         fetchPlants(term);
     };
     
+=======
+    const {plantsList, mediatePlantSearch } = usePlants();
+
+>>>>>>> origin/Squibb5
     return (
         <div className='search-section-container'>
             <div className='search-section-header'>
@@ -83,12 +95,17 @@ const PlantSearchSection = ({ draggable = true, onPlantClick = () => {} }) => {
                 />
                 <button 
                     className='search-button'
+<<<<<<< HEAD
                     onClick={() => onSearch(searchTerm)}
                     disabled={isLoading} 
+=======
+                    onClick={() => mediatePlantSearch(searchTerm)} 
+>>>>>>> origin/Squibb5
                 >
                     {isLoading ? '⌛' : '🔍'}
                 </button> 
             </div>
+<<<<<<< HEAD
             
             {error && (
                 <div className="error-message">
@@ -105,6 +122,13 @@ const PlantSearchSection = ({ draggable = true, onPlantClick = () => {} }) => {
                     onPlantClick={onPlantClick}
                 />
             )}
+=======
+            <PlantList 
+            plants={plantsList} 
+            draggable={draggable} 
+            onPlantClick={onPlantClick}
+            />
+>>>>>>> origin/Squibb5
         </div>
     );
 };
@@ -115,6 +139,7 @@ const PlantList = ({ plants, draggable, onPlantClick }) => {
     }
     
     return (
+<<<<<<< HEAD
         <div className="scrollable-section">
             {plants.map((plant) => (
                 <div
@@ -129,6 +154,20 @@ const PlantList = ({ plants, draggable, onPlantClick }) => {
                 </div>
             ))}
         </div>
+=======
+      <div
+        ref={draggable ? drag : null}
+        className="plant-item"
+        style={{
+          opacity: isDragging ? 0.5 : 1,    
+          cursor: draggable ? 'move' : 'pointer', 
+        }}
+        onClick={() => {}} 
+      >
+        {plant ? (plantFamilyIcons[plant.family] || plantFamilyIcons['default']) : ''}
+        <div className="plant-common-name">{plant['common_name']}</div>
+      </div>
+>>>>>>> origin/Squibb5
     );
 };
   
