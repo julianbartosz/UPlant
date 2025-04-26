@@ -14,7 +14,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { DummyFetch } from "../debugger";
+// import { DummyFetch } from "../debugger";
 
 const useGet = (url) => {
 
@@ -37,23 +37,23 @@ const useGet = (url) => {
         const fetchData = async () => {
             setLoading(true);
 
-            if (import.meta.env.VITE_GARDENS_API_URL !== url && import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
-                console.log("Using dummy fetch");
-                console.log("Dummy fetch URL:", url);
-                const dummyData = await DummyFetch(url);
-                console.log("Dummy data:", dummyData);
+            // if (import.meta.env.VITE_GARDENS_API_URL !== url && import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
+            //     console.log("Using dummy fetch");
+            //     console.log("Dummy fetch URL:", url);
+            //     const dummyData = await DummyFetch(url);
+            //     console.log("Dummy data:", dummyData);
 
-                setData(dummyData.data);
-                setLoading(false);
-                return;
-            }
-      
+            //     setData(dummyData.data);
+            //     setLoading(false);
+            //     return;
+            // }
 
             try {
                 const response = await fetch(url,  {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
+                        // Alternative client-side token storage
                         // 'Authorization': `Token ${localStorage.getItem('token')}`,
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
@@ -63,11 +63,10 @@ const useGet = (url) => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                
                 const result = await response.json();
                 setData(result);
-
                 setLoading(false);
-
 
             } catch (err) {
                 setError(err.message);

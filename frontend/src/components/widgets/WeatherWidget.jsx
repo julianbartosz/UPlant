@@ -1,39 +1,39 @@
-import React, { useEffect, useState } from "react";
+import './styles/weather.css';
+import React, { useEffect } from 'react';
 
-const WeatherWidget = ({ zipcode = 53211 }) => {
-  const [weather, setWeather] = useState(null);
+import { useUser } from '../../hooks';
+
+const WeatherWidget = () => {
+  // Move later
   const API_KEY = "ff501ab5606085a5564e2ee89a2856f2";
 
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchWeather = async () => {
       try {
-        const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?zip=${zipcode}&units=metric&appid=${API_KEY}`
-        );
+        const response = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=London&appid=${API_KEY}&units=metric`);
         if (!response.ok) {
           throw new Error("Failed to fetch weather data");
         }
         const data = await response.json();
         setWeather(data);
-      } catch (err) {
-        console.error("Failed to fetch weather:", err);
+      } catch (error) {
+        console.error("Error fetching weather data:", error);
       }
     };
 
     fetchWeather();
-  }, [zipcode]);
+  }, []);
 
   if (!weather) {
     return (
-      <div className="flex justify-center items-center h-48 bg-gray-100 rounded-xl shadow-md">
-        <p className="text-gray-500">Loading weather...</p>
+      <div className="loading">
+        <p>Loading weather...</p>
       </div>
     );
   }
 
   const iconUrl = `http://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`;
-  
-  // Gardening-specific recommendations
+
   const getGardeningAdvice = () => {
     const temp = weather.main.temp;
     const humidity = weather.main.humidity;
@@ -42,71 +42,77 @@ const WeatherWidget = ({ zipcode = 53211 }) => {
     if (description.includes("rain")) {
       return {
         text: "Avoid planting; soil may be too wet. Consider indoor tasks.",
-        color: "text-blue-600",
+        color: "color: #2563eb;",
       };
     }
     if (temp < 5) {
       return {
         text: "Too cold for most planting. Protect sensitive plants.",
-        color: "text-red-600",
+        color: "color: #dc2626;",
       };
     }
     if (temp > 30) {
       return {
         text: "Water plants frequently; avoid midday heat.",
-        color: "text-orange-600",
+        color: "color: #ea580c;",
       };
     }
     if (humidity < 30) {
       return {
         text: "Low humidity; ensure soil stays moist.",
-        color: "text-yellow-600",
+        color: "color: #ca8a04;",
       };
     }
     return {
       text: "Good conditions for gardening! Check soil moisture.",
-      color: "text-green-600",
+      color: "color: #16a34a;",
     };
   };
 
   const gardeningAdvice = getGardeningAdvice();
 
   return (
-    <div className="p-6 bg-gradient-to-br from-green-50 to-blue-50 rounded-xl shadow-lg max-w-sm mx-auto">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-800">{weather.name}</h2>
-        <img
-          src={iconUrl}
-          alt={weather.weather[0].description}
-          className="w-16 h-16"
-        />
-      </div>
-      
-      <div className="mt-4">
-        <p className="text-lg capitalize text-gray-700">
-          {weather.weather[0].description}
-        </p>
-        <div className="flex items-center space-x-2 mt-2">
-          <span className="text-2xl">🌡️</span>
-          <p className="text-xl font-medium text-gray-800">{weather.main.temp}°C</p>
+    <div className="weather-card">
+      <div className="header">
+        <div className="header-content">
+          <h2>{weather.name}</h2>
+          <img
+            src={iconUrl}
+            alt={weather.weather[0].description}
+          />
         </div>
-        <div className="flex items-center space-x-2 mt-2">
-          <span className="text-2xl">💧</span>
-          <p className="text-lg text-gray-700">Humidity: {weather.main.humidity}%</p>
+        <p>{weather.weather[0].description}</p>
+      </div>
+
+      <div className="details">
+        <div className="detail-item">
+          <span>🌡️</span>
+          <div>
+            <p>Temperature</p>
+            <p>{weather.main.temp}°C</p>
+          </div>
+        </div>
+        <div className="detail-item">
+          <span>💧</span>
+          <div>
+            <p>Humidity</p>
+            <p>{weather.main.humidity}%</p>
+          </div>
         </div>
         {weather.rain && weather.rain["1h"] && (
-          <div className="flex items-center space-x-2 mt-2">
-            <span className="text-2xl">🌧️</span>
-            <p className="text-lg text-gray-700">
-              Rain: {weather.rain["1h"]} mm/h
-            </p>
+          <div className="detail-item full-width">
+            <span>🌧️</span>
+            <div>
+              <p>Rain</p>
+              <p>{weather.rain["1h"]} mm/h</p>
+            </div>
           </div>
         )}
       </div>
 
-      <div className="mt-4 p-4 bg-white/50 rounded-lg">
-        <p className={`text-sm font-medium ${gardeningAdvice.color}`}>
-          🌱 Gardening Tip: {gardeningAdvice.text}
+      <div className="advice">
+        <p style={{ color: gardeningAdvice.color.split(': ')[1].replace(';', '') }}>
+          🌱 <span>Gardening Tip:</span> {gardeningAdvice.text}
         </p>
       </div>
     </div>

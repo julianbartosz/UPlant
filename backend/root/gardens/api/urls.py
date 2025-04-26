@@ -12,6 +12,7 @@ router.register(r'garden-logs', GardenLogViewSet, basename='garden-log')
 urlpatterns = [
     # Direct weather endpoint
     path('weather/<str:zip_code>/', WeatherByZipView.as_view(), name='weather-by-zip'),
+    
     # Include the router URLs
     path('', include(router.urls)),
 ]

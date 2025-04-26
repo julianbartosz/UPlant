@@ -5,10 +5,12 @@ from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 from datetime import timedelta
+from django.db import transaction
 from django.core.cache import cache
 
-from notifications.models import Notification, NotificationInstance, NotificationPlantAssociation
-from gardens.models import GardenLog
+from notifications.models import Notification, NotificationInstance, NotificationPlantAssociation, NotifTypes
+from gardens.models import GardenLog, Garden, PlantHealthStatus
+from services.search_service import reindex_model
 
 logger = logging.getLogger(__name__)
 
@@ -193,7 +195,6 @@ def create_first_notification_instance(notification):
         next_due=next_due,
         status='PENDING'
     )
-    
     logger.info(f"Created notification instance for {notification.name}, due {next_due}")
 
 
