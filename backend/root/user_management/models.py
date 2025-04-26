@@ -239,15 +239,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     def is_staff(self):
         """
         Determines if user has staff permissions.
-        
-        This property controls access to the Django admin site.
-        Admin role users and superusers have staff access.
-        
         Note: This is a property, not a field. Don't use in QuerySet filters.
         Use `role=Roles.AD OR is_superuser=True` instead.
-        
-        Returns:
-            bool: True if user has staff/admin permissions
         """
         return self.role in [Roles.AD] or self.is_superuser
 

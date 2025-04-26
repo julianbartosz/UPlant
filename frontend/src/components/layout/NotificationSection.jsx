@@ -8,9 +8,17 @@ import { useNotifications } from '../../hooks';
 const NotificationSection = ({ contentSize, selectedGardenIndex }) => {
     const [toggleForm, setToggleForm] = useState(false);
     const { gardens } = useGardens();
-    const plantOptions = [
-        ...new Set(gardens[selectedGardenIndex]?.cells.flat().filter(item => item !== null))
-      ];
+    const plantOptions = gardens[selectedGardenIndex]?.cells
+        .flat()
+        .filter(item => item !== null)
+        .reduce((unique, item) => {
+            if (!unique.some(plant => plant.id === item.id)) {
+                unique.push(item);
+            }
+            return unique;
+        }, []);
+
+    console.log("OPTIONS", plantOptions);
 
     
 

@@ -95,6 +95,7 @@ function NotificationPage() {
                 onBack={() => navigate('/dashboard')}
             />
             <div className="notification-content-container">
+
                 <div className="garden-container-static" ref={containerRef}>
                         <GardenBar 
                             dynamic={false} 

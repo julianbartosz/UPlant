@@ -1,26 +1,7 @@
-import { useState } from 'react';
-import CryptoJS from 'crypto-js';
 import { GenericButton } from '../buttons';
-import { useUser } from '../../hooks/useUser';
 import './styles/settings-form.css';
 
 const SettingsForm = () => {
-
-    const [password, setPassword] = useState('');
-    const [username, setUsername] = useState('');
-    const { updateUser, updatePassword, deleteAccount } = useUser();
-
-    const handleUpdateUser = () => {
-        updateUser(username);
-    };
-
-    const handleUpdatePassword = () => {
-        updatePassword(password);
-    };
-
-    const handleDeleteAccount = () => {
-        deleteAccount();
-    };
 
     return (
         <div className="settings-form">

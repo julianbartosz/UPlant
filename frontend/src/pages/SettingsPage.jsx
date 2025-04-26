@@ -9,11 +9,40 @@ const SettingsPage = ({ username = 'Default'}) => {
     const navigate = useNavigate();
     const [togglePasswordForm, setTogglePasswordForm] = useState(false);
     const [toggleUsernameForm, setToggleUsernameForm] = useState(false);
+    
+    const handleDeleteAccount = async () => {
+        const endpoint = null;
+        window.location.href = "https://www.google.com/";
+        const requestBody = {
+            username: username,
+        };
 
-    useEffect(() => {
-        console.log(togglePasswordForm);
-        console.log(toggleUsernameForm);
-    }, [togglePasswordForm, toggleUsernameForm]);
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Token 4c1775be909a3873ee6c23104d433adaf4cbde29`,
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete account');
+            }
+
+            alert('Account deleted successfully');
+            navigate('/'); // Redirect to home or login page
+        } catch (error) {
+            window.location.href = "http://localhost:8000/api/users/logout/";
+
+            console.error('Error deleting account:', error);
+            alert('Error deleting account. Please try again later.');
+        }
+
+    }
+
     return (
         <div>
             <NavBar title="Settings" username={username} buttonOptions={['back']} onBack={() => navigate('/dashboard')} />
@@ -36,7 +65,7 @@ const SettingsPage = ({ username = 'Default'}) => {
               label="DELETE ACCOUNT"
               disableMouseOver={true}
               style={{ backgroundColor: 'red', marginTop: '20px', width: '66%' }}
-              onClick={() => console.log('Delete account clicked')}
+              onClick={() => handleDeleteAccount()}
             />
           </div>
                 )}
