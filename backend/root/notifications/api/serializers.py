@@ -1,9 +1,14 @@
 # backend/root/notifications/api/serializers.py
 
 from rest_framework import serializers
+<<<<<<< HEAD
 from notifications.models import Notification, NotificationInstance, NotificationPlantAssociation, NotifTypes
 from plants.api.serializers import PlantDetailSerializer
 from gardens.api.serializers import GardenSerializer
+=======
+from notifications.models import Notification, NotificationInstance, NotificationPlantAssociation
+from plants.api.serializers import PlantDetailSerializer
+>>>>>>> origin/update8
 
 class NotificationPlantAssociationSerializer(serializers.ModelSerializer):
     plant_details = PlantDetailSerializer(source='plant', read_only=True)
@@ -96,7 +101,11 @@ class DashboardNotificationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Notification
+<<<<<<< HEAD
         fields = ['id', 'name', 'type', 'type_display', 'subtype', 
+=======
+        fields = ['id', 'name', 'type', 'type_display', 'interval', 'subtype', 
+>>>>>>> origin/update8
                  'garden', 'garden_name', 'plant_names', 'next_due', 
                  'status', 'is_overdue', 'instance_id']
     

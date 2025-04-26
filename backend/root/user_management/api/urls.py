@@ -2,13 +2,20 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+<<<<<<< HEAD
 from rest_framework.views import APIView
 from rest_framework.response import Response
+=======
+>>>>>>> origin/update8
 from user_management.api.views import LoginView
 
 from user_management.api.views import (
     # User account endpoints
+<<<<<<< HEAD
     UserDetailView, UserProfileView, UsernameChangeView, UserDeleteView,
+=======
+    UserDetailView, UserProfileView, UsernameChangeView,
+>>>>>>> origin/update8
     
     # Password management
     PasswordChangeView, PasswordResetRequestView, PasswordResetConfirmView,

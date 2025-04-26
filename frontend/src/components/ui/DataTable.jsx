@@ -1,7 +1,5 @@
 /**
- * DataTable Component
- * 
- * This component renders a table displaying a list of notifications, their associated plants, and time intervals.
+ * This component renders a table displaying a list of notificationsList, their associated plants, and time intervals.
  * It allows adding new entries and removing existing ones.
  * 
  * @component
@@ -16,55 +14,91 @@
  * @param {Function} props.setData 
  * @param {Object} [props.style={}]
  * @param {Function} props.onAdd 
+ * @returns {JSX.Element}
  */
 
-import React from 'react';
 import { DeleteButton, AddButton } from '../buttons';
 import useNotifications from '../../hooks/useNotifications';
+import { PiEmptyBold } from "react-icons/pi";
+import { FidgetSpinner, TailSpin} from 'react-loader-spinner';
+
 import './styles/data-table.css';
 
+
+
 const DataTable = ({ 
-        data =[{ id: 1, name: 'Beckett', plants: [{ id: 101, name: 'Fern' }, { id: 102, name: 'Cactus' }], interval: 7 }, { id: 2, name: 'Bob', plants: [{ id: 103, name: 'Bamboo' }], interval: 14 }, { id: 3, name: 'Charlie', plants: [{ id: 104, name: 'Palm' }, { id: 105, name: 'Orchid' }], interval: 30 }, { id: 4, name: 'David', plants: [{ id: 106, name: 'Rose' }], interval: 21 }],
-        setData,
-        selectedGardenIndex = 0,    
-        style = {},
+        selectedGardenIndex,    
         onAdd,
+        fontSize,
     }) => {
      
-        const { mediateDeleteNotification } = useNotifications();
+    const { mediateDeleteNotification, notificationsList} = useNotifications();
     
-
+    if (!notificationsList) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <FidgetSpinner  
+                    visible={true}
+                    height="80"
+                    width="80"
+                    ariaLabel="fidget-spinner-loading"
+                    wrapperStyle={{}}
+                    wrapperClass="fidget-spinner-wrapper"
+                    ballColors={["#00BFFF", "#00BFFF", "#00BFFF"]}
+                    backgroundColor="#F4442D"
+                />
+                <div style={{ marginLeft: '20px', fontSize: 'small' }}>Loading...</div>
+            </div>
+        );
+    }
+    
     return (
-        <div className="container" style={style}>
-            <table className="data-table">
+        <>
+            <table className="data-table" style={{ fontSize: fontSize }}>
                 <thead className="data-table-header">
                     <tr>
-                        <th style={{ fontSize: 'small' }}>Name</th>
-                        <th style={{ fontSize: 'small' }}>Plants</th>
-                        <th style={{ fontSize: 'small' }}>Interval</th>
+                        <th style={{ textAlign: 'center', fontSize: 'small' }}>Name</th>
+                        <th style={{ textAlign: 'center',fontSize: 'small' }}>Plants</th>
+                        <th style={{ textAlign: 'center', fontSize: 'small' }}>Interval</th>
                         <th style={{ textAlign: 'center', fontSize: 'small' }}>
                             <AddButton onClick={onAdd} />
                         </th>
                     </tr>
                 </thead>
                 <tbody>
-                    {data.map((item, index) => (
+                    {notificationsList && notificationsList[selectedGardenIndex] ? (
+                    notificationsList[selectedGardenIndex].map((item, index) => (
+                        item && (
                         <tr key={item.id}>
-                            <td style={{ fontSize: 'medium' }}>{item.name}</td>
-                            <td style={{ fontSize: 'small' }}>
-                                {item.plants.map((plant) => (
-                                    <div key={plant.id}>{plant.common_name}</div>
+                            <td>{item.name}</td>
+                            <td>
+                                {item && item.plant_names && item.plant_names.map(plant_name => (
+                                    <div key={item.id}>{plant_name}</div>
                                 ))}
                             </td>
-                            <td style={{ textAlign: 'center', fontSize: 'medium' }}>{item.interval}</td>
-                            <td style={{ textAlign: 'center', fontSize: 'small' }}>
+                            <td style={{ textAlign: 'center' }}>{item.interval}</td>
+                            <td style={{ textAlign: 'center' }}>
                                 <DeleteButton onClick={() => mediateDeleteNotification(selectedGardenIndex, index)} />
                             </td>
+                        </tr>)
+                    ))) : (
+                        <tr>
+                            <td colSpan="4" style={{ textAlign: 'center' }}>
+                                Loading...
+                            </td>
                         </tr>
-                    ))}
+                    )}
                 </tbody>
             </table>
-        </div>
+            {notificationsList && notificationsList[selectedGardenIndex] && notificationsList[selectedGardenIndex].length === 0  && (
+            <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 80px)', justifyContent: 'center', alignItems: 'center', fontSize: 'small' }}>
+            <PiEmptyBold style={{color: 'black', height: "70px", width: "70px"}} />
+            <ul>
+                <li style={{color: 'black'}}>You have zero configured notifications.</li>
+                <li style={{color: 'black'}}>Click the green "+" button to add a notification for your garden.</li>
+            </ul>
+            </div>)}
+            </>
     );
 };
 

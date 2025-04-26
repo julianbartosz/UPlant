@@ -1,0 +1,8 @@
+.settings-form{
+justify-content: center;
+flex-direction: column;
+/* align-self: center; */
+height: 100vh;
+display: flex;
+align-items: center;
+}

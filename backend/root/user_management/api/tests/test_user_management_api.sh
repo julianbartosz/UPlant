@@ -495,6 +495,7 @@ curl -s -X POST "http://localhost:8000/api/users/admin/users/" \
   }' > api_test_results/admin_user_create_invalid.json
 echo "Invalid user creation saved to api_test_results/admin_user_create_invalid.json"
 
+<<<<<<< HEAD
 # 31. TEST USER ACCOUNT SELF-DELETION
 echo -e "\n31. Testing user account self-deletion..."
 if [[ -n "$TEST_USER_TOKEN" ]]; then
@@ -540,6 +541,8 @@ else
   echo '{"detail": "Test skipped - no test user available"}' > api_test_results/user_self_delete.json
 fi
 
+=======
+>>>>>>> origin/update8
 # --- CLEANUP - DELETE THE MAIN TEST USER ---
 if [[ -n "$TEST_USER_ID" ]]; then
   echo -e "\n--- CLEANUP: DELETING TEST USER ---"
@@ -551,7 +554,11 @@ fi
 
 echo -e "\n--- SUMMARY ---"
 
+<<<<<<< HEAD
 TOTAL_TESTS=31
+=======
+TOTAL_TESTS=30
+>>>>>>> origin/update8
 FAILED_TESTS=0
 
 # Simple validation function
