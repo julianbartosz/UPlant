@@ -2,7 +2,6 @@
 import { useContext } from 'react';
 import { UserContext } from '../contexts/UserProvider';
 
-
 const useNotifications = () => {
     
     const context = useContext(UserContext);
@@ -12,10 +11,8 @@ const useNotifications = () => {
     }
 
     const { gardens, notificationsList, setNotifications, notificationsListLoading, notificationsListError } = context;
-
    
     console.log("Notifications:", notificationsList);
-
 
     const mediateAddNotification = async (gardenIndex, name, interval, plants, callback) => {
         const prevNotificationsList = [...notificationsList];

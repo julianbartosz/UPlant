@@ -21,6 +21,9 @@ function DashboardPage() {
   const selectedEmptyCellsRef = useRef(selectedEmptyCells);
   const selectedPlantCellsRef = useRef(selectedPlantCells);
 
+  useEffect(() => { selectedEmptyCellsRef.current = selectedEmptyCells; }, [selectedEmptyCells]);
+  useEffect(() => { selectedPlantCellsRef.current = selectedPlantCells; }, [selectedPlantCells]);
+
   useEffect(() => {
     selectedGardenIndexRef.current = selectedGardenIndex;
     setSelectedEmptyCells(new Set());
@@ -28,9 +31,8 @@ function DashboardPage() {
      
     const handleResize = () => {
       if (containerRef.current && gardens && gardens.length > 0) {
-
         const { width, height } = containerRef.current.getBoundingClientRect();
-        const maxDimension = Math.max(gardens[selectedGardenIndex].x, gardens[selectedGardenIndex].y);
+        const maxDimension = Math.max(gardens[selectedGardenIndexRef.current].x, gardens[selectedGardenIndexRef.current].y);
         const newSquareSize = Math.min(width * 0.6, height * 0.6) / maxDimension;
         setFontSize(newSquareSize * 0.5);
         setContentSize(height - 88);
@@ -38,13 +40,16 @@ function DashboardPage() {
       }
     };
     
-    handleResize();
+    if (gardens && gardens.length > selectedGardenIndexRef.current) {
+      console.log("GARDENS: ", gardens);
+      console.log("SELECTED GARDEN INDEX: ", selectedGardenIndexRef.current);
+      console.log("GARDENS(()): ", gardens[selectedGardenIndexRef.current]);
+      handleResize();
+    }
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [selectedGardenIndex, gardens]);
-
-  useEffect(() => { selectedEmptyCellsRef.current = selectedEmptyCells; }, [selectedEmptyCells]);
-  useEffect(() => { selectedPlantCellsRef.current = selectedPlantCells; }, [selectedPlantCells]);
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -54,7 +59,9 @@ function DashboardPage() {
     return () => { if (containerRef.current) observer.disconnect(); };
   }, []);
 
-
+  if (!gardens || gardens.length <= selectedGardenIndex) {
+    return <GridLoading />;
+  }
   const handlePlantClick = (item) => {
     if (item.type === 'SHEAR') {
       selectedPlantCellsRef.current.forEach(key => {
