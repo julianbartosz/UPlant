@@ -9,7 +9,7 @@ from user_management.forms import (
     CustomPasswordChangeForm,
     ProfileForm
 )
-from user_management.factories import UserFactory, AdminFactory
+from user_management.tests.factories import UserFactory, AdminFactory
 
 @pytest.mark.unit
 class TestCustomUserCreationForm:
