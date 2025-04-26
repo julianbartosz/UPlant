@@ -8,7 +8,6 @@ from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from gardens.models import Garden, GardenLog
 from gardens.api.serializers import GardenSerializer, GardenLogSerializer, GardenGridSerializer
-<<<<<<< HEAD
 from notifications.models import Notification, NotificationInstance
 from services.weather_service import get_garden_weather_insights, WeatherServiceError
 from django.db.models import Count, Sum, Q
@@ -16,15 +15,6 @@ from django.utils import timezone
 import logging
 from django.core.exceptions import ValidationError, PermissionDenied
 from services.weather_service import get_garden_weather_insights, get_weather_by_zip, WeatherServiceError
-=======
-from notifications.models import NotificationInstance
-from services.weather_service import get_garden_weather_insights, WeatherServiceError
-from django.db.models import Count, Q
-from django.utils import timezone
-import logging
-from django.core.exceptions import ValidationError, PermissionDenied
-from services.weather_service import get_weather_by_zip
->>>>>>> origin/update8
 
 
 # Set up logging
@@ -307,11 +297,7 @@ class GardenViewSet(viewsets.ModelViewSet):
                 if weather_insights['frost_warning']['frost_risk']:
                     critical_alerts.append({
                         'type': 'frost',
-<<<<<<< HEAD
                         'message': f"Frost expected soon! Protect sensitive plants.",
-=======
-                        'message': "Frost expected soon! Protect sensitive plants.",
->>>>>>> origin/update8
                         'days': [day['date'] for day in weather_insights['frost_warning']['frost_days']]
                     })
                 
