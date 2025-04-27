@@ -48,11 +48,14 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'rest_framework.authtoken',
+    'services.apps.ServicesConfig',
     'user_management.apps.UserManagementConfig',
     'core.apps.CoreConfig',
     'plants.apps.PlantsConfig',
     'gardens.apps.GardensConfig',
     'community.apps.CommunityConfig',
+    'notifications.apps.NotificationsConfig',
     'django_extensions',
     'django_select2',
     'rest_framework',
@@ -69,34 +72,44 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser'
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
 }
+
+AUTHENTICATION_BACKENDS = [
+    # Needed for email-based login
+    'allauth.account.auth_backends.AuthenticationBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 AUTH_USER_MODEL = 'user_management.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-      'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware', 
 ]
 
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
-    'Authorization',  # Allow Authorization headers
-    'credentials',    # Allow credentials header
+    'Authorization',
+    'credentials',
 ]
 CORS_ALLOW_ALL_ORIGINS = True if DEBUG else False  # Allow all origins in development, restrict in production
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:5173",  # Add your frontend origin here
-#     # other origins if needed
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+
+FRONTEND_URL = 'http://localhost:5173'
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -182,8 +195,9 @@ SITE_ID = 1
 
 # Authentication backends including allauth
 AUTHENTICATION_BACKENDS = (
-    'user_management.backends.EmailBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
+    'user_management.backends.EmailModelBackend',
+    'user_management.backends.SocialEmailFallbackBackend',
+    'allauth.account.auth_backends.AuthenticationBackend'
 )
 
 ACCOUNT_LOGIN_METHOD = 'email'
@@ -216,7 +230,6 @@ LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
 
 # LOGGING
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -254,13 +267,23 @@ LOGGING = {
 
 import sys
 if 'test' in sys.argv:
+    # Existing settings
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',  # Use in-memory database for faster tests
+            'NAME': ':memory:',
         }
     }
     
+    # Add these additional test optimizations:
+    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
+    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+    
+    # Skip signals during testing for cleaner tests
+    SKIP_SIGNAL_HANDLERS = True
+    # Disable default garden creation in tests
+    SKIP_DEFAULT_GARDEN_CREATION = True
+
      # Skip migrations when testing
     class DisableMigrations:
         def __contains__(self, item):
@@ -270,3 +293,26 @@ if 'test' in sys.argv:
             return None
             
     MIGRATION_MODULES = DisableMigrations()
+
+ENABLE_SEARCH_INDEXING = True
+MAX_SEARCH_RESULTS = 100
+SEARCH_CACHE_TIMEOUT = 3600  # 1 hour
+
+# ENABLE_ADVANCED_SEARCH = True
+# SEARCH_ENGINE = 'elasticsearch'
+# ELASTICSEARCH_HOSTS = ['http://localhost:9200']
+# ELASTICSEARCH_INDEX_PREFIX = 'uplant'
+# SEARCH_SETTINGS = {
+#     'elasticsearch': {
+#         'timeout': 30,
+#         'retry_on_timeout': True
+#     }
+# }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}
+
+SKIP_CACHE_INITIALIZATION = True

@@ -7,23 +7,22 @@
  * @param {Array<Object>} [props.options]
  * @param {string} [props.labelField="common_name"]
  * @param {string} [props.uniqueField="id"]
- * 
  * @returns {JSX.Element}
  */
 
-import React from 'react';
+import { useState } from 'react';
 import Select from 'react-select';
 import './styles/add-with-options.css';
 
 const AddWithOptions = ({ 
     handleSelection=() => {},
-    options=[{id: 0, common_name: "Plant1"}, {id: 1, common_name: "Plant2"}], 
+    options=[], 
     labelField="common_name", 
     uniqueField="id"
 }) => {
-    
-const [error, setError] = React.useState(false);
-const [selectedOptions, setSelectedOptions] = React.useState(new Set());
+
+const [error, setError] = useState(false);
+const [selectedOptions, setSelectedOptions] = useState(new Set());
 
 const handleSelectChange = (selected) => {
     if (selected.length === 0) {
@@ -56,14 +55,12 @@ const handleSelectChange = (selected) => {
                 options={options.filter(option => !Array.from(selectedOptions).some(selected => selected[uniqueField] === option[uniqueField]))}
                 value={Array.from(selectedOptions)}
                 onChange={handleSelectChange}
-                placeholder={ "Select options ..." }
+                placeholder={ "" }
                 getOptionLabel={(option) => option[labelField]}
                 getOptionValue={(option) => option[uniqueField]}
             />
         </div>
     );
 };
-
-
 
 export default AddWithOptions;

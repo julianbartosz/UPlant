@@ -1,0 +1,21 @@
+.settings-form{
+    justify-content: center;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 40px;
+    height: auto;
+    width: auto;
+    border-radius: 10px;
+}
+
+.settings-content {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: auto;
+}

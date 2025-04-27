@@ -1,6 +1,6 @@
   .grid-add-btn {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     background-color: green;
     color: white;
     cursor: pointer;
@@ -24,7 +24,7 @@
     height: 40px;
     background-color: green;
     border: 2px solid black;
-    border-radius: 50%;
+    border-radius: 4px !important;
     cursor: pointer;
     color: black;
     font-size: 20px;
@@ -32,8 +32,8 @@
   }
 
   .grid-remove-btn {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     background-color: red;
     color: white;
     cursor: pointer;
@@ -125,4 +125,8 @@
   .circle-btn {
     border-radius: 50%;
     border: 3px solid black;
+<<<<<<< HEAD
   }
+=======
+  }
+>>>>>>> origin/catalog-bf

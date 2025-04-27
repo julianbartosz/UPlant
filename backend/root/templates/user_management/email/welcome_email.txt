@@ -1,0 +1,15 @@
+{% autoescape off %}
+Hello {{ user.username }},
+
+Welcome to UPlant!
+
+Thank you for creating an account. You can now start creating and managing your gardens.
+
+Get started here: {{ app_url }}
+
+If you have any questions, please contact us at {{ help_email }}
+
+Happy gardening!
+
+The UPlant Team
+{% endautoescape %}

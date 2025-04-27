@@ -13,7 +13,6 @@ urlpatterns = [
         authentication_form=CustomAuthenticationForm
     ), name='login'),
     path('logout/', LogoutView.as_view(next_page='home'), name='logout'),
-    path('search_select/', views.search_select, name='search_select'),
 
     # API
 

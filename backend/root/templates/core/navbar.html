@@ -15,19 +15,19 @@
                 {% if request.user.is_authenticated %}
                     <li class="nav-item">
                         <!-- opens in a new tab -->
-                        <a class="nav-link" href="http://localhost:5173/app/" target="_blank">
+                        <!-- <a class="nav-link" href="http://localhost:5173/app/" target="_blank">
                             <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
-                        </a>
-                        <!-- can be rewritten to this so it opens in the same browser tab -->
-                        <!-- <a class="nav-link" href="http://localhost:5173/app/">Dashboard</a>  -->
+                        </a> -->
+                        <!-- opens in the same browser tab -->
+                        <a class="nav-link" href="http://localhost:5173/app/">Dashboard</a>
                     </li>
                     <li class="nav-item">
                         <!-- opens in a new tab -->
-                        <a class="nav-link" href="http://localhost:5173/app/catalog" target="_blank">
+                        <!-- <a class="nav-link" href="http://localhost:5173/app/catalog" target="_blank">
                             <i class="fas fa-tachometer-alt mr-1"></i> Catalog
-                        </a>
-                        <!-- can be rewritten to this so it opens in the same browser tab -->
-                        <!-- <a class="nav-link" href="http://localhost:5173/app/catalog">Catalog</a>  -->
+                        </a> -->
+                        <!-- opens in the same browser tab -->
+                        <a class="nav-link" href="http://localhost:5173/app/catalog">Catalog</a>
                     </li>
                     {% if request.user.is_superuser %}
                         <li class="nav-item">

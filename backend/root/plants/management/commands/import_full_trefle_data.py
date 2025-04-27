@@ -1,7 +1,7 @@
 # backend/root/plants/management/commands/import_full_trefle_data.py
 
 import os
-import timey
+import time
 import logging
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -10,6 +10,20 @@ from services.trefle_service import list_plants, retrieve_plants
 from services.plant_mapper import map_api_to_plant
 
 logger = logging.getLogger(__name__)
+
+def get_with_backoff(func, *args, max_retries=3, initial_delay=1, **kwargs):
+    """Helper function to retry API calls with exponential backoff"""
+    attempt = 0
+    while attempt < max_retries:
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            attempt += 1
+            if attempt == max_retries:
+                raise
+            sleep_time = initial_delay * (2 ** (attempt - 1))
+            logger.warning(f"API call failed, retrying in {sleep_time}s: {e}")
+            time.sleep(sleep_time)
 
 class Command(BaseCommand):
     help = "Import full Trefle plant data into the database using the retrieve endpoint."
@@ -22,103 +36,111 @@ class Command(BaseCommand):
             help='Maximum number of pages from the list endpoint to process (for testing)'
         )
         parser.add_argument(
-            '--delay',
-            type=float,
-            default=0.6,
-            help='Base delay in seconds between API calls (default: 0.6 seconds)'
+            '--limit',
+            type=int,
+            default=20,
+            help='Number of plants per page'
+        )
+        parser.add_argument(
+            '--debug',
+            action='store_true',
+            help='Enable debug output'
         )
 
     def handle(self, *args, **options):
         max_pages = options.get('max_pages')
-        delay = options['delay']
-        page = 1
+        limit = options.get('limit')
+        debug = options.get('debug', False)
+        
+        page_number = 1
         total_imported = 0
-
-        # Helper function for exponential backoff
-        def get_with_backoff(func, *args, **kwargs):
-            max_retries = 5
-            base_delay = delay
-            for attempt in range(max_retries):
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    # Check if the error message contains "429" (Too Many Requests)
-                    if "429" in str(e) and attempt < max_retries - 1:
-                        retry_delay = base_delay * (2 ** attempt)
-                        self.stdout.write(f"Rate limited. Waiting {retry_delay} seconds before retry...")
-                        time.sleep(retry_delay)
-                    else:
-                        raise
-
-        self.stdout.write("Starting full Trefle data import process...")
-
+        
+        self.stdout.write(f"Starting plant import (max_pages={max_pages}, limit={limit})")
+        
         while True:
+            if max_pages and page_number > max_pages:
+                self.stdout.write(f"Reached page limit ({max_pages}). Stopping import.")
+                break
+                
+            self.stdout.write(f"Fetching page {page_number} of plants...")
+            
             try:
-                list_response = list_plants(page=page)
+                list_response = get_with_backoff(
+                    list_plants, 
+                    filters={"limit": limit},
+                    page=page_number
+                )
+                
+                plant_list = list_response.get('data', [])
+                
+                if not plant_list:
+                    self.stdout.write("No more plant records found on this page. Ending import.")
+                    break
+                
+                # Process each plant in the current page
+                for basic_record in plant_list:
+                    plant_id = basic_record.get('slug') or basic_record.get('id')
+                    if not plant_id:
+                        self.stderr.write("Skipping a record due to missing identifier.")
+                        continue
+                    
+                    try:
+                        # Get detailed plant information using retrieve_plants
+                        self.stdout.write(f"Fetching detailed data for plant {plant_id}...")
+                        full_response = get_with_backoff(retrieve_plants, plant_id)
+                        
+                        if debug:
+                            self.stdout.write(f"Retrieved plant data: {full_response}")
+                        
+                        # Check if we got valid data back
+                        full_data = full_response.get('data')
+                        if not full_data:
+                            self.stderr.write(f"No full data found for plant {plant_id}.")
+                            continue
+                        
+                        # Create or update plant record in database
+                        try:
+                            with transaction.atomic():
+                                # Convert API data to our model format
+                                plant_fields = map_api_to_plant(full_data)
+                                
+                                # Debug output
+                                if debug:
+                                    self.stdout.write(f"Mapped fields: {plant_fields}")
+                                
+                                # Check for required fields
+                                if not plant_fields.get('scientific_name'):
+                                    self.stderr.write(f"Missing scientific name for plant {plant_id}. Skipping.")
+                                    continue
+                                
+                                # Use update_or_create to either update existing record or create new one
+                                plant, created = Plant.objects.update_or_create(
+                                    api_id=str(full_data.get('id')),
+                                    defaults=plant_fields
+                                )
+                                
+                                action = "Created" if created else "Updated"
+                                self.stdout.write(f"{action} plant: {plant.scientific_name}")
+                                total_imported += 1
+                                
+                        except Exception as e:
+                            self.stderr.write(f"Error saving plant {plant_id}: {e}")
+                            logger.exception(f"Failed to save plant record for {plant_id}")
+                    
+                    except Exception as e:
+                        self.stderr.write(f"Error retrieving full data for plant {plant_id}: {e}")
+                        logger.exception(f"Error retrieving full data for plant {plant_id}")
+                        continue
+                
+                # Move to next page
+                page_number += 1
+                
+                # Add a small delay to avoid rate limits
+                time.sleep(0.5)
+                
             except Exception as e:
-                self.stderr.write(f"Error fetching list page {page}: {e}")
-                logger.exception("Error fetching list page %s", page)
+                self.stderr.write(f"Error fetching plant list page {page_number}: {e}")
+                logger.exception(f"Error fetching plant list page {page_number}")
                 break
-
-            plant_list = list_response.get('data', [])
-            if not plant_list:
-                self.stdout.write("No more plant records found on this page. Ending import.")
-                break
-
-            for basic_record in plant_list:
-                plant_id = basic_record.get('slug') or basic_record.get('id')
-                if not plant_id:
-                    self.stderr.write("Skipping a record due to missing identifier.")
-                    continue
-
-                try:
-                    # Use our backoff helper to wrap the retrieve call
-                    full_response = get_with_backoff(retrieve_plants, plant_id)
-                except Exception as e:
-                    self.stderr.write(f"Error retrieving full data for plant {plant_id}: {e}")
-                    logger.exception("Error retrieving full data for plant %s", plant_id)
-                    continue
-
-                full_data = full_response.get('data')
-                if not full_data:
-                    self.stderr.write(f"No full data found for plant {plant_id}.")
-                    continue
-
-                try:
-                    mapped_data = map_api_to_plant(full_data)
-                except Exception as e:
-                    logger.error("Mapping error for plant %s: %s", plant_id, e)
-                    continue
-
-                unique_filter = {}
-                if mapped_data.get("api_id"):
-                    unique_filter["api_id"] = mapped_data["api_id"]
-                else:
-                    unique_filter["slug"] = mapped_data["slug"]
-
-                try:
-                    with transaction.atomic():
-                        obj, created = Plant.objects.update_or_create(
-                            **unique_filter,
-                            defaults=mapped_data
-                        )
-                        total_imported += 1
-                        self.stdout.write(f"Imported {mapped_data.get('slug')} (Total: {total_imported})")
-                except Exception as e:
-                    logger.error("Error saving plant %s: %s", mapped_data.get("slug"), e)
-                    continue
-
-                # Delay between each retrieve call (this delay is separate from backoff delays)
-                time.sleep(delay)
-
-            links = list_response.get('links', {})
-            if not links.get('next'):
-                self.stdout.write("No next page available in list endpoint. Import complete.")
-                break
-
-            page += 1
-            if max_pages is not None and page > max_pages:
-                self.stdout.write("Reached max_pages limit. Stopping import.")
-                break
-
-        self.stdout.write(self.style.SUCCESS(f"Full import complete. Total plants imported/updated: {total_imported}"))
+        
+        self.stdout.write(self.style.SUCCESS(f"Successfully imported {total_imported} plants"))

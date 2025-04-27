@@ -7,9 +7,9 @@ export const useUser = () => {
     if (!context) {
         throw new Error("useUser must be used within a UserProvider");
     }
-
+    
     const { username, setUsername } = context;
-
+    
     const updateUsername = async (newUsername) => {
         if (!newUsername) {
             alert("Invalid username. Please provide a valid username.");
@@ -17,11 +17,10 @@ export const useUser = () => {
         }
 
         try {
-            const response = await fetch('/api/user/update-username', {
-                method: 'PUT',
+            const response = await fetch('http://localhost:8000/api/users/me/update_username/', { // Added quotes around the URL
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'credentials': 'include',
                 },
                 body: JSON.stringify({ username: newUsername }),
             });
@@ -33,7 +32,7 @@ export const useUser = () => {
             setUsername((prevUser) => ({ ...prevUser, username: newUsername }));
             console.log("Username updated successfully.");
         } catch (error) {
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }
@@ -42,32 +41,6 @@ export const useUser = () => {
         }
     };
 
-    const updatePassword = async (newPassword) => {
-        if (!newPassword) {
-            alert("Invalid password. Please provide a valid password.");
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/user/update-password', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'credentials': 'include',
-                },
-                body: JSON.stringify({ password: newPassword }),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to update password");
-            }
-
-            console.log("Password updated successfully.");
-        } catch (error) {
-            console.error("Error updating password:", error);
-            alert("Failed to update password. Please try again.");
-        }
-    };
 
     const deleteAccount = async () => {
         const confirmDelete = window.confirm("Are you sure you want to delete your account? This action cannot be undone.");
@@ -94,7 +67,7 @@ export const useUser = () => {
             console.log("Account deleted successfully.");
         } catch (error) {
             console.error("Error deleting account:", error);
-            if (import.meta.env.VITE__USE_DUMMY_FETCH === 'true') {
+            if (import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
                 console.error("Using dummy fetch, no rollback needed.");
                 return;
             }
@@ -104,8 +77,7 @@ export const useUser = () => {
 
     return {
         username,
-        updateUsername,
-        updatePassword,
+        setUsername,
         deleteAccount,
     };
 };

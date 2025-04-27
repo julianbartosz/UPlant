@@ -53,7 +53,7 @@ class ContactView(FormView):
             subject,
             full_message,
             email,  # Sender
-            ['uplant@gmail.com'],  # Replace with actual recipient
+            ['uplant.notifications@gmail.com'],  # Replace with actual recipient
             fail_silently=False,
         )
 
