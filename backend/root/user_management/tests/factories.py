@@ -17,6 +17,7 @@ class BaseUserFactory(DjangoModelFactory):
     class Meta:
         model = User
         abstract = True
+        skip_postgeneration_save = True  # Added to fix deprecation warning
 
     # Use Faker for more realistic test data
     email = factory.Sequence(lambda n: f'user{n}@example.com')
@@ -44,6 +45,7 @@ class BaseUserFactory(DjangoModelFactory):
         if extracted:
             for key, value in extracted.items():
                 setattr(self, key, value)
+            self.save()  # Explicitly save after setting attributes
 
 
 class UserFactory(BaseUserFactory):
@@ -60,6 +62,10 @@ class UserFactory(BaseUserFactory):
         # Create inactive user
         user = UserFactory(is_active=False)
     """
+    class Meta:
+        model = User
+        skip_postgeneration_save = True  # Added to fix deprecation warning
+        
     role = Roles.US
 
 
@@ -74,6 +80,10 @@ class AdminFactory(BaseUserFactory):
         # Create admin with specific attributes
         admin = AdminFactory(email='admin@example.com')
     """
+    class Meta:
+        model = User
+        skip_postgeneration_save = True  # Added to fix deprecation warning
+        
     email = factory.Sequence(lambda n: f'admin{n}@example.com')
     username = factory.Sequence(lambda n: f'admin{n}')
     role = Roles.AD
@@ -88,6 +98,10 @@ class ModeratorFactory(BaseUserFactory):
         # Create basic moderator
         mod = ModeratorFactory()
     """
+    class Meta:
+        model = User
+        skip_postgeneration_save = True  # Added to fix deprecation warning
+        
     email = factory.Sequence(lambda n: f'mod{n}@example.com')
     username = factory.Sequence(lambda n: f'mod{n}')
     role = Roles.MO
@@ -95,6 +109,10 @@ class ModeratorFactory(BaseUserFactory):
 
 class InactiveUserFactory(UserFactory):
     """Factory for creating inactive users for testing account activation flows."""
+    class Meta:
+        model = User
+        skip_postgeneration_save = True  # Added to fix deprecation warning
+        
     is_active = False
 
 
@@ -104,6 +122,10 @@ class NewUserFactory(UserFactory):
     
     Useful for testing new user flows and welcome emails.
     """
+    class Meta:
+        model = User
+        skip_postgeneration_save = True  # Added to fix deprecation warning
+        
     created_at = factory.LazyFunction(lambda: timezone.now() - timedelta(minutes=5))
     updated_at = factory.LazyFunction(lambda: timezone.now() - timedelta(minutes=5))
 
@@ -114,6 +136,10 @@ class UserWithActivityFactory(UserFactory):
     
     Useful for testing user activity reports and dashboards.
     """
+    class Meta:
+        model = User
+        skip_postgeneration_save = True  # Added to fix deprecation warning
+        
     last_login = factory.LazyFunction(lambda: timezone.now() - timedelta(hours=2))
 
     @factory.post_generation
@@ -124,6 +150,7 @@ class UserWithActivityFactory(UserFactory):
         
         # Set a login count attribute for testing (not a real model field)
         self.login_count = extracted or 5
+        self.save()  # Explicitly save after setting login_count
 
 
 # Factory build helpers
