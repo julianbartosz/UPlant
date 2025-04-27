@@ -294,6 +294,8 @@ if 'test' in sys.argv:
             
     MIGRATION_MODULES = DisableMigrations()
 
+FORMS_URLFIELD_ASSUME_HTTPS = True
+
 ENABLE_SEARCH_INDEXING = True
 MAX_SEARCH_RESULTS = 100
 SEARCH_CACHE_TIMEOUT = 3600  # 1 hour
