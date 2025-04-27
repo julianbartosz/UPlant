@@ -3,6 +3,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError, PermissionDenied
+from model_utils import FieldTracker
 
 User = get_user_model()
 
@@ -171,6 +172,8 @@ class Plant(models.Model):
         
     # Explicitly define the primary key field (Django would create this anyway)
     id = models.AutoField(primary_key=True)
+
+    tracker = FieldTracker(fields=['is_verified']) # for signals
 
     # API fields
     api_id = models.IntegerField(
