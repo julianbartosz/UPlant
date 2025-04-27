@@ -5,6 +5,9 @@ from django.urls import reverse
 from pytest_factoryboy import register
 
 # User Management Factories
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from user_management.tests.factories import (
     UserFactory, 
     AdminFactory,
