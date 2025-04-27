@@ -57,15 +57,9 @@ class TestPlantBasicModel:
     def test_user_created_plant_required_fields(self, db):
         """Test that user-created plants require specific fields."""
         user = UserFactory()
-        
-        # Missing water_interval (required for user plants)
-        with pytest.raises(ValidationError):
-            Plant.create_user_plant(
-                user=user,
-                common_name="My Plant"
-                # Missing water_interval
-            )
-        
+
+        # Removed missing water_interval check. models provides default water_interval = 7
+
         # Missing common_name (required for user plants)
         with pytest.raises(ValidationError):
             Plant.create_user_plant(
@@ -87,23 +81,21 @@ class TestPlantBasicModel:
         assert plant.water_interval == 7
 
     def test_indexes_exist(self, db):
+        # Updated test from postgres language to mysql
+
         """Test that important indexes are defined."""
         # This test verifies the database has the defined indexes
         # Uses Django's introspection API
         from django.db import connection
         
         with connection.cursor() as cursor:
-            # Check for common_name index
-            cursor.execute(
-                "SELECT 1 FROM pg_indexes WHERE indexname = 'idx_plant_common_name'"
-            )
-            assert cursor.fetchone() is not None, "Common name index not found"
-            
-            # Check for created_by index
-            cursor.execute(
-                "SELECT 1 FROM pg_indexes WHERE indexname = 'idx_plant_created_by'"
-            )
-            assert cursor.fetchone() is not None, "Created by index not found"
+            indexes = connection.introspection.get_constraints(cursor, 'plants_plant')
+
+        # indexes is a dict of constraints and indexes
+        index_names = [name for name, details in indexes.items() if details['index']]
+
+        assert 'idx_plant_common_name' in index_names, "Common name index not found"
+        assert 'idx_plant_created_by' in index_names, "Created by index not found"
 
 
 @pytest.mark.unit
