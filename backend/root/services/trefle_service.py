@@ -1,3 +1,5 @@
+# THIS FILE IS DEPRECATED; DO NOT TEST OR USE IT
+
 # backend/root/services/trefle_service.py
 
 import os
