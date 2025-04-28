@@ -58,8 +58,6 @@ class TestPlantBasicModel:
         """Test that user-created plants require specific fields."""
         user = UserFactory()
 
-        # Removed missing water_interval check. models provides default water_interval = 7
-
         # Missing common_name (required for user plants)
         with pytest.raises(ValidationError):
             Plant.create_user_plant(
@@ -81,8 +79,6 @@ class TestPlantBasicModel:
         assert plant.water_interval == 7
 
     def test_indexes_exist(self, db):
-        # Updated test from postgres language to mysql
-
         """Test that important indexes are defined."""
         # This test verifies the database has the defined indexes
         # Uses Django's introspection API
