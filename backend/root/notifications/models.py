@@ -10,12 +10,12 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 class NotifTypes(models.TextChoices):
-    PR = "Prune"
-    FE = "Fertilize"
-    HA = "Harvest"
-    WA = "Water"
-    WE = "Weather"
-    OT = "Other"
+    PR = "PR", "Prune"
+    FE = "FE", "Fertilize"
+    HA = "HA", "Harvest" 
+    WA = "WA", "Water"
+    WE = "WE", "Weather"
+    OT = "OT", "Other"
 
 class Notification(models.Model):
     garden = models.ForeignKey('gardens.Garden', on_delete=models.CASCADE)

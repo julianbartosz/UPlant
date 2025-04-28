@@ -24,6 +24,7 @@ class NotificationFactory(DjangoModelFactory):
     """
     class Meta:
         model = Notification
+        skip_postgeneration_save = True
     
     garden = factory.SubFactory(GardenFactory)
     name = factory.Sequence(lambda n: f"Test Notification {n}")
@@ -120,6 +121,7 @@ class NotificationPlantAssociationFactory(DjangoModelFactory):
     """
     class Meta:
         model = NotificationPlantAssociation
+        skip_postgeneration_save = True
     
     notification = factory.SubFactory(NotificationFactory)
     plant = factory.SubFactory(APIPlantFactory)
@@ -156,6 +158,7 @@ class NotificationInstanceFactory(DjangoModelFactory):
     """
     class Meta:
         model = NotificationInstance
+        skip_postgeneration_save = True
     
     notification = factory.SubFactory(NotificationFactory)
     next_due = factory.LazyFunction(lambda: timezone.now() + timedelta(days=random.randint(1, 5)))
