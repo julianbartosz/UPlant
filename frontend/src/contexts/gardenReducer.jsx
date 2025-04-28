@@ -1,21 +1,24 @@
+// Garden reducer to manage the state of gardens and their notifications
+const DEBUG = import.meta.env.VITE_DEBUG === 'true';
 
-const initialState = {contentSize: null, info: []};
+const initialState = {contentSize: null, info: null};
 
-function validateContentAction(action) {
-    if (!action.contentSize.width || !action.contentSize.height) {
-        throw new Error("Content size must include both width and height");
-    }
-    if (action.contentSize.width <= 0 || action.contentSize.height <= 0) {
-        throw new Error("Content size must be greater than zero");
-    }
-    if (typeof action.contentSize.width !== 'number' || typeof action.contentSize.height !== 'number') {
-        throw new Error("Content size must be a number");
-    }
-}
-
-function validateGardenAction(action) {
+// Validation to aid in debugging
+function validate(state, action) {
 
     switch (action.type) {
+        case 'UPDATE_CONTENT':
+            if (!action.contentSize.width || !action.contentSize.height) {
+                throw new Error("Content size must include both width and height");
+            }
+            if (action.contentSize.width <= 0 || action.contentSize.height <= 0) {
+                throw new Error("Content size must be greater than zero");
+            }
+            if (typeof action.contentSize.width !== 'number' || typeof action.contentSize.height !== 'number') {
+                throw new Error("Content size must be a number");
+            }
+            break;
+
         case 'ADD_GARDEN':
             if (!action.payload) {
                 throw new Error("Payload is required for ADD_GARDEN action");
@@ -60,15 +63,7 @@ function validateGardenAction(action) {
                 throw new Error("Payload is required for UPDATE_GARDEN action");
             }
             break;
-    
-        default:
-            throw new Error(`Unsupported action type: ${action.type}`);
-    }
-}
-
-function validateNotificationAction(action) {
-
-    switch (action.type) {
+ 
         case 'ADD_NOTIFICATION':
             if (!action.payload) {
                 throw new Error("Payload is required for ADD_NOTIFICATION action");
@@ -119,10 +114,22 @@ function validateNotificationAction(action) {
     }
 }
 
-
 // Reducer function to handle garden actions
 function gardenReducer(state, action) {
-  
+    // Validate action before processing
+    if (DEBUG) {
+        console.log("--- Attempting reduction ---");
+        console.log("ACTION: ", action); 
+        console.log("STATE: ", state);
+        
+        try {
+            validate(state, action);
+        } catch (error) {
+            console.error("Invalid action: ", error.message);
+            return state;
+        }
+    }
+
     switch (action.type) {
         case 'UPDATE_CONTENT':
             validateContentAction(action);
@@ -141,7 +148,8 @@ function gardenReducer(state, action) {
                     const { x_coordinate, y_coordinate, planted_date, id: logId, plant_details: plant } = log;
                     garden.cells[y_coordinate][x_coordinate] = { logId, planted_date, ...plant };
                 }
-                return garden;
+                // Remove garden_logs from the final state to avoid redundancy
+                return { ...garden, garden_logs: undefined };
             });
             return { contentSize: state.contentSize, info: processedInfo };
         

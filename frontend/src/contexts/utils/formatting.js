@@ -13,21 +13,13 @@ const formatGardens = (gardens) => {
     });
 }
 
-const formatNotificationsList = (notificationsList) => { 
+const formatNotifications = (notificationsData) => { 
+    // let gardenId = notificationsData['garden_id'];
+    // let notifications = notificationsData[0]['notifications']
+    // return 
     
-    return notificationsList.map(notification => {
-        if (!notification || notification.length === 0) {
-            return [];
-        }
-        if (notification[0]['notifications'] === undefined) {
-            return notification;
-        }
-        return notification[0]['notifications']
-            .filter(item => !item.subtype || item.subtype !== 'welcome')
-            .map(item => {
-                return { ...item };
-            });
-    });
+    // });
+    return null;
 }
 
-export { formatGardens, formatNotificationsList };
+export { formatGardens, formatNotifications };
