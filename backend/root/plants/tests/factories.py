@@ -71,7 +71,7 @@ class APIPlantFactory(BasePlantFactory):
         # Create API plant with specific attributes
         plant = APIPlantFactory(common_name='Specific Plant', water_interval=7)
     """
-    api_id = factory.Sequence(lambda n: n + 5000)
+    api_id = factory.Sequence(lambda n: n + 999999) # raised value
     is_user_created = False
     is_verified = True
     

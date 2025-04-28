@@ -1,104 +1,99 @@
 # backend/root/conftest.py
 import pytest
 from django.test import Client
-from django.urls import reverse
-from pytest_factoryboy import register
 
-# User Management Factories
-from user_management.tests.factories import (
-    UserFactory, 
-    AdminFactory,
-    ModeratorFactory,
-    InactiveUserFactory,
-    NewUserFactory,
-    UserWithActivityFactory
-)
+@pytest.fixture(scope="session", autouse=True)
+def django_db_setup():
+    """Initialize Django before any tests are run."""
+    import os
+    import sys
+    import django
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djangoProject1.settings")
+    django.setup()
 
-# Plant Factories
-from plants.tests.factories import (
-    APIPlantFactory,  # Renamed from PlantFactory
-    UserCreatedPlantFactory,
-    VerifiedUserPlantFactory,
-    PlantWithFullDetailsFactory,
-    PlantChangeRequestFactory
-)
-
-# Garden Factories
-from gardens.tests.factories import (
-    GardenFactory,
-    SmallGardenFactory,
-    LargeGardenFactory,
-    PublicGardenFactory,
-    DeletedGardenFactory,
-    GardenLogFactory,
-    HealthyPlantLogFactory,
-    UnhealthyPlantLogFactory,
-    DeadPlantLogFactory,
-    NewlyPlantedLogFactory,
-    MaturePlantLogFactory,
-    UserPlantInGardenFactory
-)
-
-# Notification Factories
-from notifications.tests.factories import (
-    NotificationFactory,
-    WaterNotificationFactory,
-    FertilizeNotificationFactory,
-    PruneNotificationFactory,
-    HarvestNotificationFactory,
-    WeatherNotificationFactory,
-    OtherNotificationFactory,
-    NotificationPlantAssociationFactory,
-    NotificationInstanceFactory,
-    OverdueNotificationInstanceFactory,
-    CompletedNotificationInstanceFactory,
-    SkippedNotificationInstanceFactory,
-    MissedNotificationInstanceFactory
-)
-
-# Register User Management Factories
-register(UserFactory)
-register(AdminFactory)
-register(ModeratorFactory)
-register(InactiveUserFactory)
-register(NewUserFactory)
-register(UserWithActivityFactory)
-
-# Register Plant Factories
-register(APIPlantFactory)
-register(UserCreatedPlantFactory)
-register(VerifiedUserPlantFactory)
-register(PlantWithFullDetailsFactory)
-register(PlantChangeRequestFactory)
-
-# Register Garden Factories
-register(GardenFactory)
-register(SmallGardenFactory)
-register(LargeGardenFactory)
-register(PublicGardenFactory)
-register(DeletedGardenFactory)
-register(GardenLogFactory)
-register(HealthyPlantLogFactory)
-register(UnhealthyPlantLogFactory)
-register(DeadPlantLogFactory)
-register(NewlyPlantedLogFactory)
-register(MaturePlantLogFactory)
-register(UserPlantInGardenFactory)
-
-# Register Notification Factories
-register(NotificationFactory)
-register(WaterNotificationFactory)
-register(FertilizeNotificationFactory)
-register(PruneNotificationFactory)
-register(HarvestNotificationFactory)
-register(WeatherNotificationFactory)
-register(OtherNotificationFactory)
-register(NotificationPlantAssociationFactory)
-register(NotificationInstanceFactory)
-register(OverdueNotificationInstanceFactory)
-register(CompletedNotificationInstanceFactory)
-register(SkippedNotificationInstanceFactory)
-register(MissedNotificationInstanceFactory)
+@pytest.fixture(scope="session", autouse=True)
+def register_factories():
+    """Register all factories after Django is initialized."""
+    from pytest_factoryboy import register
+    
+    # User Management Factories
+    from user_management.tests.factories import (
+        UserFactory, AdminFactory, ModeratorFactory,
+        InactiveUserFactory, NewUserFactory, UserWithActivityFactory
+    )
+    
+    # Plant Factories
+    from plants.tests.factories import (
+        APIPlantFactory, UserCreatedPlantFactory,
+        VerifiedUserPlantFactory, PlantWithFullDetailsFactory,
+        PlantChangeRequestFactory
+    )
+    
+    # Garden Factories
+    from gardens.tests.factories import (
+        GardenFactory, SmallGardenFactory, LargeGardenFactory,
+        PublicGardenFactory, DeletedGardenFactory, GardenLogFactory,
+        HealthyPlantLogFactory, UnhealthyPlantLogFactory,
+        DeadPlantLogFactory, NewlyPlantedLogFactory,
+        MaturePlantLogFactory, UserPlantInGardenFactory
+    )
+    
+    # Notification Factories
+    from notifications.tests.factories import (
+        NotificationFactory, WaterNotificationFactory,
+        FertilizeNotificationFactory, PruneNotificationFactory,
+        HarvestNotificationFactory, WeatherNotificationFactory,
+        OtherNotificationFactory, NotificationPlantAssociationFactory,
+        NotificationInstanceFactory, OverdueNotificationInstanceFactory,
+        CompletedNotificationInstanceFactory, SkippedNotificationInstanceFactory,
+        MissedNotificationInstanceFactory
+    )
+    
+    # Register all factories
+    # User Management
+    register(UserFactory)
+    register(AdminFactory)
+    register(ModeratorFactory)
+    register(InactiveUserFactory)
+    register(NewUserFactory)
+    register(UserWithActivityFactory)
+    
+    # Plants
+    register(APIPlantFactory)
+    register(UserCreatedPlantFactory)
+    register(VerifiedUserPlantFactory)
+    register(PlantWithFullDetailsFactory)
+    register(PlantChangeRequestFactory)
+    
+    # Gardens
+    register(GardenFactory)
+    register(SmallGardenFactory)
+    register(LargeGardenFactory)
+    register(PublicGardenFactory)
+    register(DeletedGardenFactory)
+    register(GardenLogFactory)
+    register(HealthyPlantLogFactory)
+    register(UnhealthyPlantLogFactory)
+    register(DeadPlantLogFactory)
+    register(NewlyPlantedLogFactory)
+    register(MaturePlantLogFactory)
+    register(UserPlantInGardenFactory)
+    
+    # Notifications
+    register(NotificationFactory)
+    register(WaterNotificationFactory)
+    register(FertilizeNotificationFactory)
+    register(PruneNotificationFactory)
+    register(HarvestNotificationFactory)
+    register(WeatherNotificationFactory)
+    register(OtherNotificationFactory)
+    register(NotificationPlantAssociationFactory)
+    register(NotificationInstanceFactory)
+    register(OverdueNotificationInstanceFactory)
+    register(CompletedNotificationInstanceFactory)
+    register(SkippedNotificationInstanceFactory)
+    register(MissedNotificationInstanceFactory)
 
 # ==================== Base Client Fixtures ====================
 
@@ -235,6 +230,7 @@ def watering_garden(regular_user):
 @pytest.fixture
 def water_notification(water_notification_factory, garden, api_plant):
     """Create a water notification for a garden"""
+    from notifications.tests.factories import NotificationPlantAssociationFactory
     notification = water_notification_factory(garden=garden)
     NotificationPlantAssociationFactory(notification=notification, plant=api_plant)
     return notification
@@ -243,7 +239,6 @@ def water_notification(water_notification_factory, garden, api_plant):
 def notification_due_today(notification_instance_factory, water_notification):
     """Create a notification instance that's due today"""
     from django.utils import timezone
-    from datetime import timedelta
     return notification_instance_factory(
         notification=water_notification,
         next_due=timezone.now(),
@@ -265,6 +260,15 @@ def complete_user_setup(regular_user):
     
     Returns a dictionary with all created entities.
     """
+    # Import inside function to avoid premature import
+    from gardens.tests.factories import GardenFactory, HealthyPlantLogFactory, NewlyPlantedLogFactory
+    from plants.tests.factories import APIPlantFactory, UserCreatedPlantFactory
+    from notifications.tests.factories import (
+        WaterNotificationFactory, FertilizeNotificationFactory,
+        NotificationPlantAssociationFactory, NotificationInstanceFactory,
+        OverdueNotificationInstanceFactory
+    )
+    
     # Create a garden
     garden = GardenFactory(user=regular_user)
     
@@ -323,6 +327,8 @@ def login_user():
         def test_something(client, login_user):
             login_user(client, 'user@example.com', 'password123')
     """
+    from django.urls import reverse
+    
     def _login_user(client, username, password):
         client.post(
             reverse('login'), 
@@ -362,7 +368,6 @@ def create_image_file():
             response = client.post('/upload/', {'image': image_file})
     """
     from PIL import Image
-    import tempfile
     from io import BytesIO
     
     def _create_image_file(filename='test.png', size=(100, 100), color='blue'):
