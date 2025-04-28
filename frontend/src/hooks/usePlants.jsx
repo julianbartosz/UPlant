@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { UserContext } from '../contexts/UserProvider';
 
 export const usePlants = () => {
@@ -13,25 +13,21 @@ export const usePlants = () => {
         setPlantsList, 
         plantsListError,
         selectedPlant,
-        selectedPlantLoading,
-        selectedPlantError,
-        setSelectedPlantLoading,
-        setSelectedPlantError,
     } = context;
     
+    const [loading, setLoading] = useState(false);
 
     const mediatePlantSearch = async (query) => {
         if (!query) {
             alert("Please provide a valid search query.");
             return;
         }
-
-        console.log("Searching for plants with query:", query);
-
-
+        setLoading(true);
+        console.log("Searching for plants with query: ", query);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_PLANT_SEARCH_API_URL}?q=${query}&limit=10`, {
+            
+            const response = await fetch(`${import.meta.env.VITE_PLANT_SEARCH_API_URL}?q=${query}&limit=30`, {
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
@@ -55,6 +51,8 @@ export const usePlants = () => {
             }
             console.error("Error searching plants:", error);
             alert("Failed to search plants. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -95,9 +93,7 @@ export const usePlants = () => {
     return {
         plantsList,
         plantsListError,
-        selectedPlant,
-        selectedPlantLoading,
-        selectedPlantError,
+        loading,
         mediatePlantSearch,
         mediatePlantRetrieval,
     };

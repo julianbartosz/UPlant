@@ -1,5 +1,5 @@
 
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { UserContext } from '../contexts/UserProvider';
 
 const useNotifications = () => {
@@ -11,7 +11,43 @@ const useNotifications = () => {
     }
 
     const { gardens, notificationsList, setNotifications, notificationsListLoading, notificationsListError } = context;
-   
+    
+    const [todaysNotifications, setTodaysNotifications] = useState(null);
+
+    useEffect(() => {
+
+        const determineReminders = () => {
+            if (!notificationsList || !gardens) {
+                console.log("Notifications or gardens not available");
+                return;
+            }
+
+            const reminders = notificationsList && notificationsList.map(garden => {
+
+                        return garden.filter(notification => {
+                            const now = new Date();
+                            console.log("Now:", notification.next_due);
+                            const truncatedDate = notification.next_due.split('.')[0] + 'Z'; // Remove the fractional part
+                            const nextDue = new Date(truncatedDate).setHours(0, 0, 0, 0);
+                            console.log("Next due:", nextDue);
+                            console.log("Now:", now);
+                            return nextDue - now <= 24 * 60 * 60 * 1000 && nextDue > now;
+                        })
+                        .map((notification, index) => (
+                    
+                              {name: notification.name, plant_names: notification.plant_names, index: index}
+                         
+                        ));
+                    });
+
+                setTodaysNotifications(reminders);
+            };
+
+        determineReminders();
+        
+    }, [notificationsList]);
+    
+
     console.log("Notifications:", notificationsList);
 
     const mediateAddNotification = async (gardenIndex, name, interval, plants, callback) => {
@@ -25,6 +61,7 @@ const useNotifications = () => {
             name: name,
             type: "Other",
             interval: interval,
+            next_due: new Date(Date.now() + interval * 24 * 60 * 60 * 1000).toISOString(),
             plant_names: plants.map((plant) => plant.common_name),
         };
     
@@ -165,6 +202,7 @@ const useNotifications = () => {
         setNotifications,
         notificationsListLoading,
         notificationsListError,
+        todaysNotifications,
         mediateAddNotification,
         mediateDeleteNotification,
     };

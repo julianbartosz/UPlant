@@ -33,6 +33,20 @@
     box-shadow: 0 0 5px rgba(21, 96, 130, 0.5);
 }
 
+button.loading {
+    width: 25%;
+    margin-left: 10px;
+    padding: 10px;
+    color: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    background-color: transparent;
+    border-radius: 50%;   
+    pointer-events: none;
+}
+
 button.search-button {
     width: 25%;
     margin-left: 10px;
