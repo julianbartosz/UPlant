@@ -167,10 +167,6 @@ class UserDeleteView(APIView):
             # Delete auth tokens to force logout
             Token.objects.filter(user=user).delete()
             
-            # Optional: Record deletion time
-            user.profile_notes = f"Account deactivated on {timezone.now().strftime('%Y-%m-%d %H:%M:%S')}"
-            user.save(update_fields=['profile_notes'])
-            
             # Log the event
             logger.info(f"User {user.email} (ID: {user.id}) deactivated their account")
             
@@ -721,7 +717,8 @@ class SocialAccountListView(APIView):
             'provider': account.provider,
             'name': account.extra_data.get('name', ''),
             'last_login': account.last_login,
-            'created_at': account.created_at
+            # 'created_at': account.created_at
+            # 'date_joined': account.date_joined,
         } for account in social_accounts]
         
         return Response(accounts)
