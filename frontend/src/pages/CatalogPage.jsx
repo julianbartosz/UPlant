@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { NavBar, PlantSearchSideBar } from '../components/layout';
-import { useUser } from '../hooks/useUser';
 
 import './styles/catalog-page.css';
+import { GridLoading } from '../components/widgets';
 
 function Catalog() {
-    const { username } = useUser();
     const [selectedPlant, setSelectedPlant] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -24,12 +23,14 @@ function Catalog() {
                     throw new Error('Network response was not ok');
                 }
                 const data = await response.json();
-                console.log("DATA", data);
                 setSelectedPlant(data);
-                setLoading(false);
+                console.log("Selected plant details:", data);
             } catch (error) {
                 console.error('Error fetching plant details:', error);
+            } finally {
+                setLoading(false);
             }
+            
         };
         fetchPlantDetails(plant);
     };
@@ -38,10 +39,11 @@ function Catalog() {
 
     return (
         <>
-            <NavBar title="Catalog" username={username} onBack={() => { window.location.href = import.meta.env.VITE_HOME_URL }} />
+            <NavBar title="Catalog" onBack={() => { window.location.href = import.meta.env.VITE_HOME_URL }} />
             <PlantSearchSideBar page="catalog" onPlantClick={handlePlantClick} />
             <div className='catalog-content'>
-                {selectedPlant ? (
+                {loading ? <GridLoading/> : 
+                selectedPlant ? (
                     <div className="plant-details-container">
                         <div className="plant-details-section" style={{padding: '0px 20px'}}>
                         <h2>{selectedPlant.common_name}</h2>
@@ -137,7 +139,7 @@ function Catalog() {
                         </div>
                     </div>
                     
-                ) : <h2 style={{fontSize: '40px', color: 'black', padding: '5px 10px', borderRadius: '5px', background: 'rgba(255, 253, 253, 0.6)'}}>Click to smell the flowers</h2>
+                ) : <h2 style={{fontSize: '40px', color: 'black', padding: '5px 10px', borderRadius: '5px', background: 'rgba(255, 253, 253, 0.6)'}}>Select a plant from the Sidebar</h2>
                 }
             </div>
         </>
