@@ -1,3 +1,5 @@
+# THIS FILE IS DEPRECATED; DO NOT TEST OR USE IT
+
 # backend/root/services/external_search.py
 
 import logging
