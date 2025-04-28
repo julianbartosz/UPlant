@@ -17,6 +17,7 @@ export const UserProvider = ({ children }) => {
     const [plantsList, setPlantsList] = useState(null);
     const [zipcode, setZipcode] = useState(null);
     const [weather, setWeather] = useState(null);
+    const [userId, setUserId] = useState(null);
      
     useEffect(() => {
             
@@ -81,7 +82,9 @@ export const UserProvider = ({ children }) => {
     } = useGet(import.meta.env.VITE_USER_PROFILE_API_URL);
     
     useEffect(() => {
+        console.log("Users data:", usersData);
         setUsername(usersData?.username);
+        setUserId(usersData?.id);
         // setZipcode(usersData?.zipcode);
     }, [usersData]);
 
@@ -92,37 +95,14 @@ export const UserProvider = ({ children }) => {
         }
     }, [gardensData]);
 
-
-    // useEffect(() => {
-    //     const fetchWeather = async () => {
-    //       try {
-    //         const response = await fetch(
-    //           `https://api.openweathermap.org/data/2.5/weather?zip=${zipcode}&units=metric&appid=${import.meta.env.OPEN_WEATHER_API_KEY}`,
-    //         );
-    //         if (!response.ok) {
-    //           throw new Error("Failed to fetch weather data");
-    //         }
-    //         const data = await response.json();
-    //         setWeather(data);
-    //       } catch (err) {
-    //         console.error("Failed to fetch weather:", err);
-    //       }
-    //     };
-    //     if (zipcode) {
-    //       fetchWeather();
-    //     }
-    
-    
-    //     }, [zipcode]);
-
     return (
         <UserContext.Provider
             value={{
                 // Username
                 username,
                 setUsername,
+                userId,
                 
-
                 zipcode,
                 setZipcode,
 

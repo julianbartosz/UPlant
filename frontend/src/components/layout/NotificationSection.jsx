@@ -3,7 +3,6 @@ import NotificationForm from '../forms/NotificationForm';
 import DataTable from '../ui/DataTable';
 import { useGardens } from '../../hooks/useGardens';
 import './styles/notification-section.css';
-import { useNotifications } from '../../hooks';
 
 const NotificationSection = ({ contentSize, selectedGardenIndex }) => {
     const [toggleForm, setToggleForm] = useState(false);
@@ -17,10 +16,6 @@ const NotificationSection = ({ contentSize, selectedGardenIndex }) => {
             }
             return unique;
         }, []);
-
-    console.log("OPTIONS", plantOptions);
-
-    
 
     return (
         <div className='notification-section-container'>

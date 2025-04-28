@@ -1,20 +1,39 @@
-import React, { useEffect, useState } from 'react';
+/**
+ * ChangeUsernameForm Component
+ * 
+ * @file ChangeUsernameForm.jsx
+ * @component
+ * @param {Object} props
+ * @param {Function} props.onCancel - Callback function to handle the cancel action.
+ * 
+ * @returns {JSX.Element} The rendered ChangeUsernameForm component.
+ * 
+ * @example
+ * <ChangeUsernameForm onCancel={() => console.log('Cancel clicked')} />
+ * 
+ * @remarks
+ * - The `newUsername` must be at least 5 characters long and different from the current username.
+ * - Success and error messages are automatically cleared after 5 seconds.
+ * - Uses the `VITE_USERNAME_CHANGE_API_URL` environment variable for the API endpoint.
+ */
+
+import { useEffect, useState } from 'react';
 import { GenericButton } from '../buttons';
 import { useUser } from '../../hooks/useUser';
 import { GridLoading } from '../widgets';
-import './styles/change-password-form.css';
+import './styles/form.css';
 
 const ChangeUsernameForm = ({ onCancel }) => {
     const [newUsername, setNewUsername] = useState(''); 
     const [message, setMessage] = useState(''); 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const { username } = useUser();
+    const { username, setUsername } = useUser();
 
     useEffect(() => {
-        const storedUsername = username; 
-        if (storedUsername) {
-            setNewUsername(storedUsername);
+        const currentUsername = username; 
+        if (currentUsername && currentUsername !== newUsername) {
+            setNewUsername(currentUsername);
         }
     }, [username]);
 
@@ -36,44 +55,58 @@ const ChangeUsernameForm = ({ onCancel }) => {
         }
     }, [error]);
 
-    const handleSubmit = (e) => {
-  
+    const handleSubmit = () => {
+
+        if (!newUsername) {
+            alert('Username cannot be empty.');
+            return;
+        }
+        if (newUsername === username) {
+            alert('New username cannot be the same as the current username.');
+            return;
+        }
+        if (newUsername.length < 5) {
+            alert('Username must be at least 5 characters long.');
+            return;
+        }
+
         setLoading(true);
 
         (async () => {
             try {
-                const endpoint = 'http://localhost:8000/api/users/me/update_username/'; 
+                const url = import.meta.env.VITE_USERNAME_CHANGE_API_URL; 
 
                 const requestBody = {
                     username: newUsername,
                 };
 
-                const response = await fetch(endpoint, {
-                    method: 'POST',
+                const response = await fetch(url, {
+                    method: 'PATCH',
                     credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Token 4c1775be909a3873ee6c23104d433adaf4cbde29`,
                     },
                     body: JSON.stringify(requestBody),
                 });
 
                 if (response.ok) {
                     const result = await response.json();
-                    setMessage(result.detail);
-                    setLoading(false);
-                    setNewUsername('');
+                    setUsername(newUsername);
+                    setMessage("Success");
+                    console.log("Username updated successfully: ", result.username);
                 } else {
-                    setNewUsername(username); // Reset to original username
                     const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to change username');
+                    setNewUsername(username); // reset to previous username
+                    setMessage("Error: " + response.statusText);
+                    console.error("Error changing username:", errorData.message);
                 }
-            } catch (e) {
-                setLoading(false);
-                setError(e.message);
-                setNewUsername(username);
-            }
 
+            } catch (e) {
+                setError("Error (severe): " + e.message);
+                console.error("Error changing username: ", e);
+            } finally {
+                setLoading(false);
+            }
         })();
     };
 
@@ -86,25 +119,25 @@ const ChangeUsernameForm = ({ onCancel }) => {
     }
 
     return (
-        <div className="password-form">
-            <div className="password-form-header">
+        <div className="form">
+            <div className="form-header">
                 <GenericButton
                     label="Return"
                     onClick={onCancel}
                     style={{ backgroundColor: 'red' }}
-                    className="password-form-cancel-button"
+                    className="form-cancel-button"
                 />
             </div>
 
-            <div className="password-form-input-container">
-                <label htmlFor="newUsername" className="password-form-label">
+            <div className="form-input-container">
+                <label htmlFor="newUsername" className="form-label">
                     Change Username:
                 </label>
                 <input
                     type="text"
                     id="newUsername"
                     name="newUsername"
-                    className="password-form-input"
+                    className="form-input"
                     value={newUsername}
                     onChange={(e) => setNewUsername(e.target.value)}
                 />
@@ -112,9 +145,9 @@ const ChangeUsernameForm = ({ onCancel }) => {
                
                 {message && <div style={{ color: 'green' }}>{message}</div>}
                 {error && <div style={{ color: 'red' }}>{error}</div>}
-                <div className="password-form-footer">
+                <div className="form-footer">
                     <GenericButton
-                        className="password-form-button"
+                        className="form-button"
                         label="Submit"
                         onClick={handleSubmit}
                     />
