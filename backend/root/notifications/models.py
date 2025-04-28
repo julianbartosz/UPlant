@@ -39,13 +39,13 @@ class Notification(models.Model):
     
     def clean(self):
         # For standard notification types, subtype must be blank
-        if self.type != 'OT' and self.subtype:
+        if self.type != NotifTypes.OT and self.subtype:
             raise ValidationError({
                 'subtype': _('Subtype should only be used with "Other" notification types')
             })
                 
         # For "Other" notifications: require a subtype
-        if self.type == 'OT' and not self.subtype:
+        if self.type == NotifTypes.OT and not self.subtype:
             raise ValidationError({
                 'subtype': _('Subtype is required for "Other" notification types')
             })

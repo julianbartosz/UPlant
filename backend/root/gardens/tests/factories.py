@@ -19,6 +19,7 @@ class GardenFactory(DjangoModelFactory):
     """
     class Meta:
         model = Garden
+        skip_postgeneration_save = True
     
     user = factory.SubFactory(UserFactory)
     name = factory.Sequence(lambda n: f"Test Garden {n}")
@@ -104,6 +105,7 @@ class SpecificGardenFactory(GardenFactory):
     class Meta:
         model = Garden
         exclude = ('_size',)
+        skip_postgeneration_save = True
         
     _size = factory.LazyAttribute(lambda o: (10, 10))  # Default size
     size_x = factory.LazyAttribute(lambda o: o._size[0])
@@ -125,6 +127,7 @@ class GardenLogFactory(DjangoModelFactory):
     """
     class Meta:
         model = GardenLog
+        skip_postgeneration_save = True
     
     garden = factory.SubFactory(GardenFactory)
     plant = factory.SubFactory(APIPlantFactory)
