@@ -341,7 +341,7 @@ class Plant(models.Model):
     
     # From the Trefle's 'growth' and 'specifications' sections:
     days_to_harvest = models.DecimalField(
-        max_digits=4, decimal_places=2, null=True, blank=True, 
+        max_digits=6, decimal_places=2, null=True, blank=True, 
         help_text="Average number of days from planting to harvest"
     )
     sowing = models.TextField(
