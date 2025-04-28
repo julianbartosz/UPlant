@@ -249,7 +249,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         Returns:
             bool: True if user has staff/admin permissions
         """
-        return self.role in [Roles.AD] or self.is_superuser
+        return self.role in [Roles.AD, Roles.MO] or self.is_superuser
 
     def has_perm(self, perm, obj=None):
         """
