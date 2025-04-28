@@ -443,9 +443,12 @@ class TestAdminPlantForm:
     """Test the AdminPlantForm for admin editing."""
     
     def test_form_has_all_fields(self, db):
-        """Test form includes all model fields."""
+        """Test form includes all model fields except auto fields and primary keys."""
         form = AdminPlantForm()
-        model_fields = [f.name for f in Plant._meta.fields]
+        # Get all model fields except id, created_at, and updated_at which are auto fields
+        model_fields = [f.name for f in Plant._meta.fields 
+                       if not f.primary_key and not f.auto_created 
+                       and f.name not in ('created_at', 'updated_at')]
         
         # All model fields should be in the form
         for field in model_fields:
