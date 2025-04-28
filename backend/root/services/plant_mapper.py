@@ -1,3 +1,5 @@
+# THIS FILE IS DEPRECATED; DO NOT TEST OR USE IT
+
 # backend/root/services/plant_mapper.py
 
 from plants.models import Plant
