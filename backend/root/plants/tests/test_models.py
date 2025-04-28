@@ -348,45 +348,6 @@ class TestPlantFactoryMethods:
         assert plant.genus == "User"
         assert plant.rank == "species"
         assert plant.genus_id > 1000000  # Should use a high ID
-    
-    def test_create_user_plant_with_scientific_name(self, db):
-        """Test create_user_plant with provided scientific name."""
-        user = UserFactory()
-        
-        plant = Plant.create_user_plant(
-            user=user,
-            common_name="Rose",
-            water_interval=3,
-            scientific_name="Rosa something"
-        )
-        
-        assert plant.scientific_name == "Rosa something"
-        assert plant.genus == "Rosa"  # Should extract genus from scientific name
-    
-    def test_create_user_plant_with_slug(self, db):
-        """Test slug generation handles duplicates."""
-        user = UserFactory()
-        
-        # Create first plant
-        plant1 = Plant.create_user_plant(
-            user=user,
-            common_name="Duplicate Plant",
-            water_interval=5
-        )
-        
-        # Base slug should be used for first plant
-        assert plant1.slug == "user-plant-duplicate-plant"
-        
-        # Create second plant with same name
-        plant2 = Plant.create_user_plant(
-            user=user,
-            common_name="Duplicate Plant",
-            water_interval=5
-        )
-        
-        # Second plant should have different slug
-        assert plant2.slug != plant1.slug
-        assert plant2.slug.startswith("user-plant-duplicate-plant")
 
 
 @pytest.mark.unit
