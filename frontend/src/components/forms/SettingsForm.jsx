@@ -1,5 +1,5 @@
 import { GenericButton } from '../buttons';
-import './styles/settings-form.css';
+import './styles/form.css';
 
 const SettingsForm = () => {
 

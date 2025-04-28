@@ -3,15 +3,17 @@ import { FaCog } from 'react-icons/fa';
 import { BackButton } from '../buttons/index.js';
 import { SiTacobell } from "react-icons/si";
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../hooks';
 import './styles/nav-bar.css';
 
 const NavBar = ({ 
-    username = 'Default', 
     title = 'Default', 
     buttonOptions = ['back', 'settings', 'bell'], 
     onBack = () => {} 
 }) => {
+
     const navigate = useNavigate();
+    const { username } = useUser();
 
     return (
         <div className="navbar">

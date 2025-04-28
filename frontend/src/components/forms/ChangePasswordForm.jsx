@@ -1,8 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { GenericButton } from '../buttons';
-import './styles/change-password-form.css';
-import { GridLoading } from '../widgets';
+/**
+ * ChangePasswordForm Component
+ * 
+ * @file ChangePasswordForm.jsx
+ * @component
+ * @param {Object} props
+ * @param {Function} props.onCancel - Callback function to handle the cancel action.
+ * 
+ * @returns {JSX.Element} The rendered ChangePasswordForm component.
+ * 
+ * @example
+ * <ChangePasswordForm onCancel={() => console.log('Cancel clicked')} />
+ * 
+ * @remarks
+ * - The `newPassword` and `confirmPassword` must match.
+ * - Success and error messages are automatically cleared after 5 seconds.
+ * - Uses the `VITE_PASSWORD_CHANGE_API_URL` environment variable for the API endpoint.
+ */
 
+import { useEffect, useState } from 'react';
+import { GenericButton } from '../buttons';
+import { GridLoading } from '../widgets';
+import './styles/form.css';
 
 const ChangePasswordForm = ({ onCancel }) => {
     const [currentPassword, setCurrentPassword] = useState('');
@@ -35,10 +53,12 @@ const ChangePasswordForm = ({ onCancel }) => {
         e.preventDefault();
         if (newPassword !== confirmPassword) {
             alert('New password and confirm password do not match.');
+            setConfirmPassword('');
+            setNewPassword('');
+            setCurrentPassword('');
             return;
         }
-            
-
+        
         setLoading(true);
 
         (async () => {
@@ -63,26 +83,30 @@ const ChangePasswordForm = ({ onCancel }) => {
 
                 if (response.ok) {
                     const result = await response.json();
-                    setMessage(result.detail);
-                    setLoading(false);
+                    setMessage("success");
                     setConfirmPassword('');
                     setNewPassword('');
                     setCurrentPassword('');
+                    console.log("Password changed successfully.");
                 } else {
+                    const errorData = await response.json();
+                    console.log(errorData);
+                    setError(errorData);
                     setConfirmPassword('');
                     setNewPassword('');
                     setCurrentPassword('');
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to change password');
+                    console.error("Error changing password: ", errorData);
                 }
+
             } catch (e) {
-                setLoading(false);
                 setError(e.message);
                 setConfirmPassword('');
                 setNewPassword('');
                 setCurrentPassword('');
+                console.error("Error during password change: ", e);
+            } finally {
+                setLoading(false);
             }
-
         })();
     };
 
@@ -95,57 +119,64 @@ const ChangePasswordForm = ({ onCancel }) => {
     }
 
     return (
-        <div className="password-form">
-            <div className="password-form-header">
+        <div className="form">
+
+            <div className="form-header">
                 <GenericButton
                     label="Return"
                     onClick={onCancel}
                     style={{ backgroundColor: 'red' }}
-                    className="password-form-cancel-button"
+                    className="form-cancel-button"
                 />
             </div>
 
-            <div className="password-form-input-container">
-                <label htmlFor="currentPassword" className="password-form-label">
+            <div className="form-input-container">
+                <label htmlFor="currentPassword" className="form-label">
                     Current Password:
                 </label>
+                {error && error.current_password && Array.isArray(error.current_password) && error.current_password.map((err, index) => (
+                    <div key={index} style={{ color: 'red' }}>{err.split('.')[0]}</div>
+                ))}
                 <input
                     type="password"
                     id="currentPassword"
                     name="currentPassword"
-                    className="password-form-input"
+                    className="form-input"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                 />
-
-                <label htmlFor="newPassword" className="password-form-label">
+                <label htmlFor="newPassword" className="form-label">
                     New Password:
                 </label>
+                {error && error.new_password && Array.isArray(error.new_password) && error.new_password.map((err, index) => (
+                    <div key={index} style={{ color: 'red' }}>{err.split('.')[0]}</div>
+                ))}
                 <input
                     type="password"
                     id="newPassword"
                     name="newPassword"
-                    className="password-form-input"
+                    className="form-input"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                 />
 
-                <label htmlFor="confirmPassword" className="password-form-label">
+                <label htmlFor="confirmPassword" className="form-label">
                     Confirm Password:
                 </label>
+                
                 <input
                     type="password"
                     id="confirmPassword"
                     name="confirmPassword"
-                    className="password-form-input"
+                    className="form-input"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                 />
+                {error && !error.new_password && !error.current_password && <div style={{ color: 'red' }}>{error}</div>}
                 {message && <div style={{ color: 'green' }}>{message}</div>}
-                {error && <div style={{ color: 'red' }}>{error}</div>}
-                <div className="password-form-footer">
+                <div className="form-footer">
                     <GenericButton
-                        className="password-form-button"
+                        className="form-button"
                         label="Submit"
                         onClick={handleSubmit}
                     />

@@ -1,26 +1,26 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { PAGES, ICONS } from '../../constants';
-import usePlants from '../../hooks/usePlants';
+import { usePlants } from '../../hooks';
 import { IoIosCut } from "react-icons/io";
-
 import './styles/plant-search-side-bar.css';
 
 const PlantSearchSideBar = ({ page, onShearClick = null, onPlantClick = null }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const { plantsList, mediatePlantSearch } = usePlants();
-
+    const { 
+      plantsList, 
+      loading: plantsListLoading, 
+      mediatePlantSearch 
+    } = usePlants();
+    
     if (!page || !PAGES.includes(page)) {
-      console.error('Invalid page. Use "dashboard" or "catalog".');
       throw new Error('Invalid page. Use "dashboard" or "catalog".');
     }
 
     if (page === 'dashboard' && !onShearClick) {
-      console.error('onShearClick function is required for dashboard page');
       throw new Error('onShearClick function is required for dashboard page');
     }
 
     if (page === 'catalog' && !onPlantClick) {
-      console.error('setSelectedPlant function is required for catalog page');
       throw new Error('setSelectedPlant function is required for catalog page');
     }
 
@@ -34,12 +34,18 @@ const PlantSearchSideBar = ({ page, onShearClick = null, onPlantClick = null }) 
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Enter plant name..."
           />
-          <button
+          
+            {plantsListLoading ? (
+              <button className="loading">⏳</button>
+            ) : (
+              <button
             className="search-button"
             onClick={() => mediatePlantSearch(searchTerm)}
           >
-            🔍
-          </button>
+              🔍
+              </button>
+            )}
+  
         </div>
         <div className="scrollable-section">
           {page == 'dashboard' && (
@@ -52,7 +58,7 @@ const PlantSearchSideBar = ({ page, onShearClick = null, onPlantClick = null }) 
               <div className="item-container" key={plant.id}>
                 <PlantItem
                   plant={plant}
-                  onClick={() => {console.log(onPlantClick); onPlantClick(plant);}}
+                  onClick={() => {onPlantClick(plant);}}
                 />
               </div>
             ))

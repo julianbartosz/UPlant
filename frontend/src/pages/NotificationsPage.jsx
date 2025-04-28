@@ -5,14 +5,15 @@ import { NavBar, GardenBar } from '../components/layout';
 import { GardenGrid } from '../components/ui';
 import { Grid } from 'react-loader-spinner';
 import './styles/notifications-page.css';
+import { PiEmptyBold } from "react-icons/pi";
 
 function NotificationPage() {
     
-    const { username, usernameError } = useUser();
-    const { notificationsList, notificationsListLoading, notificationsListError } = useNotifications();
-    const { gardens, gardensLoading, gardensError } = useGardens();
-
     const navigate = useNavigate();
+
+    const { todaysNotifications } = useNotifications();
+    const { gardens } = useGardens();
+
     const [squareSize, setSquareSize] = useState(1);
     const [fontSize, setFontSize] = useState(null);
     const [selectedGardenIndex, setSelectedGardenIndex] = useState(0);
@@ -67,14 +68,11 @@ function NotificationPage() {
     }, []);
 
     if (!gardens) return <div style={{width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center'}}><Grid color="black" height={150} width={150} /></div>;    
-
-
-
+    
     const handleNotificationClick = (plants) => {
-        console.log('Selected plants:', plants);
         const garden = { ...gardens[selectedGardenIndex]};
         const redCells = new Set();
-
+       
         garden.cells.forEach((row, i) => {
             row.forEach((cell, j) => {
                 if (cell && plants.some(p => p === cell.common_name)) {
@@ -82,7 +80,6 @@ function NotificationPage() {
                 }
             });
         });
-        console.log('Red cells:', redCells);
         setSelectedPlantCells(redCells);
     };
 
@@ -91,7 +88,6 @@ function NotificationPage() {
             <NavBar
                 title="Notifications"
                 buttonOptions={['back']}
-                username={username}
                 onBack={() => navigate('/dashboard')}
             />
             <div className="notification-content-container">
@@ -104,16 +100,25 @@ function NotificationPage() {
                             style={{justifyContent: 'center'}} 
                         />
                     <div className="notification-buttons">
-                        {notificationsList && notificationsList[selectedGardenIndex]?.map((notification, index) => (
-                         
-                            <button
-                                key={index}
-                                onClick={() => handleNotificationClick(notification.plant_names)}
-                                className="notification-button"
-                            >
-                                {notification.name}
-                            </button>
-                        ))}
+                        
+                        {todaysNotifications && todaysNotifications[selectedGardenIndex] && todaysNotifications[selectedGardenIndex].length > 0 ? (
+                            todaysNotifications[selectedGardenIndex].map(notification => (
+                                <>
+                                <strong>Complete the following tasks:</strong>
+                                <button
+                                    key={notification.index}
+                                    className="notification-button"
+                                    onClick={() => handleNotificationClick(notification.plant_names)}
+                                >
+                                    {notification.name}
+                                </button>
+                                </>
+                            ))
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 80px)', justifyContent: 'center', alignItems: 'center', fontSize: 'small' }}>
+                                <strong>(No notifications for today)</strong>
+                            </div>
+                        )}
                     </div>
                     <GardenGrid
                         interactive={false}
