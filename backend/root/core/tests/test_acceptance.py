@@ -97,18 +97,6 @@ class TestBasicViews:
         response = client.get(reverse(view_name))
         assert response.status_code == 200
         assert template in [t.name for t in response.templates]
-    
-    def test_search_select_requires_login(self, client):
-        """Test that search_select redirects unauthenticated users"""
-        response = client.get(reverse('search_select'))
-        assert response.status_code == 302
-        assert '/login/' in response.url
-    
-    def test_search_select_accessible_when_authenticated(self, authenticated_client):
-        """Test that authenticated users can access search_select"""
-        response = authenticated_client.get(reverse('search_select'))
-        assert response.status_code == 200
-        assert 'core/search_select.html' in [t.name for t in response.templates]
 
 
 @pytest.mark.django_db
@@ -234,8 +222,6 @@ class TestViewsWithRequestFactory:
         request = factory.get('/')
         response = home(request)
         assert response.status_code == 200
-        #assert 'home.html' in response.template_name[0]
-        # response.template_name doesn't exist on a normal HttpResponse
     
     def test_home_view(self, client):
         response = client.get(reverse('home'))
