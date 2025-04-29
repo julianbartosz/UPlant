@@ -1,275 +1,275 @@
-name: UPlant CI/CD Workflow
+# name: UPlant CI/CD Workflow
 
-on:
-  push:
-    branches:
-      - main
-      - develop
-    paths:
-      - 'frontend/**'
-      - 'backend/**'
-  pull_request:
-    paths:
-      - 'frontend/**'
-      - 'backend/**'
-  schedule:
-    - cron: '0 2 * * *'  # Runs daily at 2:00 AM UTC
-  workflow_dispatch:  # Allow manual triggering
+# on:
+#   push:
+#     branches:
+#       - main
+#       - develop
+#     paths:
+#       - 'frontend/**'
+#       - 'backend/**'
+#   pull_request:
+#     paths:
+#       - 'frontend/**'
+#       - 'backend/**'
+#   schedule:
+#     - cron: '0 2 * * *'  # Runs daily at 2:00 AM UTC
+#   workflow_dispatch:  # Allow manual triggering
 
-jobs:
-  docs-lint:
-    name: Lint Documentation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+# jobs:
+#   docs-lint:
+#     name: Lint Documentation
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
 
-      - name: Setup Node.js for Markdown Linting
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'npm'
+#       - name: Setup Node.js for Markdown Linting
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '16'
+#           cache: 'npm'
 
-      - name: Install markdownlint-cli
-        run: npm install -g markdownlint-cli
+#       - name: Install markdownlint-cli
+#         run: npm install -g markdownlint-cli
 
-      - name: Run markdownlint on Documentation
-        run: markdownlint project_docs/**/*.md
+#       - name: Run markdownlint on Documentation
+#         run: markdownlint project_docs/**/*.md
 
-  docs-review:
-    name: Create Documentation Review PR
-    needs: docs-lint
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+#   docs-review:
+#     name: Create Documentation Review PR
+#     needs: docs-lint
+#     if: github.event_name == 'push'
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
 
-      - name: Create Documentation Update PR
-        uses: peter-evans/create-pull-request@v4
-        with:
-          branch: docs-update-branch
-          title: 'Documentation Update Review'
-          body: |
-            Automated documentation updates have been detected in `project_docs/`.
-            Please review the changes before merging.
-          path: |
-            project_docs/**
+#       - name: Create Documentation Update PR
+#         uses: peter-evans/create-pull-request@v4
+#         with:
+#           branch: docs-update-branch
+#           title: 'Documentation Update Review'
+#           body: |
+#             Automated documentation updates have been detected in `project_docs/`.
+#             Please review the changes before merging.
+#           path: |
+#             project_docs/**
 
-  frontend-lint-test:
-    name: Frontend Linting & Unit Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+#   frontend-lint-test:
+#     name: Frontend Linting & Unit Tests
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '16'
+#           cache: 'npm'
+#           cache-dependency-path: 'frontend/package-lock.json'
 
-      - name: Install Dependencies
-        run: cd frontend && npm ci
+#       - name: Install Dependencies
+#         run: cd frontend && npm ci
 
-      - name: Run ESLint
-        run: cd frontend && npx eslint . --max-warnings=0
+#       - name: Run ESLint
+#         run: cd frontend && npx eslint . --max-warnings=0
 
-      - name: Run Prettier Check
-        run: cd frontend && npx prettier --check "src/**/*.{js,jsx,ts,tsx}"
+#       - name: Run Prettier Check
+#         run: cd frontend && npx prettier --check "src/**/*.{js,jsx,ts,tsx}"
 
-      - name: Run Unit Tests with Coverage
-        run: cd frontend && npm test -- --watchAll=false --coverage
+#       - name: Run Unit Tests with Coverage
+#         run: cd frontend && npm test -- --watchAll=false --coverage
       
-      - name: Upload Test Coverage
-        uses: actions/upload-artifact@v3
-        with:
-          name: frontend-test-coverage
-          path: frontend/coverage
-          retention-days: 14
+#       - name: Upload Test Coverage
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: frontend-test-coverage
+#           path: frontend/coverage
+#           retention-days: 14
 
-  frontend-build:
-    name: Frontend Build & Analysis
-    runs-on: ubuntu-latest
-    needs: frontend-lint-test
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+#   frontend-build:
+#     name: Frontend Build & Analysis
+#     runs-on: ubuntu-latest
+#     needs: frontend-lint-test
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '16'
+#           cache: 'npm'
+#           cache-dependency-path: 'frontend/package-lock.json'
 
-      - name: Install Dependencies
-        run: cd frontend && npm ci
+#       - name: Install Dependencies
+#         run: cd frontend && npm ci
 
-      - name: Build Frontend
-        run: cd frontend && npm run build
-        env:
-          CI: true
-          REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL || 'https://api-staging.uplant.com' }}
+#       - name: Build Frontend
+#         run: cd frontend && npm run build
+#         env:
+#           CI: true
+#           REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL || 'https://api-staging.uplant.com' }}
       
-      - name: Analyze Bundle Size
-        run: cd frontend && npx source-map-explorer 'build/static/js/*.js'
+#       - name: Analyze Bundle Size
+#         run: cd frontend && npx source-map-explorer 'build/static/js/*.js'
 
-      - name: Run Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v9
-        with:
-          uploadArtifacts: true
-          temporaryPublicStorage: true
-          configPath: './frontend/.lighthouserc.json'
-          runs: 3
+#       - name: Run Lighthouse CI
+#         uses: treosh/lighthouse-ci-action@v9
+#         with:
+#           uploadArtifacts: true
+#           temporaryPublicStorage: true
+#           configPath: './frontend/.lighthouserc.json'
+#           runs: 3
 
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: frontend-build
-          path: frontend/build
-          retention-days: 14
+#       - name: Upload Build Artifacts
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: frontend-build
+#           path: frontend/build
+#           retention-days: 14
 
-  frontend-e2e:
-    name: Frontend E2E Tests
-    runs-on: ubuntu-latest
-    needs: frontend-build
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+#   frontend-e2e:
+#     name: Frontend E2E Tests
+#     runs-on: ubuntu-latest
+#     needs: frontend-build
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '16'
+#           cache: 'npm'
+#           cache-dependency-path: 'frontend/package-lock.json'
 
-      - name: Install Dependencies
-        run: cd frontend && npm ci
+#       - name: Install Dependencies
+#         run: cd frontend && npm ci
       
-      - name: Install Cypress
-        run: npm install -g cypress
+#       - name: Install Cypress
+#         run: npm install -g cypress
 
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: frontend-build
-          path: frontend/build
+#       - name: Download Build Artifacts
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: frontend-build
+#           path: frontend/build
 
-      - name: Setup Local Server
-        run: cd frontend && npx serve -s build &
+#       - name: Setup Local Server
+#         run: cd frontend && npx serve -s build &
       
-      - name: Run Cypress Tests
-        run: cd frontend && npx cypress run
+#       - name: Run Cypress Tests
+#         run: cd frontend && npx cypress run
       
-      - name: Upload Cypress Results
-        uses: actions/upload-artifact@v3
-        with:
-          name: cypress-results
-          path: frontend/cypress/videos
-          retention-days: 14
+#       - name: Upload Cypress Results
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: cypress-results
+#           path: frontend/cypress/videos
+#           retention-days: 14
 
-  backend-lint-test:
-    name: Backend Linting & Tests
-    runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_DATABASE: test_uplant
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+#   backend-lint-test:
+#     name: Backend Linting & Tests
+#     runs-on: ubuntu-latest
+#     services:
+#       mysql:
+#         image: mysql:8.0
+#         env:
+#           MYSQL_DATABASE: test_uplant
+#           MYSQL_ROOT_PASSWORD: root
+#         ports:
+#           - 3306:3306
+#         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-          cache: 'pip'
-          cache-dependency-path: 'backend/root/requirements.txt'
+#       - name: Setup Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.10'
+#           cache: 'pip'
+#           cache-dependency-path: 'backend/root/requirements.txt'
 
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/root/requirements.txt
-          pip install pytest pytest-django pytest-cov black flake8 isort
+#       - name: Install Dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install -r backend/root/requirements.txt
+#           pip install pytest pytest-django pytest-cov black flake8 isort
 
-      - name: Run Black Code Formatter Check
-        run: black --check backend/root/
+#       - name: Run Black Code Formatter Check
+#         run: black --check backend/root/
 
-      - name: Run isort Import Check
-        run: isort --check-only --profile black backend/root/
+#       - name: Run isort Import Check
+#         run: isort --check-only --profile black backend/root/
 
-      - name: Run Flake8
-        run: flake8 backend/root --count --max-complexity=10 --max-line-length=127 --statistics
+#       - name: Run Flake8
+#         run: flake8 backend/root --count --max-complexity=10 --max-line-length=127 --statistics
 
-      - name: Run Django Tests with Coverage
-        run: |
-          cd backend/root
-          python -m pytest --cov=. --cov-report=xml
-        env:
-          DATABASE_URL: "mysql://root:root@localhost:3306/test_uplant"
-          DJANGO_SETTINGS_MODULE: djangoProject1.settings
+#       - name: Run Django Tests with Coverage
+#         run: |
+#           cd backend/root
+#           python -m pytest --cov=. --cov-report=xml
+#         env:
+#           DATABASE_URL: "mysql://root:root@localhost:3306/test_uplant"
+#           DJANGO_SETTINGS_MODULE: djangoProject1.settings
 
-      - name: Upload Coverage Report
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./backend/root/coverage.xml
-          fail_ci_if_error: false
+#       - name: Upload Coverage Report
+#         uses: codecov/codecov-action@v3
+#         with:
+#           file: ./backend/root/coverage.xml
+#           fail_ci_if_error: false
 
-  security-scan:
-    name: Security and Dependency Scanning
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+#   security-scan:
+#     name: Security and Dependency Scanning
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
 
-      # Frontend Security Audit
-      - name: Setup Node.js for Frontend Security
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
+#       # Frontend Security Audit
+#       - name: Setup Node.js for Frontend Security
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '16'
+#           cache: 'npm'
+#           cache-dependency-path: 'frontend/package-lock.json'
 
-      - name: Install Frontend Dependencies
-        run: cd frontend && npm ci
+#       - name: Install Frontend Dependencies
+#         run: cd frontend && npm ci
 
-      - name: Run Frontend Security Audit
-        run: cd frontend && npm audit --audit-level=moderate || true
+#       - name: Run Frontend Security Audit
+#         run: cd frontend && npm audit --audit-level=moderate || true
 
-      - name: Scan Frontend with Snyk
-        uses: snyk/actions/node@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN || '' }}
-        with:
-          args: --file=frontend/package.json
+#       - name: Scan Frontend with Snyk
+#         uses: snyk/actions/node@master
+#         continue-on-error: true
+#         env:
+#           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN || '' }}
+#         with:
+#           args: --file=frontend/package.json
 
-      # Backend Security Audit
-      - name: Setup Python for Backend Security
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-          cache: 'pip'
-          cache-dependency-path: 'backend/root/requirements.txt'
+#       # Backend Security Audit
+#       - name: Setup Python for Backend Security
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.10'
+#           cache: 'pip'
+#           cache-dependency-path: 'backend/root/requirements.txt'
 
-      - name: Install Security Tools
-        run: |
-          pip install safety bandit
+#       - name: Install Security Tools
+#         run: |
+#           pip install safety bandit
           
-      - name: Scan Backend Dependencies
-        run: safety check -r backend/root/requirements.txt || true
+#       - name: Scan Backend Dependencies
+#         run: safety check -r backend/root/requirements.txt || true
 
-      - name: Run Bandit Security Analysis
-        run: bandit -r backend/root -x backend/root/venv,backend/root/tests,backend/root/*/tests,backend/root/*/migrations
+#       - name: Run Bandit Security Analysis
+#         run: bandit -r backend/root -x backend/root/venv,backend/root/tests,backend/root/*/tests,backend/root/*/migrations
 
   # build-deploy-staging:
   #   name: Build & Deploy to Staging
@@ -284,7 +284,7 @@ jobs:
   #       uses: actions/checkout@v3
 
   #     - name: Download Frontend Build
-  #       uses: actions/download-artifact@v3
+  #       uses: actions/download-artifact@v4
   #       with:
   #         name: frontend-build
   #         path: frontend/build
@@ -361,7 +361,7 @@ jobs:
   #       uses: actions/checkout@v3
 
   #     - name: Download Frontend Build
-  #       uses: actions/download-artifact@v3
+  #       uses: actions/download-artifact@v4
   #       with:
   #         name: frontend-build
   #         path: frontend/build

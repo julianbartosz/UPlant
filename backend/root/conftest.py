@@ -105,9 +105,10 @@ def api_client():
 # ==================== Authentication Fixtures ====================
 
 @pytest.fixture
-def admin_user(admin_factory):
+def admin_user(db):
     """Create and return an admin user with standard credentials"""
-    return admin_factory(
+    from user_management.tests.factories import AdminFactory
+    return AdminFactory(
         email="admin@example.com",
         username="admin",
         password="password123"
