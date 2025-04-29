@@ -44,3 +44,16 @@
     border-radius: 10px;
     padding: 40px;
 }
+
+.wood-form {
+    justify-content: center;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    background-image: url("/app/wood-texture.jpg");
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px;
+    padding: 40px;
+    outline: 4px solid #000;
+}

@@ -18,43 +18,66 @@
  */
 
 import { DeleteButton, AddButton } from '../buttons';
-import useNotifications from '../../hooks/useNotifications';
 import { PiEmptyBold } from "react-icons/pi";
 import { FidgetSpinner, TailSpin} from 'react-loader-spinner';
+import { UserContext } from '../../context/UserProvider';
 
 import './styles/data-table.css';
-
-
+import { useContext } from 'react';
 
 const DataTable = ({ 
         selectedGardenIndex,    
         onAdd,
-        fontSize,
     }) => {
-     
-    const { mediateDeleteNotification, notificationsList} = useNotifications();
-    
-    // if (!notificationsList) {
-    //     return (
-    //         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-    //             <FidgetSpinner  
-    //                 visible={true}
-    //                 height="80"
-    //                 width="80"
-    //                 ariaLabel="fidget-spinner-loading"
-    //                 wrapperStyle={{}}
-    //                 wrapperClass="fidget-spinner-wrapper"
-    //                 ballColors={["#00BFFF", "#00BFFF", "#00BFFF"]}
-    //                 backgroundColor="#F4442D"
-    //             />
-    //             <div style={{ marginLeft: '20px', fontSize: 'small' }}>Loading...</div>
-    //         </div>
-    //     );
-    // }
-    
+
+    const {gardens, dispatch, loading} = useContext(UserContext);
+
+    if (loading) return null;
+
+    const handleDeleteNotification = (gardenIndex, notificationId) => {
+        if (!window.confirm("Are you sure you want to delete this notification?")) {
+            return;
+        }
+
+        const rollback = { ...gardens[gardenIndex]['notifications'].filter(notification => notification.id === notificationId)[0] };
+       
+        // Optimistically update
+        dispatch({ type: 'REMOVE_NOTIFICATION', garden_index: gardenIndex, notification_id: notificationId });
+        
+        const notificationUrl = `${import.meta.env.VITE_NOTIFICATIONS_API_URL}${notificationId}/`
+        console.log(`Deleting notification at ${notificationUrl}`);
+
+        (async () => {
+            try {
+                const response = await fetch(notificationUrl, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (!response.ok) {
+                    // Rollback if the request fails
+                    dispatch({ type: 'ADD_NOTIFICATION', garden_index: gardenIndex, payload: rollback });
+                    alert("Failed to delete notification. Please try again.");
+                } else {
+                    const deletedNotification = await response.json();
+                    console.log(`Notification deleted successfully:`, deletedNotification);
+                }
+            } catch (error) {
+                console.error("Error deleting notification:", error);
+                // Rollback if the request fails
+                dispatch({ type: 'ADD_NOTIFICATION', garden_index: gardenIndex, payload: rollback });
+                alert(error.message);
+            }
+        })();
+    }   
+
+
+ 
     return (
         <>
-            <table className="data-table" style={{ fontSize: fontSize }}>
+            <table className="data-table" >
                 <thead className="data-table-header">
                     <tr>
                         <th style={{ textAlign: 'center', fontSize: 'small' }}>Name</th>
@@ -66,19 +89,19 @@ const DataTable = ({
                     </tr>
                 </thead>
                 <tbody>
-                    {notificationsList && notificationsList[selectedGardenIndex] ? (
-                    notificationsList[selectedGardenIndex].map((item, index) => (
+                    {gardens[selectedGardenIndex]['notifications']?.length > 0 ? (
+                    gardens[selectedGardenIndex]['notifications'].map((item, index) => (
                         item && (
                         <tr key={item.id}>
                             <td>{item.name}</td>
                             <td>
-                                {item && item.plant_names && item.plant_names.map(plant_name => (
-                                    <div key={item.id}>{plant_name}</div>
+                                {item && item.plants && item.plants.map(plant => (
+                                    <div key={plant.id}>{plant}</div>
                                 ))}
                             </td>
                             <td style={{ textAlign: 'center' }}>{item.interval}</td>
                             <td style={{ textAlign: 'center' }}>
-                                <DeleteButton onClick={() => mediateDeleteNotification(selectedGardenIndex, index)} />
+                                <DeleteButton onClick={() => handleDeleteNotification(selectedGardenIndex, item.id)} />
                             </td>
                         </tr>)
                     ))) : (
@@ -100,7 +123,7 @@ const DataTable = ({
                     )}
                 </tbody>
             </table>
-            {notificationsList && notificationsList[selectedGardenIndex] && notificationsList[selectedGardenIndex].length === 0  && (
+            {gardens && gardens[selectedGardenIndex] && gardens[selectedGardenIndex]['notifications'].length === 0  && (
             <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 80px)', justifyContent: 'center', alignItems: 'center', fontSize: 'small' }}>
             <PiEmptyBold style={{color: 'black', height: "70px", width: "70px"}} />
             <ul>

@@ -9,7 +9,7 @@ import './styles/nav-bar.css';
 const NavBar = ({ 
     title = 'Default', 
     buttonOptions = ['back', 'settings', 'bell'], 
-    onBack = () => {} 
+    onBack = () => {}
 }) => {
 
     const navigate = useNavigate();
