@@ -1,4 +1,3 @@
-
 import { useContext, useState, useEffect } from 'react';
 import { UserContext } from '../contexts/UserProvider';
 
@@ -50,7 +49,7 @@ const useNotifications = () => {
 
     console.log("Notifications:", notificationsList);
 
-    const mediateAddNotification = async (gardenIndex, name, interval, plants, callback) => {
+    const mediateAddNotification = async (gardenIndex, name, type, interval, plants, callback) => {
         const prevNotificationsList = [...notificationsList];
         const gardenNotifications = [...notificationsList[gardenIndex]];
         const gardenId = gardens[gardenIndex].id;
@@ -59,7 +58,7 @@ const useNotifications = () => {
         const newNotification = {
             garden: `${gardenId}`,
             name: name,
-            type: "Other",
+            type: type, // Now correctly sent as a proper type code
             interval: interval,
             next_due: new Date(Date.now() + interval * 24 * 60 * 60 * 1000).toISOString(),
             plant_names: plants.map((plant) => plant.common_name),
