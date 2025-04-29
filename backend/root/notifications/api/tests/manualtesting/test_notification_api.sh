@@ -35,7 +35,7 @@ else
       -d '{
         "garden": '$GARDEN_ID',
         "name": "Test Watering Notification",
-        "type": "Water",
+        "type": "WA",
         "interval": 7
       }' > api_test_results/notification_create.json
     
