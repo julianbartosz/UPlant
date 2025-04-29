@@ -22,12 +22,12 @@ const useGet = (url) => {
         throw new Error("URL is required");
     }
 
-    const allowedEndpoints = import.meta.env.VITE_ALLOWED_ENDPOINTS?.split(',') || [];
-    const isValidEndpoint = allowedEndpoints.some(endpoint => url.startsWith(endpoint));
+    // const allowedEndpoints = import.meta.env.VITE_ALLOWED_ENDPOINTS?.split(',') || [];
+    // const isValidEndpoint = allowedEndpoints.some(endpoint => url.startsWith(endpoint));
 
-    if (!isValidEndpoint) {
-        throw new Error("The provided URL is not among the allowed endpoints");
-    }
+    // if (!isValidEndpoint) {
+    //     throw new Error("The provided URL is not among the allowed endpoints");
+    // }
 
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
