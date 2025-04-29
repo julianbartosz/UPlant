@@ -83,6 +83,14 @@ class NotificationSerializer(serializers.ModelSerializer):
         
         return data
 
+    def validate_garden(self, value):
+        """Validate that the user can only create notifications for their own gardens."""
+        request = self.context.get('request')
+        if request and request.user and value.user != request.user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You can only create notifications for your own gardens.")
+        return value
+
 
 class DashboardNotificationSerializer(serializers.ModelSerializer):
     """Specialized serializer for dashboard views"""

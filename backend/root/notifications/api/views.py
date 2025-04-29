@@ -55,11 +55,8 @@ class NotificationViewSet(viewsets.ModelViewSet):
         """Ensure new notifications are linked to the current user's garden"""
         garden = serializer.validated_data.get('garden')
         if garden.user != self.request.user:
-            # Safety check, though serializer validation should catch this
-            return Response(
-                {"error": "You can only create notifications for your own gardens"},
-                status=status.HTTP_403_FORBIDDEN
-            )
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You can only create notifications for your own gardens")
         serializer.save()
     
     @action(detail=True, methods=['post'])
@@ -428,10 +425,9 @@ class NotificationViewSet(viewsets.ModelViewSet):
                 notification, created = Notification.objects.get_or_create(
                     garden=garden,
                     type='WE',  # Weather type
-                    subtype='FROST',
+                    name=f"Frost Warning for {frost_day}",  # Use name as identifier
                     defaults={
-                        'name': f"Frost Warning for {frost_day}",
-                        'interval': 0  # One-time alert
+                        'interval': 1  # Change from 0 to 1
                     }
                 )
                 
@@ -453,10 +449,9 @@ class NotificationViewSet(viewsets.ModelViewSet):
                 notification, created = Notification.objects.get_or_create(
                     garden=garden,
                     type='WE',  # Weather type
-                    subtype='HEAT',
+                    name=f"Extreme Heat Warning for {hot_day}",  # Use name as identifier
                     defaults={
-                        'name': f"Extreme Heat Warning for {hot_day}",
-                        'interval': 0  # One-time alert
+                        'interval': 1  # Change from 0 to 1
                     }
                 )
                 
@@ -477,10 +472,9 @@ class NotificationViewSet(viewsets.ModelViewSet):
                 notification, created = Notification.objects.get_or_create(
                     garden=garden,
                     type='WE',  # Weather type
-                    subtype='WIND',
+                    name=f"High Wind Warning for {windy_day}",  # Use name as identifier
                     defaults={
-                        'name': f"High Wind Warning for {windy_day}",
-                        'interval': 0  # One-time alert
+                        'interval': 1  # Change from 0 to 1
                     }
                 )
                 
@@ -498,10 +492,9 @@ class NotificationViewSet(viewsets.ModelViewSet):
                 notification, created = Notification.objects.get_or_create(
                     garden=garden,
                     type='WA',  # Watering type
-                    subtype='WEATHER',
+                    name="Watering needed - Dry conditions",  # Use name as identifier
                     defaults={
-                        'name': "Watering needed - Dry conditions",
-                        'interval': 0  # One-time alert
+                        'interval': 1  # Change from 0 to 1
                     }
                 )
                 

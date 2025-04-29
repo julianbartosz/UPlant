@@ -1,17 +1,9 @@
 # backend/root/conftest.py
 import pytest
 from django.test import Client
+from pytest_factoryboy import register
 
-@pytest.fixture(scope="session", autouse=True)
-def django_db_setup():
-    """Initialize Django before any tests are run."""
-    import os
-    import sys
-    import django
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "djangoProject1.settings")
-    django.setup()
-
+# ==================== Django Setup ====================
 @pytest.fixture(scope="session", autouse=True)
 def register_factories():
     """Register all factories after Django is initialized."""
@@ -51,49 +43,49 @@ def register_factories():
     )
     
     # Register all factories
-    # User Management
-    register(UserFactory)
-    register(AdminFactory)
-    register(ModeratorFactory)
-    register(InactiveUserFactory)
-    register(NewUserFactory)
-    register(UserWithActivityFactory)
+    # User Management - assign explicit model fixture names 
+    register(UserFactory, _name="user")
+    register(AdminFactory, _name="admin")
+    register(ModeratorFactory, _name="moderator")
+    register(InactiveUserFactory, _name="inactive_user")
+    register(NewUserFactory, _name="new_user")
+    register(UserWithActivityFactory, _name="user_with_activity")
     
-    # Plants
-    register(APIPlantFactory)
-    register(UserCreatedPlantFactory)
-    register(VerifiedUserPlantFactory)
-    register(PlantWithFullDetailsFactory)
-    register(PlantChangeRequestFactory)
+    # Plants - assign explicit model fixture names
+    register(APIPlantFactory, _name="api_plant")
+    register(UserCreatedPlantFactory, _name="user_created_plant")
+    register(VerifiedUserPlantFactory, _name="verified_plant")
+    register(PlantWithFullDetailsFactory, _name="detailed_plant")
+    register(PlantChangeRequestFactory, _name="plant_change_request")
     
-    # Gardens
-    register(GardenFactory)
-    register(SmallGardenFactory)
-    register(LargeGardenFactory)
-    register(PublicGardenFactory)
-    register(DeletedGardenFactory)
-    register(GardenLogFactory)
-    register(HealthyPlantLogFactory)
-    register(UnhealthyPlantLogFactory)
-    register(DeadPlantLogFactory)
-    register(NewlyPlantedLogFactory)
-    register(MaturePlantLogFactory)
-    register(UserPlantInGardenFactory)
+    # Gardens - assign explicit model fixture names
+    register(GardenFactory, _name="garden_instance")
+    register(SmallGardenFactory, _name="small_garden")
+    register(LargeGardenFactory, _name="large_garden")
+    register(PublicGardenFactory, _name="public_garden_instance")
+    register(DeletedGardenFactory, _name="deleted_garden")
+    register(GardenLogFactory, _name="garden_log")
+    register(HealthyPlantLogFactory, _name="healthy_plant_log")
+    register(UnhealthyPlantLogFactory, _name="unhealthy_plant_log")
+    register(DeadPlantLogFactory, _name="dead_plant_log")
+    register(NewlyPlantedLogFactory, _name="newly_planted_log")
+    register(MaturePlantLogFactory, _name="mature_plant_log")
+    register(UserPlantInGardenFactory, _name="user_plant_garden_log")
     
-    # Notifications
-    register(NotificationFactory)
-    register(WaterNotificationFactory)
-    register(FertilizeNotificationFactory)
-    register(PruneNotificationFactory)
-    register(HarvestNotificationFactory)
-    register(WeatherNotificationFactory)
-    register(OtherNotificationFactory)
-    register(NotificationPlantAssociationFactory)
-    register(NotificationInstanceFactory)
-    register(OverdueNotificationInstanceFactory)
-    register(CompletedNotificationInstanceFactory)
-    register(SkippedNotificationInstanceFactory)
-    register(MissedNotificationInstanceFactory)
+    # Notifications - assign explicit model fixture names
+    register(NotificationFactory, _name="notification_instance")
+    register(WaterNotificationFactory, _name="water_notification_instance")
+    register(FertilizeNotificationFactory, _name="fertilize_notification_instance")
+    register(PruneNotificationFactory, _name="prune_notification_instance")
+    register(HarvestNotificationFactory, _name="harvest_notification_instance")
+    register(WeatherNotificationFactory, _name="weather_notification_instance")
+    register(OtherNotificationFactory, _name="other_notification_instance")
+    register(NotificationPlantAssociationFactory, _name="notification_plant_assoc")
+    register(NotificationInstanceFactory, _name="notification_instance_model")
+    register(OverdueNotificationInstanceFactory, _name="overdue_notification")
+    register(CompletedNotificationInstanceFactory, _name="completed_notification")
+    register(SkippedNotificationInstanceFactory, _name="skipped_notification")
+    register(MissedNotificationInstanceFactory, _name="missed_notification")
 
 # ==================== Base Client Fixtures ====================
 
@@ -113,9 +105,10 @@ def api_client():
 # ==================== Authentication Fixtures ====================
 
 @pytest.fixture
-def admin_user(admin_factory):
+def admin_user(db):
     """Create and return an admin user with standard credentials"""
-    return admin_factory(
+    from user_management.tests.factories import AdminFactory
+    return AdminFactory(
         email="admin@example.com",
         username="admin",
         password="password123"
