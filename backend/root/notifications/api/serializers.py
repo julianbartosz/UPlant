@@ -1,9 +1,8 @@
 # backend/root/notifications/api/serializers.py
 
 from rest_framework import serializers
-from notifications.models import Notification, NotificationInstance, NotificationPlantAssociation, NotifTypes
+from notifications.models import Notification, NotificationInstance, NotificationPlantAssociation
 from plants.api.serializers import PlantDetailSerializer
-from gardens.api.serializers import GardenSerializer
 
 class NotificationPlantAssociationSerializer(serializers.ModelSerializer):
     plant_details = PlantDetailSerializer(source='plant', read_only=True)
@@ -42,8 +41,8 @@ class NotificationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Notification
-        fields = ['id', 'garden', 'garden_details', 'name', 'type', 'type_display',
-                 'subtype', 'interval', 'plants', 'created_at', 'upcoming_instance']
+        fields = ['id', 'garden', 'garden_details', 'name', 'type','type_display',
+                 'subtype', 'plants', 'created_at', 'upcoming_instance']
         read_only_fields = ['id', 'created_at', 'type_display', 'garden_details', 'upcoming_instance']
     
     def get_garden_details(self, obj):
@@ -104,7 +103,7 @@ class DashboardNotificationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Notification
-        fields = ['id', 'name', 'type', 'type_display', 'subtype', 
+        fields = ['id', 'name', 'type', 'type_display', 'interval', 'subtype', 
                  'garden', 'garden_name', 'plant_names', 'next_due', 
                  'status', 'is_overdue', 'instance_id']
     
