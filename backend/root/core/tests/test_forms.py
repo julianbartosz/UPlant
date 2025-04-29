@@ -34,7 +34,8 @@ class TestCustomAuthenticationForm:
     def test_form_inheritance(self):
         """Test that the form inherits from AuthenticationForm"""
         assert issubclass(CustomAuthenticationForm, AuthenticationForm)
-        
+    
+    @pytest.mark.django_db
     def test_valid_email_validation(self):
         """Test form validation with valid email"""
         data = {

@@ -266,7 +266,7 @@ LOGGING = {
 }
 
 import sys
-if 'test' in sys.argv:
+if ('test' in sys.argv) or ('pytest' in sys.modules):
     # Existing settings
     DATABASES = {
         'default': {
