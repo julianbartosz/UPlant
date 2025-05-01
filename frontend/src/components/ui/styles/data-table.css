@@ -1,0 +1,26 @@
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+}
+
+.data-table th, .data-table td {
+  border: 2px solid rgb(47, 47, 47);
+  padding: 12px;
+  text-align: left;
+}
+
+.data-table th {
+  background-color: black;
+}
+
+.data-table-header {
+  color: white;
+  height: 80px;
+}
+
+li {
+  margin-right: 35px;
+  margin-left: 35px;
+  text-align: left;
+}
