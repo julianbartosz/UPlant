@@ -1,1 +1,0 @@
-# backend/root/community/api/views.py

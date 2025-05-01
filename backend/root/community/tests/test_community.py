@@ -1,1 +1,0 @@
-# backend/root/community/tests/test_community.py

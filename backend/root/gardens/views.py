@@ -1,1 +1,0 @@
-# backend/root/gardens/views.py
