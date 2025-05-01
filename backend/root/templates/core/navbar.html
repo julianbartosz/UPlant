@@ -1,0 +1,51 @@
+<!-- backend/root/templates/core/navbar.html -->
+
+{% load static %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <img src="{% static 'img/logo.png' %}" alt="Logo" class="uwm-logo">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                {% if request.user.is_authenticated %}
+                    <li class="nav-item">
+                        <!-- opens in a new tab -->
+                        <!-- <a class="nav-link" href="http://localhost:5173/app/" target="_blank">
+                            <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
+                        </a> -->
+                        <!-- opens in the same browser tab -->
+                        <a class="nav-link" href="http://localhost:5173/app/">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <!-- opens in a new tab -->
+                        <!-- <a class="nav-link" href="http://localhost:5173/app/catalog" target="_blank">
+                            <i class="fas fa-tachometer-alt mr-1"></i> Catalog
+                        </a> -->
+                        <!-- opens in the same browser tab -->
+                        <a class="nav-link" href="http://localhost:5173/app/catalog">Catalog</a>
+                    </li>
+                    {% if request.user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin:index' %}">Admn Dash</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-link" >Logout</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
