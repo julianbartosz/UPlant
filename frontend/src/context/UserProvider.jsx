@@ -5,6 +5,8 @@ import { useFetch } from '../hooks';
 // environment variables
 const DEBUG = import.meta.env.VITE_DEBUG === 'true';
 
+console.log("DEBIGGING:", DEBUG);
+
 export const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
@@ -63,6 +65,9 @@ export const UserProvider = ({ children }) => {
 
     useEffect(() => {
         if (rawUser && !user && loading) {
+            if (DEBUG) {
+                console.log("RAW USER:", rawUser);
+            }
             console.log("Fetched user profile, populating user state");
             // Remove sensitive data from user object
             setUser({ ...rawUser, email: undefined, zipcode: undefined });
@@ -72,11 +77,21 @@ export const UserProvider = ({ children }) => {
     
     useEffect(() => {
         if (rawNotifications && rawGardens && loading && gardens === null) {
+            if (DEBUG) {
+                console.log("RAW Notifications:", rawNotifications);
+                console.log("RAW Gardens:", rawGardens);
+            }
+            
+            console.log('Notifications and gardens fetched, populating gardens state' , rawNotifications);
             const processedGardens = rawGardens.map(garden => {
                 return {...garden, notifications: rawNotifications.filter(notification => notification['garden'] === garden.id)};
             });
             dispatch({ type: 'POPULATE', payload: processedGardens });
             setLoading(false);
+            console.log("Fetched gardens, populating gardens state");
+            if (DEBUG) {
+                console.log("Gardens:", processedGardens);
+            }
         }
     }
     , [rawNotifications, rawGardens]);

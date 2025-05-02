@@ -21,36 +21,32 @@ const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex, dynamic = true
             return;
         }
 
-        const rollback = { ...gardens[index] };
-
-        // Optimistically update
-        dispatch({ type: 'REMOVE_GARDEN', garden_index: index });
-
-        const gardenUrl = `${import.meta.env.VITE_GARDENS_API_URL}${gardens[index].id}/`;
+        const gardenUrl = `http://localhost:8000/api/gardens/gardens/${gardens[index].id}/`;
         console.log(`Deleting garden at ${gardenUrl}`);
-        
+    
         (async () => {
             try {
                 const response = await fetch(gardenUrl, {
                     method: 'DELETE',
                     credentials: 'include',
                     headers: {
+                        // 'Authorization': `Token 4c1775be909a3873ee6c23104d433adaf4cbde29`,
                         'Content-Type': 'application/json',
                     },
                 });
                 if (!response.ok) {
-                    // Rollback if the request fails
-                    dispatch({ type: 'ADD_GARDEN', garden_index: index, payload: rollback });
                     alert("Failed to delete garden. Please try again.");
+                    return;
                 } else {
-                    console.log(`Garden deleted successfully.`);
+                    console.log(`Garden deleted successfully.`)
                 }
     
             } catch (error) {
                 console.error("Error deleting garden:", error);
-                // Rollback if the request fails
-                dispatch({ type: 'ADD_GARDEN', garden_index: index, payload: rollback });
                 alert(error.message);
+                return;
+            } finally {
+                dispatch({ type: 'REMOVE_GARDEN', garden_index: index });
             }
         })();
     };

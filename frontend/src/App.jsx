@@ -1,15 +1,15 @@
-// frontend/src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // import { DashboardPage, CatalogPage, SettingsPage, NotificationsPage } from './pages';
 import UserProvider from './context/UserProvider';
 import { DashboardPage } from './pages';
 import './styles/app.css';
+import { useState, useEffect } from 'react';
 
 import SettingsPage from './pages/SettingsPage';
 
 function App() {
-  
-    return (
+
+  return (
     <UserProvider>
       <Router basename='/app'>
         <Routes>

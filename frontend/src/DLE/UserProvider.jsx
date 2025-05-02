@@ -4,6 +4,7 @@ import { useFetch } from '../hooks';
 
 // environment variables
 const DEBUG = import.meta.env.VITE_DEBUG === 'true';
+console.log("DEBIGGING:", DEBUG);
 
 export const UserContext = createContext(null);
 
@@ -48,8 +49,9 @@ export const UserProvider = ({ children }) => {
 
     useEffect(() => {
         if (rawNotifications && rawGardens && contextLoading) {
+            console.log("RAW Notifications:", rawNotifications);
             const processedGardens = rawGardens.map((garden, index) => {
-                return {...garden, notifications: rawNotifications[index] };
+                return {...garden, notifications: rawNotifications[index] || [] };
             });
             dispatch({ type: 'POPULATE', payload: processedGardens });
             setContextLoading(false);

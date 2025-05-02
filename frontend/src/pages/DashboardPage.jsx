@@ -23,182 +23,152 @@ function DashboardPage() {
   const selectedGardenIndexRef = useRef(selectedGardenIndex);
   const selectedEmptyCellsRef = useRef(selectedEmptyCells);
   const selectedPlantCellsRef = useRef(selectedPlantCells);
+
+  const [gridLoading, setGridLoading] = useState(false);
+  const [loadingEstimate, setLoadingEstimate] = useState(0);
   
   useEffect(() => { selectedEmptyCellsRef.current = selectedEmptyCells; }, [selectedEmptyCells]);
   useEffect(() => { selectedPlantCellsRef.current = selectedPlantCells; }, [selectedPlantCells]);
   
+  const handleAddPlantsToGarden = async (plant) => {
+    if (gridLoading) return;
+    setLoadingEstimate(selectedEmptyCellsRef.current.size/2.2)
+     const selectedCells = new Set(selectedEmptyCellsRef.current);
+     setSelectedEmptyCells(new Set());
+     setGridLoading(true);
+      const gardenId = gardens[selectedGardenIndexRef.current].id;
+
+      let gardenLogs = [];
+
+        for (let coordinates of selectedCells) {
+                const [y, x] = coordinates.split('-').map(Number);
+
+                if (DEBUG) {
+                  console.log("Adding plant to garden:", { 
+                    index: selectedGardenIndexRef.current, 
+                    plant: plant, 
+                    planted_date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
+                    x: x, 
+                    y: y 
+                  });
+              }
+
+                const reqBody =  { notes: "EMPTY", health_status: "Healthy", garden: gardenId, plant: plant.id, x_coordinate: x, y_coordinate: y };
+                if (DEBUG) {
+                  console.log("Request body:", reqBody);
+                }
+          
+                let data;
+
+                try {
+                    const response = await fetch(`${BASE_API}/api/gardens/garden-logs/`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // 'Authorization': `Token 4c1775be909a3873ee6c23104d433adaf4cbde29`,
+                        },
+                        body: JSON.stringify({ 
+                            ...reqBody,
+                            planted_date: new Date().toISOString().split('T')[0],
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        if (DEBUG) {
+                          console.error("Failed to add plant to garden:", response);
+                        } else {
+                          console.error("Failed to add plant to garden:", response.statusText);
+                        }
+                        setGridLoading(false);
+                        alert("Error: Please try again.");
+                        return;
+                    }
+
+                    data = await response.json();
+                    console.log("Response Data:", data);
+                    console.log("Success");
+                    // Wait for data before dispatching
+                  if (data) {
+                    console.log("Data:", data);
+                    gardenLogs.push(data);
+                  } else {
+                    console.log('No data received from the server');
+                  }
+
+            
+                } catch (error) {
+                    console.error("Failed to add plant to garden:", error);
+                    setGridLoading(false);
+                    alert("Error: Please try again.");
+                }
+              }
+              dispatch({ type: 'ADD_GARDEN_LOGS', garden_index: selectedGardenIndexRef.current, payload: gardenLogs });
+              setGridLoading(false);
+            }
+
+const handleRemovePlantsFromGarden = async () => {
+  if (gridLoading) return;
+  setLoadingEstimate(selectedPlantCellsRef.current.size/2.2)
+  setGridLoading(true);
+  setSelectedPlantCells(new Set());
+  const selectedCells = new Set(selectedPlantCellsRef.current);
   
-  const handleAddPlantToGarden = (plant, y, x) => {
-    const newGarden = { ...gardens[selectedGardenIndexRef.current] };
-    const gardenId = newGarden.id;
-    const rollback = { ...newGarden };
-    
-    if (DEBUG) {
-        console.log("Adding plant to garden:", { 
-          garden: newGarden, 
-          index: selectedGardenIndexRef.current, 
-          plant: plant, 
-          planted_date: "2025-04-22",
-          x: x, 
-          y: y 
-        });
-    }
+  const newCells = gardens[selectedGardenIndexRef.current].cells.map((row, rowIndex) =>
+    row.map((cell, colIndex) => {
+      const key = `${rowIndex}-${colIndex}`;
+      return selectedPlantCellsRef.current.has(key) ? null : cell;
+    })
+  );
 
-    // Validate inputs
-    if (!newGarden) {
-        console.error("Invalid garden index:", selectedGardenIndexRef.current);
-        alert("Error: Please try again.");
-        return;
-    }
+  for (let coordinates of selectedCells) {
+      const [y, x] = coordinates.split('-').map(Number);
+      const logId = gardens[selectedGardenIndexRef.current].cells[y][x].id;
 
-    if (newGarden.cells[y][x] !== null) {
-        console.error("Cell is already occupied:", { x: x, y: y });
-        alert("Error: Please try again.");
-        return;
-    }
+      if (DEBUG) {
+        console.log("---Removing plant from garden---");
+        console.log(`Selected Plant Cell: (${x}, ${y})`);
+      }
+      
+      try {
+        
+          const response = await fetch(`${BASE_API}/api/gardens/garden-logs/${logId}/`, {
+              method: 'DELETE',
+              credentials: 'include',
+              headers: {
+                  'Content-Type': 'application/json',
+              }
+          });
 
-    if (plant.type !== 'SHEAR' && (plant.id === undefined || typeof plant.id !== 'number')) {
-        console.error("Invalid plant data:", plant);
-        alert("Error: Invalid plant data.");
-        return;
-    }
+          if (!response.ok) {
+              setGridLoading(false);  
 
-    newGarden.cells[y][x] = plant;
+              if (DEBUG) {
+                console.error("Failed to remove plant from garden:", response);
+              } else {
+                console.error("Failed to remove plant from garden:", response.statusText);
+              }
+               
+              alert("Error: Please try again.");
+              return;
+          }
+          console.log("Success");
 
-    // Optimistically update UI
-    dispatch({ type: 'UPDATE_GARDEN', garden_index: selectedGardenIndexRef.current, payload: newGarden }); 
+      } catch (error) {
+          setGridLoading(false);
+          console.error("Error updating gardens:", error);
+          alert("Error: Please try again.");
+      }
+   } 
 
-    const reqBody =  { notes: "EMPTY", health_status: "Healthy", garden: gardenId, plant: plant.id, x_coordinate: x, y_coordinate: y };
-
-    if (DEBUG) {
-      console.log("Request body:", reqBody);
-    }
-
-    // IIFE to handle async operation
-    (async () => {
-        try {
-            const response = await fetch(`${BASE_API}/api/gardens/garden-logs/`, {
-                method: 'POST',
-                // credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token 4c1775be909a3873ee6c23104d433adaf4cbde29`,
-                },
-                body: JSON.stringify({ 
-                    ...reqBody,
-                    planted_date: "2025-04-22",
-                }),
-            });
-
-            if (!response.ok) {
-                if (DEBUG) {
-                  console.error("Failed to add plant to garden:", response);
-                } else {
-                  console.error("Failed to add plant to garden:", response.statusText);
-                }
-                // Rollback UI
-                dispatch({ type: 'UPDATE_GARDEN', garden_index: selectedGardenIndexRef.current, payload: rollback });
-                alert("Error: Please try again.");
-                return;
-            }
-            console.log("Success");
-    
-        } catch (error) {
-            console.error("Failed to add plant to garden:", error);
-            // Rollback UI
-            dispatch({ type: 'UPDATE_GARDEN', garden_index: gardenIndex, payload: rollback });
-            alert("Error: Please try again.");
-        }
-    })(); 
+   console.log("All plants removed successfully");
+   dispatch({ type: 'PATCH_CELLS', garden_index: selectedGardenIndexRef.current, payload: newCells });
+   setGridLoading(false);
 }
-
-const handleRemovePlantFromGarden = (y, x) => {
-    const newGarden = { ...gardens[selectedGardenIndexRef.current] };
-    const rollback = { ...newGarden };
-    const plant = newGarden.cells[y][x];
-    if (DEBUG) {
-        console.log("Removing plant from garden:", {
-          garden: newGarden,
-          index: selectedGardenIndexRef.current,
-          plant: plant,
-          x: x,
-          y: y
-        });
-    }
-    if (!newGarden) {
-        console.error("Invalid garden index:", selectedGardenIndexRef.current);
-        alert("Error: Please try again.");
-        return;
-    }
-    console.log("NEW GARDEN: ", newGarden);
-    const logId = newGarden.cells[y][x].logId;
-    if (newGarden.cells[y][x] === null) {
-        console.error("Cell is already empty:", { x: x, y: y });
-        alert("Error: Please try again.");
-        return;
-    }
-    
-    newGarden.cells[y][x] = null;
-
-    // Optimistically update UI
-    dispatch({ type: 'UPDATE_GARDEN', garden_index: selectedGardenIndexRef.current, payload: newGarden });
-
-    // IIFE to handle async operation
-    (async () => {
-        try {
-            const response = await fetch(`${BASE_API}/api/gardens/garden-logs/${logId}/`, {
-                method: 'DELETE',
-                // credentials: 'include',
-                headers: {
-                    'Authorization': `Token 4c1775be909a3873ee6c23104d433adaf4cbde29`,
-                    'Content-Type': 'application/json',
-                }
-            });
-
-            if (!response.ok) {
-                if (DEBUG) {
-                  console.error("Failed to remove plant from garden:", response);
-                } else {
-                  console.error("Failed to remove plant from garden:", response.statusText);
-                }
-                // Rollback UI
-                dispatch({ type: 'UPDATE_GARDEN', garden_index: selectedGardenIndexRef.current, payload: rollback });
-                alert("Error: Please try again.");
-                return;
-            }
-
-            console.log("Success");
-
-        } catch (error) {
-            console.error("Error updating gardens:", error);
-            // Rollback UI
-            dispatch({ type: 'UPDATE_GARDEN', garden_index: selectedGardenIndexRef.current, payload: rollback });
-            alert("Error: Please try again.");
-        }
-    })();
-}
-
 
   if (loading) {
     return <GridLoading />;
   }
-  const handlePlantClick = (item) => {
-    if (item.type === 'SHEAR') {
-      selectedPlantCellsRef.current.forEach(key => {
-        const [row, col] = key.split('-').map(Number);
-        if (row < gardens[selectedGardenIndexRef.current].size_y && col < gardens[selectedGardenIndexRef.current].size_x) handleRemovePlantFromGarden(row, col);
-      });
-      return;
-    }
-    
-
-    const currentGarden = gardens[selectedGardenIndexRef.current]
-      selectedEmptyCellsRef.current.forEach(key => {
-        const [row, col] = key.split('-').map(Number);
-        console.log("ROW COL: ", row, col);
-        if (row < currentGarden.size_y && col < currentGarden.size_x) handleAddPlantToGarden(item, row, col);
-      });
-  };
 
   const cellClickHandler = (obj, i, j) => {
     const isTaken = obj !== null;
@@ -226,8 +196,8 @@ const handleRemovePlantFromGarden = (y, x) => {
       />
       <PlantSearchSideBar
         page="dashboard"
-        onPlantClick={handlePlantClick}
-        onShearClick={() => { handlePlantClick({ type: 'SHEAR' }); }}
+        onPlantClick={handleAddPlantsToGarden}
+        onShearClick={handleRemovePlantsFromGarden}
       />
         <div className="dashboard-content" ref={containerRef}>
             <GardenBar
@@ -244,6 +214,8 @@ const handleRemovePlantFromGarden = (y, x) => {
             selectedEmptyCells={selectedEmptyCells}
             selectedPlantCells={selectedPlantCells}
             cellClickHandler={cellClickHandler}
+            loading={gridLoading}
+            loadingEstimate={loadingEstimate}
           />
 
           ) : <GardenForm callback={() => {setToggleForm(false);}} />}

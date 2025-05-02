@@ -5,7 +5,7 @@
  * @param {Object} props
  * @param {Function} [props.handleSelection=() => {}]
  * @param {Array<Object>} [props.options]
- * @param {string} [props.labelField="common_name"]
+ * @param {string} [props.labelField="name"]
  * @param {string} [props.uniqueField="id"]
  * @returns {JSX.Element}
  */
@@ -17,7 +17,7 @@ import './styles/add-with-options.css';
 const AddWithOptions = ({ 
     handleSelection=() => {},
     options=[], 
-    labelField="common_name", 
+    labelField="name", 
     uniqueField="id"
 }) => {
 

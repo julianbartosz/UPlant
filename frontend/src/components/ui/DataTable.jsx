@@ -19,7 +19,7 @@
 
 import { DeleteButton, AddButton } from '../buttons';
 import { PiEmptyBold } from "react-icons/pi";
-import { FidgetSpinner, TailSpin} from 'react-loader-spinner';
+import { FidgetSpinner } from 'react-loader-spinner';
 import { UserContext } from '../../context/UserProvider';
 
 import './styles/data-table.css';
@@ -35,14 +35,10 @@ const DataTable = ({
     if (loading) return null;
 
     const handleDeleteNotification = (gardenIndex, notificationId) => {
+
         if (!window.confirm("Are you sure you want to delete this notification?")) {
             return;
         }
-
-        const rollback = { ...gardens[gardenIndex]['notifications'].filter(notification => notification.id === notificationId)[0] };
-       
-        // Optimistically update
-        dispatch({ type: 'REMOVE_NOTIFICATION', garden_index: gardenIndex, notification_id: notificationId });
         
         const notificationUrl = `${import.meta.env.VITE_NOTIFICATIONS_API_URL}${notificationId}/`
         console.log(`Deleting notification at ${notificationUrl}`);
@@ -57,17 +53,14 @@ const DataTable = ({
                     },
                 });
                 if (!response.ok) {
-                    // Rollback if the request fails
-                    dispatch({ type: 'ADD_NOTIFICATION', garden_index: gardenIndex, payload: rollback });
                     alert("Failed to delete notification. Please try again.");
+                    return;
                 } else {
-                    const deletedNotification = await response.json();
-                    console.log(`Notification deleted successfully:`, deletedNotification);
+                    console.log(`Notification deleted successfully:`);
+                    dispatch({ type: 'REMOVE_NOTIFICATION', garden_index: gardenIndex, notification_id: notificationId });
                 }
             } catch (error) {
                 console.error("Error deleting notification:", error);
-                // Rollback if the request fails
-                dispatch({ type: 'ADD_NOTIFICATION', garden_index: gardenIndex, payload: rollback });
                 alert(error.message);
             }
         })();
@@ -89,14 +82,14 @@ const DataTable = ({
                     </tr>
                 </thead>
                 <tbody>
-                    {gardens[selectedGardenIndex]['notifications']?.length > 0 ? (
-                    gardens[selectedGardenIndex]['notifications'].map((item, index) => (
+                    {gardens[selectedGardenIndex]['notifications'] && (
+                    gardens[selectedGardenIndex]['notifications'].map((item, _) => (
                         item && (
                         <tr key={item.id}>
                             <td>{item.name}</td>
                             <td>
-                                {item && item.plants && item.plants.map(plant => (
-                                    <div key={plant.id}>{plant}</div>
+                                {item && item.plant_names && item.plant_names.map(plantName => (
+                                    <div key={plantName}>{plantName}</div>
                                 ))}
                             </td>
                             <td style={{ textAlign: 'center' }}>{item.interval}</td>
@@ -104,23 +97,7 @@ const DataTable = ({
                                 <DeleteButton onClick={() => handleDeleteNotification(selectedGardenIndex, item.id)} />
                             </td>
                         </tr>)
-                    ))) : (
-
-                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                <FidgetSpinner  
-                    visible={true}
-                    height="80"
-                    width="80"
-                    ariaLabel="fidget-spinner-loading"
-                    wrapperStyle={{}}
-                    wrapperClass="fidget-spinner-wrapper"
-                    ballColors={["#00BFFF", "#00BFFF", "#00BFFF"]}
-                    backgroundColor="#F4442D"
-                />
-                <div style={{ marginLeft: '20px', fontSize: 'small' }}>Loading...</div>
-            </div>
-                 
-                    )}
+                    )))}
                 </tbody>
             </table>
             {gardens && gardens[selectedGardenIndex] && gardens[selectedGardenIndex]['notifications'].length === 0  && (

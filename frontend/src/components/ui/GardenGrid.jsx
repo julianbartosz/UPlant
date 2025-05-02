@@ -12,6 +12,8 @@ import "./styles/garden-grid.css"
 import { useContext, useState, useEffect } from "react";
 import { UserContext } from "../../context/UserProvider";
 import { MAXSIZE_GARDEN } from "../../constants";
+import { TailSpin } from "react-loader-spinner";
+import { LoadingBar } from "../widgets";
 
 const GardenGrid = ({
     selectedGardenIndex, 
@@ -20,23 +22,24 @@ const GardenGrid = ({
     selectedEmptyCells = null, 
     selectedPlantCells = null,
     cellClickHandler = null,
-    coloredCells = null
+    coloredCells = null,
+    loading,
+    loadingEstimate
 }) => {
 
     // const [squareSize, setSquareSize] = useState(0)
     const [view, setView] = useState(0);
-
     const context = useContext(UserContext);
 
     if (context === undefined) {
         throw new Error("GardenGrid must be used within a UserProvider");
     }
-    const { gardens, dispatch, loading } = context;
+    const { gardens, dispatch, loading: ggLoading } = context;
     console.log("Gardens: ", gardens);
     console.log("Selected Garden Index: ", selectedGardenIndex);
     console.log("Dispatch: ", dispatch);
     
-    if (loading || dispatch === undefined || dispatch === null) {  
+    if (ggLoading || dispatch === undefined || dispatch === null) {  
         return null;
     }
 
@@ -162,16 +165,17 @@ const GardenGrid = ({
             }
         })();
     } 
-    
+
+
     return (
         <>
-                <div 
-                    className="grid-container" 
-                    style={{
-                    width: `${squareSize * gridSize.width}px`, 
-                    height: `${squareSize * gridSize.height}px`,
-                }}
-                >
+            <div 
+                className="grid-container" 
+                style={{
+                width: `${squareSize * gridSize.width}px`, 
+                height: `${squareSize * gridSize.height}px`,
+            }}
+            >
         <div 
         className="grid" 
         style={{
@@ -181,25 +185,46 @@ const GardenGrid = ({
 
     { gardens[selectedGardenIndex].cells.map((row, i) => (
                     row.map((item, j) => (
-                        <div  key={`${i}-${j}`} data-tooltip-id="my-tooltip" data-tooltip-content={item ? item['common_name'] : ""}>
+                        <div  key={`${i}-${j}`} data-tooltip-id="my-tooltip" data-tooltip-content={item ? item.plant_detail.name : ""}>
                             <div
                                 className={`${isColored(i, j) ? 'needs-care' : 'square'} ${isSelectedEmpty(i, j) ? 'selected' : ''} ${isSelectedPlant(i, j) ? 'selected-shear' : ''}`}
                                 style={{ 
-                                    fontSize: `${squareSize/2}px`,
-                                
+                                    fontSize: `${squareSize/2}px`,   
                                 }}
-                                onClick={() => {cellClickHandler && cellClickHandler(item, i, j)}}
+                                onClick={() => { !loading && cellClickHandler && cellClickHandler(item, i, j)}}
                             >
                                 {item ? (ICONS[item.family] || ICONS['default']) : ""}
                             </div>
                         </div>
                     ))
-                ))}
-
-            <Tooltip id="my-tooltip" style={{ zIndex: 9999 }}/>
+                )) 
+                }
+                <Tooltip id="my-tooltip" style={{ zIndex: 9999 }}/>
+            {loading && (
+                     <div style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        zIndex: 1,
+                        textAlign: 'center'
+                    }}>
+                        <LoadingBar isLoading={loading} seconds={loadingEstimate} />
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <TailSpin
+                                height="80"
+                                width="80"
+                                color="#4fa94d"
+                                ariaLabel="tail-spin-loading"
+                                radius="1"
+                                visible={true}
+                            />
+                        </div>
+                    </div>
+                )}
+            
             {interactive && (
                 <>
-                   
                     <div style={{
                         position: "absolute",
                         top: "50%", right: "-20px",
@@ -210,13 +235,13 @@ const GardenGrid = ({
                         justifyContent: "center",
                     }}>
                         {/* Right Center Button */}
-                        <CircleButton text={<FaArrowLeft />} className="grid-remove-btn" onClick={() => handleGridResizing(-1, "right", selectedGardenIndex)} />
-                        <CircleButton text={<FaArrowRight />} className="grid-add-btn" onClick={() => handleGridResizing(1, "right", selectedGardenIndex)} />
+                        <CircleButton text={<FaArrowLeft />} className="grid-remove-btn" onClick={() => !loading && handleGridResizing(-1, "right", selectedGardenIndex)} />
+                        <CircleButton text={<FaArrowRight />} className="grid-add-btn" onClick={() => !loading && handleGridResizing(1, "right", selectedGardenIndex)} />
                     </div>
                     <div style={{ position: "absolute", bottom: "-20px", left: "50%", transform: "translateX(-50%)", zIndex: 1, display: "flex" }}>
                         {/* Bottom Center Button */}
-                        <CircleButton text={<FaArrowDown />} className="grid-add-btn" onClick={() => handleGridResizing(1, "bottom", selectedGardenIndex)} />
-                        <CircleButton text={<FaArrowUp />} className="grid-remove-btn" onClick={() => handleGridResizing(-1, "bottom", selectedGardenIndex)} />
+                        <CircleButton text={<FaArrowDown />} className="grid-add-btn" onClick={() => !loading && handleGridResizing(1, "bottom", selectedGardenIndex)} />
+                        <CircleButton text={<FaArrowUp />} className="grid-remove-btn" onClick={() => !loading && handleGridResizing(-1, "bottom", selectedGardenIndex)} />
                     </div>
                 </>
             )}
