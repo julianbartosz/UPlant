@@ -1,0 +1,171 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: linear-gradient(to right, rgb(152, 152, 152), rgb(65, 64, 64));
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    width: 85%;
+}
+
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 18px;
+  }
+  
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+    align-items: center;
+  }
+  
+  .filter-input {
+    padding: 8px 12px;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    flex: 1;
+    min-width: 200px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+  }
+  
+  .filter-input:focus {
+    border-color: #2196F3;
+    outline: none;
+  }
+  
+  .filter-select {
+    padding: 8px 12px;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    flex: 1;
+    min-width: 200px;
+    background-color: white;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    color: black;
+  }
+  
+  .filter-select:focus {
+    border-color: #2196F3;
+    outline: none;
+  }
+  
+  .today-filter {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Reduced gap for tighter integration */
+    font-size: 14px;
+    color: #333;
+    padding: 6px 10px;
+    background-color: #f7f7f7;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .today-filter input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0; /* Remove default margin */
+    cursor: pointer;
+    accent-color: #2196F3; /* Matches visual button color */
+  }
+  
+  .today-filter label {
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+
+  }
+  
+  .table-wrapper {
+    overflow-x: auto;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333;
+  }
+  
+  th {
+    background-color: #f7f7f7;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+
+  .plant-names {
+    max-width: 200px;
+    white-space: normal;
+    word-wrap: break-word;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .complete {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .complete:hover {
+    background-color: #45a049;
+  }
+  
+  .skip {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .skip:hover {
+    background-color: #da190b;
+  }
+  
+  .visual-btn {
+    background-color: #2196F3;
+    color: white;
+  }
+  
+  .visual-btn:hover {
+    background-color: #1976D2;
+  }
+  
+  td.visual {
+    text-align: center;
+  }
+  
+  @media (max-width: 600px) {
+    .controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .filter-input, .filter-select {
+      min-width: auto;
+    }
+    th, td {
+      padding: 8px;
+      font-size: 13px;
+    }
+  }

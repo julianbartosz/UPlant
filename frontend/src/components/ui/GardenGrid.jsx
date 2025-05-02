@@ -7,7 +7,6 @@ import {
 } from "react-icons/fa";
 import { CircleButton } from "../buttons";
 import { Tooltip } from "react-tooltip";
-import { useGardens } from "../../hooks";
 import "./styles/garden-grid.css"
 import { useContext, useState, useEffect } from "react";
 import { UserContext } from "../../context/UserProvider";
@@ -193,7 +192,7 @@ const GardenGrid = ({
                                 }}
                                 onClick={() => { !loading && cellClickHandler && cellClickHandler(item, i, j)}}
                             >
-                                {item ? (ICONS[item.family] || ICONS['default']) : ""}
+                                {item ? (ICONS[item.plant_detail.family] || ICONS['default']) : ""}
                             </div>
                         </div>
                     ))

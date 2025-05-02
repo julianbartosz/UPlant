@@ -5,7 +5,7 @@ import { UserContext } from '../../context/UserProvider';
 
 import './styles/garden-bar.css';
 
-const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex, dynamic = true, style = {}, onAdd }) => {
+const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex, dynamic = true, style = {}, onAdd, centered=false }) => {
     const { gardens, dispatch, loading } = useContext(UserContext);
     
     if (loading) {
@@ -52,7 +52,7 @@ const GardenBar = ({ selectedGardenIndex, setSelectedGardenIndex, dynamic = true
     };
 
     return (
-        <div className="garden-bar-container" style={style}>
+        <div className="garden-bar-container" style={{ ...style, display: 'flex', justifyContent: centered ? 'center' : 'flex-start' }}>
         <div className="garden-bar">
             {dynamic && (
                 <div className="garden-bar-item" key={-1}>

@@ -39,7 +39,7 @@ function LoadingBar({ seconds, isLoading }) {
 
     return (
         shouldShowBar && (
-            <div className="container">
+            <div className="l-container">
                 <div className="loading-bar-container">
                     <div
                         className="loading-bar"

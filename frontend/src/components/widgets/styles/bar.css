@@ -1,8 +1,9 @@
-.container {
+.l-container {
     max-width: 400px;
     margin: 20px auto;
     text-align: center;
     z-index: 1000;
+    background-color:red;
 }
 .input {
     padding: 8px;

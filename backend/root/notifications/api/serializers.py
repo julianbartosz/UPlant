@@ -41,7 +41,7 @@ class NotificationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Notification
-        fields = ['id', 'garden', 'garden_details', 'name', 'type','type_display',
+        fields = ['id', 'garden', 'garden_details', 'name', 'interval', 'type','type_display',
                  'subtype', 'plants', 'created_at', 'upcoming_instance']
         read_only_fields = ['id', 'created_at', 'type_display', 'garden_details', 'upcoming_instance']
     

@@ -199,6 +199,7 @@ const NotificationForm = ({
             setErrorMessage(`Error: ${error.message || 'Unknown error occurred'}`);
         } finally {
             setSubmitting(false);
+            setToggleForm(false);
         }
     }
 
