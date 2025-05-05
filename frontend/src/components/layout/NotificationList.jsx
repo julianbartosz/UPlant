@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { ThreeDots } from 'react-loader-spinner';
 import './styles/notification-list.css';
 
-const NotificationList = ({ notifications, onComplete, onSkip, onShowVisual }) => {
+const NotificationList = ({ loading, notifications, onComplete, onSkip, onShowVisual }) => {
   const [sortField, setSortField] = useState('next_due');
   const [sortOrder, setSortOrder] = useState('asc');
   const [filterType, setFilterType] = useState('');
@@ -58,8 +59,8 @@ const NotificationList = ({ notifications, onComplete, onSkip, onShowVisual }) =
     });
 
   return (
-    <div className="container">
-      <h1>Pending Garden Maintenance Notifications</h1>
+    <>
+      <h1>DAILY REMINDERS</h1>
       <div className="controls">
         <select
           value={filterType}
@@ -90,9 +91,9 @@ const NotificationList = ({ notifications, onComplete, onSkip, onShowVisual }) =
           Show only today's notifications
         </label>
       </div>
-      <div className="table-wrapper">
+      <>
         <table>
-          <thead>
+          <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
             <tr>
               <th onClick={() => handleSort('name')}>
                 Task Name {sortField === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
@@ -106,30 +107,61 @@ const NotificationList = ({ notifications, onComplete, onSkip, onShowVisual }) =
               <th onClick={() => handleSort('next_due')}>
                 Due Date {sortField === 'next_due' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              <th onClick={() => handleSort('interval')}>
+              {/* <th onClick={() => handleSort('interval')}>
                 Interval (days) {sortField === 'interval' && (sortOrder === 'asc' ? '↑' : '↓')}
-              </th>
+              </th> */}
               <th>Actions</th>
               <th>Visual</th>
             </tr>
           </thead>
           <tbody>
-            {sortedNotifications.length > 0 ? (
+           {loading ? (
+       <td colSpan={7} rowSpan={3} style={{ borderBottom: 'none'}}>
+                  <div className="loading-spinner" 
+                  style={{
+                    width: '100%', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center'}}
+                  >
+                        <ThreeDots
+                        visible={true}
+                        height="80"
+                        width="80"
+                        color="white"
+                        radius="9"
+                        ariaLabel="three-dots-loading"
+                        wrapperClass=""
+                      />
+                  </div>
+                </td>
+ 
+            ) : null}
+              
+            {!loading && sortedNotifications.length > 0 ? (
               sortedNotifications.map((notification) => (
                 <tr key={notification.instance_id}>
                   <td>{notification.name}</td>
                   <td>{notification.type_display}</td>
-                  <td className="plant-names">{notification.plant_names.join(', ')}</td>
+                  <td className="plant-names">{notification.plant_names.map(
+                    (plantName) => (
+                      <li key={plantName} className="data-table-plant">
+                        {plantName}
+                      </li>
+                    )
+                  )}</td>
                   <td>{new Date(notification.next_due).toLocaleDateString()}</td>
-                  <td>{notification.interval}</td>
+                  {/* <td>{notification.interval}</td> */}
                   <td className="actions">
                     <button
                       className="btn complete"
+                      style={{border: '2px solid black', marginRight: '10px'}}
                       onClick={() => onComplete(notification.instance_id)}
                     >
                       Complete
                     </button>
                     <button
+                    style={{border: '2px solid black'}}
                       className="btn skip"
                       onClick={() => onSkip(notification.instance_id)}
                     >
@@ -138,23 +170,28 @@ const NotificationList = ({ notifications, onComplete, onSkip, onShowVisual }) =
                   </td>
                   <td className="visual">
                     <button
+                    style={{border: '2px solid black'}}
                       className="btn visual-btn"
-                      onClick={() => onShowVisual(notification.plant_names)}
+                      onClick={() => onShowVisual(notification)}
                     >
                       Show Visual
                     </button>
+                    
                   </td>
                 </tr>
               ))
-            ) : (
+            ) : !loading && (
               <tr>
-                <td colSpan="7">No notifications found</td>
+                <td colSpan="7">
+                ✅ Your garden has non pending reminders.
+                </td>
+                
               </tr>
             )}
           </tbody>
         </table>
-      </div>
-    </div>
+      </>
+    </>
   );
 };
 

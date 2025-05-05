@@ -16,7 +16,7 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="*" element={
-            <div className='centered-message'>Oops! Looks like you've wandered off the garden path.</div>} />
+            <div className='centered-content'>🌱 Oops! Looks like you've wandered off the garden path. 🌱</div>} />
         </Routes>
       </Router>
     </UserProvider>

@@ -1,21 +1,22 @@
 
 
   .garden-grid-container {
-      width: 65%;
+      width: 60%;
       outline: 2px solid black;
       display: flex;
       justify-content: center;
         align-items: center;
   }
   
-.garden-notification-container{
+/* .garden-notification-container{
     display: flex;
     justify-content: center;
     height: 500px;
-    width: 35%;
+    width: 40%;
     border-top: 2px solid black;
     align-self: end;
-  }
+    align-items: center;
+  } */
 
 .grid-container {
     padding: 30px;
@@ -43,11 +44,40 @@
     left: 240px;
     width: calc(100vw - 240px);
     height: calc(100vh - 60px);
- 
     display: flex;
-    /* justify-content: center; */
     align-items: end;
     background: linear-gradient(to bottom, #156082,rgb(83, 118, 83));
     border-radius: 10px 0 0 0;
   }
   
+.notification-section-container {
+    border-top: 2px solid black;          
+    width: 40%;
+    overflow-y: auto;
+    display: flex;
+    align-content: top;
+    justify-content: center;
+    display: block;
+}
+
+/* Target the scrollbar of a specific container */
+.notification-section-container::-webkit-scrollbar {
+  width: 20px;
+  height: auto;
+}
+
+/* Background of the scrollbar track */
+.notification-section-container::-webkit-scrollbar-track {
+  background-color: black;
+}
+
+/* Scrollbar thumb (the draggable part) */
+.notification-section-container::-webkit-scrollbar-thumb {
+  background: #999;
+  border-radius: 6px;
+}
+
+/* Hovered thumb */
+.notification-section-container::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}

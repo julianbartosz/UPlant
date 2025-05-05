@@ -18,18 +18,19 @@ const NotificationSection = ({ contentSize, selectedGardenIndex }) => {
         }, []);
 
     return (
-        <div className='notification-section-container'>
+        <>
             {toggleForm ? (
-                    <NotificationForm setToggleForm={setToggleForm} plantOptions={plantOptions} onBack={() => setToggleForm(false)} selectedGardenIndex={selectedGardenIndex} />
+                <div className='centered-content'>
+                     <NotificationForm setToggleForm={setToggleForm} plantOptions={plantOptions} onBack={() => setToggleForm(false)} selectedGardenIndex={selectedGardenIndex} />
+                </div>
+             
                 ) : (
                     <DataTable
                         selectedGardenIndex={selectedGardenIndex}
                         onAdd={() => setToggleForm(true)}
-                        setData={() => {}}
-                        fontSize={contentSize.width / 50}
                     />
                 )}
-        </div>
+        </>
     );
 };
 

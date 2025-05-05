@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { NavBar, PlantSearchSideBar } from '../components/layout';
-
-import './styles/catalog-page.css';
 import { GridLoading } from '../components/widgets';
+import { DEBUG, HOME_URL, BASE_API } from '../constants';
+import './styles/catalog-page.css';
 
 function Catalog() {
     const [selectedPlant, setSelectedPlant] = useState(null);
@@ -12,7 +12,7 @@ function Catalog() {
         const fetchPlantDetails = async (plant) => {
             setLoading(true);   
             try {
-                const response = await fetch(`http://localhost:8000/api/plants/plants/${plant.id}/`, {
+                const response = await fetch(`${BASE_API}/plants/${plant.id}/`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -39,7 +39,7 @@ function Catalog() {
 
     return (
         <>
-            <NavBar title="Catalog" onBack={() => { window.location.href = import.meta.env.VITE_HOME_URL }} />
+            <NavBar title="Catalog" onBack={() => { window.location.href = HOME }} />
             <PlantSearchSideBar page="catalog" onPlantClick={handlePlantClick} />
             <div className='catalog-content'>
                 {loading ? <GridLoading/> : 

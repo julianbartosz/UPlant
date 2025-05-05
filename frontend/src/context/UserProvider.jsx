@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useReducer, useMemo } from 'react';
 import { initialState, gardensReducer } from './reducers';
 import { useFetch } from '../hooks';
+import { s } from 'framer-motion/client';
 
 // environment variables
 const DEBUG = import.meta.env.VITE_DEBUG === 'true';
@@ -102,6 +103,7 @@ export const UserProvider = ({ children }) => {
           gardens,
           dispatch,
           user,
+          setUser,
           loading,
           error,
         }),

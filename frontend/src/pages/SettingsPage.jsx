@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChangePasswordForm, ChangeUsernameForm } from '../components/forms';
 import { NavBar } from '../components/layout';
-import { useUser } from '../hooks';
 import { GenericButton } from '../components/buttons';
+import { UserContext } from '../context/UserProvider';
+import { BASE_API, LOGIN_URL, DEBUG } from '../constants';
 import './styles/settings-page.css';
 
 const SettingsPage = () => {
@@ -11,7 +12,24 @@ const SettingsPage = () => {
     const navigate = useNavigate();
     const [togglePasswordForm, setTogglePasswordForm] = useState(false);
     const [toggleUsernameForm, setToggleUsernameForm] = useState(false);
-    const { mediateDeleteAccount } = useUser();
+    
+    const handleDeleteAccount = async () => {
+        
+        const response = await fetch(`${BASE_API}/users/me/delete/`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password: prompt("Please enter your password to confirm account deletion:") })
+        });
+        if (response.ok) {
+            console.log("Account deleted successfully");
+            window.location.href = LOGIN_URL;
+        } else {
+            console.error('Error deleting account:', response.statusText);
+        }
+    }
 
     return (
         <div>
@@ -35,7 +53,7 @@ const SettingsPage = () => {
               label="DELETE ACCOUNT"
               disableMouseOver={true}
               style={{ backgroundColor: 'red', marginTop: '20px', width: '66%' }}
-              onClick={() => mediateDeleteAccount()}
+              onClick={() => handleDeleteAccount()}
             />
           </div>
                 )}

@@ -1,11 +1,10 @@
-.container {
-    max-width: 1200px;
+.gg-container {
     margin: 0 auto;
     padding: 20px;
-    background: linear-gradient(to right, rgb(152, 152, 152), rgb(65, 64, 64));
+    background: none;
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    width: 85%;
+
 }
 
   h1 {
@@ -111,10 +110,7 @@
     word-wrap: break-word;
   }
   
-  .actions {
-    display: flex;
-    gap: 8px;
-  }
+
   
   .btn {
     padding: 8px 16px;

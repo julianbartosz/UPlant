@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import "./styles/bar.css";
 
-function LoadingBar({ seconds, isLoading }) {
+function LoadingBar({ seconds, isLoading, style }) {
     const [width, setWidth] = useState(0);
     const [completed, setCompleted] = useState(false);
     const timerRef = useRef(null);
@@ -39,7 +39,7 @@ function LoadingBar({ seconds, isLoading }) {
 
     return (
         shouldShowBar && (
-            <div className="l-container">
+            <div className="l-container" style={style}>
                 <div className="loading-bar-container">
                     <div
                         className="loading-bar"

@@ -10,7 +10,7 @@ import { Tooltip } from "react-tooltip";
 import "./styles/garden-grid.css"
 import { useContext, useState, useEffect } from "react";
 import { UserContext } from "../../context/UserProvider";
-import { MAXSIZE_GARDEN } from "../../constants";
+import { MAXSIZE_GARDEN, BASE_API, DEBUG } from "../../constants";
 import { TailSpin } from "react-loader-spinner";
 import { LoadingBar } from "../widgets";
 
@@ -139,7 +139,7 @@ const GardenGrid = ({
         // IIFE to handle async operation
         (async () => {
             try {
-                const response = await fetch(`${import.meta.env.VITE_GARDENS_API_URL}${newGarden.id}/`, {
+                const response = await fetch(`${BASE_API}/gardens/gardens/${newGarden.id}/`, {
                     method: 'PATCH',
                     credentials: 'include',
                     headers: {
@@ -199,28 +199,8 @@ const GardenGrid = ({
                 )) 
                 }
                 <Tooltip id="my-tooltip" style={{ zIndex: 9999 }}/>
-            {loading && (
-                     <div style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        zIndex: 1,
-                        textAlign: 'center'
-                    }}>
-                        <LoadingBar isLoading={loading} seconds={loadingEstimate} />
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <TailSpin
-                                height="80"
-                                width="80"
-                                color="#4fa94d"
-                                ariaLabel="tail-spin-loading"
-                                radius="1"
-                                visible={true}
-                            />
-                        </div>
-                    </div>
-                )}
+   
+                
             
             {interactive && (
                 <>
@@ -228,7 +208,7 @@ const GardenGrid = ({
                         position: "absolute",
                         top: "50%", right: "-20px",
                         transform: "translateY(-50%)",
-                        zIndex: 1,
+                        zIndex: 2,
                         display: "flex",
                         flexDirection: "column",
                         justifyContent: "center",
@@ -237,15 +217,35 @@ const GardenGrid = ({
                         <CircleButton text={<FaArrowLeft />} className="grid-remove-btn" onClick={() => !loading && handleGridResizing(-1, "right", selectedGardenIndex)} />
                         <CircleButton text={<FaArrowRight />} className="grid-add-btn" onClick={() => !loading && handleGridResizing(1, "right", selectedGardenIndex)} />
                     </div>
-                    <div style={{ position: "absolute", bottom: "-20px", left: "50%", transform: "translateX(-50%)", zIndex: 1, display: "flex" }}>
+                    <div style={{ position: "absolute", bottom: "-20px", left: "50%", transform: "translateX(-50%)", zIndex: 2, display: "flex" }}>
                         {/* Bottom Center Button */}
                         <CircleButton text={<FaArrowDown />} className="grid-add-btn" onClick={() => !loading && handleGridResizing(1, "bottom", selectedGardenIndex)} />
                         <CircleButton text={<FaArrowUp />} className="grid-remove-btn" onClick={() => !loading && handleGridResizing(-1, "bottom", selectedGardenIndex)} />
                     </div>
                 </>
             )}
-                
-                
+            {loading && (
+            <div style={{
+                        position: "absolute",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        left: "0px",
+                        zIndex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: "100%",
+                        width: '100%',
+                        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                        
+                    }}>
+                        
+                        
+                            </div>
+                    
+                )}
+                    
                     </div>
             
                 </div>

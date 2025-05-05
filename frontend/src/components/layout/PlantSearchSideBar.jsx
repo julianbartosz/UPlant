@@ -61,7 +61,7 @@ const PlantSearchSideBar = ({ page, onShearClick = null, onPlantClick = null }) 
 
     try {
       const response = await fetch(
-        `${BASE_API}/api/plants/search/?q=${query}&limit=${MAX_RESPONSE_SIZE}`,
+        `${BASE_API}/plants/search/?q=${query}&limit=${MAX_RESPONSE_SIZE}`,
         {
           credentials: 'include',
           headers: {
@@ -89,6 +89,7 @@ const PlantSearchSideBar = ({ page, onShearClick = null, onPlantClick = null }) 
           (plant) => plant.common_name && plant.id && plant.family
         )
       );
+      
     } catch (error) {
       console.error('Error searching plants:', error);
       alert('Failed to search plants. Please try again.');

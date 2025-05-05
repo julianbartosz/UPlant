@@ -13,10 +13,10 @@
 
 
 .notification-page-container {
-    background: url('/public/garden_background.jpg') no-repeat center center;
     width: 100vw;
-    height: 100vh;
+    height: 60vh;
     position: relative;
+
   }
   
   .notification-content-container {
@@ -29,6 +29,8 @@
     justify-content: center;
     align-items: center;
     border-top: 2px solid black;
+    
+    
   }
   
   .notification-buttons {
@@ -53,5 +55,14 @@
     display: flex;
     justify-content: center;
     align-items: anchor-center;
+    display: block;
+    overflow-y: scroll;
+}
+
+.visual-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
   

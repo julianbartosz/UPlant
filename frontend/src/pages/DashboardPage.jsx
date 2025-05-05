@@ -8,6 +8,7 @@ import { useContext } from 'react';
 import { GardenForm } from '../components/forms';
 import { useContentSize } from '../hooks';
 import { BASE_API, DEBUG } from '../constants';
+import LoadingBarModal from '../components/modals/LoadingBarModal';
 import './styles/dashboard-page.css';
 
 function DashboardPage() {
@@ -61,7 +62,7 @@ function DashboardPage() {
                 let data;
 
                 try {
-                    const response = await fetch(`${BASE_API}/api/gardens/garden-logs/`, {
+                    const response = await fetch(`${BASE_API}/gardens/garden-logs/`, {
                         method: 'POST',
                         credentials: 'include',
                         headers: {
@@ -132,7 +133,7 @@ const handleRemovePlantsFromGarden = async () => {
       
       try {
         
-          const response = await fetch(`${BASE_API}/api/gardens/garden-logs/${logId}/`, {
+          const response = await fetch(`${BASE_API}/gardens/garden-logs/${logId}/`, {
               method: 'DELETE',
               credentials: 'include',
               headers: {
@@ -217,19 +218,15 @@ const handleRemovePlantsFromGarden = async () => {
             loading={gridLoading}
             loadingEstimate={loadingEstimate}
           />
+          
 
           ) : <GardenForm callback={() => {setToggleForm(false);}} />}
           </div>
           }
           
-
           <div
-            className="garden-notification-container"
-            style={{
-              borderTop: '2px solid black',
-              alignSelf: 'end',
-              height: `${contentSize.height - 88}px`,
-            }}
+            className="notification-section-container"
+            style={{height: `${contentSize.height - 88}px`}}
           >
           <NotificationSection
             contentSize={contentSize}
@@ -238,6 +235,7 @@ const handleRemovePlantsFromGarden = async () => {
           
         </div>
     </div>
+     <LoadingBarModal loading={gridLoading} loadingEstimate={loadingEstimate} />
     </>
   );
 }

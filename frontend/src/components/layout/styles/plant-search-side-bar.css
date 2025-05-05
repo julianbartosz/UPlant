@@ -6,7 +6,7 @@
     top: 60px;
     width: 200px;
     height: calc(100vh - 60px);
-    background: linear-gradient(to right, rgb(152, 152, 152), rgb(65, 64, 64));
+    background: linear-gradient(to right, rgba(152, 152, 152, 0.8), rgba(65, 64, 64, 0.8));
     padding: 10px;
     border-radius: 0 10px 0 0;
     border: 2px solid black;

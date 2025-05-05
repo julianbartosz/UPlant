@@ -1,0 +1,81 @@
+/* form.css */
+
+.form {
+    justify-content: center;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(to bottom right, rgba(152, 152, 152, 0.8), rgba(61, 61, 61, 0.8));
+    border-radius: 10px;
+    padding: 30px;
+    outline: 2px solid #000;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.6);
+}
+
+.wood-form {
+    justify-content: center;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    background-image: url("/app/wood-texture.jpg");
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px;
+    padding: 40px;
+    outline: 4px solid #000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.form-content {
+    font-family: monospace;
+    width: 100%;
+    margin-top: 40px;
+}
+
+.form-header {
+    margin-bottom: 30px;
+}
+
+.form-footer {
+    margin-top: 10px;
+}
+
+.form-label {
+    margin-bottom: 5px;
+    color: black;
+}
+
+.form-field-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+}
+
+.form-input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    width: 200px;
+    margin-bottom: 14px;
+}
+
+.message-container {
+    min-height: 24px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Truncate content exceeding the height */
+    box-sizing: border-box; /* Prevent padding/margins from expanding */
+}
+
+.message-error {
+    color: red;
+    font-size: 14px;
+}
+
+.message-success {
+    color: green;
+    font-size: 14px;
+}
