@@ -10,8 +10,10 @@
   .modal-actions {
     display: flex;
     justify-content: center;
+    padding-top: 10px;
     gap: 10px; /* Space between buttons */
   }
+
   .modal-container {
     background-color: rgba(200, 198, 198, 0.8); /* Semi-transparent white background */
     border-radius: 8px;
@@ -22,6 +24,7 @@
     text-align: center;
     border: 2px solid black;
   }
+  
   .modal-overlay {
     position: fixed;
     top: 0;
@@ -52,4 +55,8 @@
   .modal-cancel-button:disabled {
     background-color: #6c757d;
     cursor: not-allowed;
+  }
+
+  .modal-error {
+    text-align: center;
   }

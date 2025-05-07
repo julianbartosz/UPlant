@@ -5,7 +5,7 @@ function LoadingBar({ seconds, isLoading, style }) {
     const [width, setWidth] = useState(0);
     const [completed, setCompleted] = useState(false);
     const timerRef = useRef(null);
-
+    
     useEffect(() => {
         const sec = parseFloat(seconds);
 
@@ -35,15 +35,16 @@ function LoadingBar({ seconds, isLoading, style }) {
         };
     }, [isLoading, seconds]);
 
-    const shouldShowBar = isLoading || (completed && isLoading !== undefined);
+    const shouldShowBar = isLoading;
 
     return (
         shouldShowBar && (
             <div className="l-container" style={style}>
-                <div className="loading-bar-container">
+                <div className="loading-bar-container" style={style}>
                     <div
                         className="loading-bar"
                         style={{
+                            zIndex: 1001,
                             width: `${width}%`,
                             transition: isLoading && !completed ? `width ${seconds}s linear` : 'none'
                         }}

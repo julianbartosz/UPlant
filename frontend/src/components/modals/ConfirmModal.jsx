@@ -10,7 +10,7 @@
  */
 
 import { useEffect, useRef } from "react";
-import "./styles/confirm-modal.css";
+import "./styles/generic-modal.css";
 
 const ConfirmModal = ({ isOpen, onConfirm, onCancel, message }) => {
     const confirmButtonRef = useRef(null);

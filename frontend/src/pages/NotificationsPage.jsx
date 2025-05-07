@@ -1,17 +1,157 @@
-import { useRef, useEffect, useState, useContext } from 'react';
+/**
+ * NotificationPage Component
+ * 
+ * @file NotificationPage.jsx
+ * @component
+ * @returns {JSX.Element} The rendered NotificationPage component.
+ * 
+ * @example
+ * <NotificationPage />
+ * 
+ * @remarks
+ * - Fetches and displays notifications for a selected garden.
+ * - Allows users to complete, skip, or visualize notifications.
+ * - Uses context for garden data and custom hooks for content sizing.
+ * - Visual mode highlights garden cells related to a notification.
+ */
+
+import { 
+  useRef, 
+  useEffect, 
+  useState, 
+  useContext 
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NavBar, GardenBar } from '../components/layout';
 import { GardenGrid } from '../components/ui';
-
-import './styles/notifications-page.css';
 import { UserContext } from '../context/UserProvider';
 import { NotificationList } from '../components/layout';
 import { useContentSize } from '../hooks';
-import { BackButton, GenericButton } from '../components/buttons';
-import { Grid } from 'react-loader-spinner';
 import { GridLoading } from '../components/widgets';
-import { DEBUG } from '../constants';   
+import { DEBUG, BASE_API } from '../constants';   
+import './styles/notifications-page.css';
 
+/**
+ * Fetches notifications for a specific garden.
+ * 
+ * @param {string} gardenId - The ID of the garden to fetch notifications for.
+ * @returns {Promise<{ success: boolean, data?: any, error?: string }>} The result of the API request.
+ */
+const fetchNotificationsByGarden = async (gardenId) => {
+  if (DEBUG) {
+    console.log('--- Fetch Notifications Request ---');
+    console.log('Garden ID:', gardenId);
+  }
+
+  try {
+    const response = await fetch(`${BASE_API}/notifications/notifications/by_garden/?garden_id=${gardenId}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (!data) {
+      throw new Error('No data received');
+    }
+
+    if (DEBUG) {
+      console.log('Fetched notifications data:', data);
+    }
+
+    // Flatten notifications and filter for PENDING status
+    const flattenedNotifications = data
+      .flatMap(garden => garden.notifications || [])
+      .filter(notification => notification.status === 'PENDING');
+
+    return { success: true, data: flattenedNotifications };
+  } catch (error) {
+    if (DEBUG) {
+      console.error('Error fetching notifications:', error);
+    }
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Completes a notification instance.
+ * 
+ * @param {string} instanceId - The ID of the notification instance to complete.
+ * @returns {Promise<{ success: boolean, data?: any, error?: string }>} The result of the API request.
+ */
+const completeNotification = async (instanceId) => {
+  if (DEBUG) {
+    console.log('--- Complete Notification Request ---');
+    console.log('Instance ID:', instanceId);
+  }
+
+  try {
+    const response = await fetch(`${BASE_API}/notifications/instances/${instanceId}/complete/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (DEBUG) {
+      console.log('Complete notification response:', data);
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    if (DEBUG) {
+      console.error('Error completing notification:', error);
+    }
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Skips a notification instance.
+ * 
+ * @param {string} instanceId - The ID of the notification instance to skip.
+ * @returns {Promise<{ success: boolean, data?: any, error?: string }>} The result of the API request.
+ */
+const skipNotification = async (instanceId) => {
+  if (DEBUG) {
+    console.log('--- Skip Notification Request ---');
+    console.log('Instance ID:', instanceId);
+  }
+
+  try {
+    const response = await fetch(`${BASE_API}/notifications/instances/${instanceId}/skip/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (DEBUG) {
+      console.log('Skip notification response:', data);
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    if (DEBUG) {
+      console.error('Error skipping notification:', error);
+    }
+    return { success: false, error: error.message };
+  }
+};
 
 function NotificationPage() {
   const navigate = useNavigate();
@@ -27,13 +167,13 @@ function NotificationPage() {
   const [selectedPlantCells, setSelectedPlantCells] = useState(new Set());
   const [toggleVisual, setToggleVisual] = useState(false);
   const [coloredCells, setColoredCells] = useState(new Set());
+  const [selectedInstance, setSelectedInstance] = useState(null);
 
   const containerRef = useRef(null);
   const contentSize = useContentSize(containerRef);
   const selectedEmptyCellsRef = useRef(selectedEmptyCells);
   const selectedPlantCellsRef = useRef(selectedPlantCells);
   const selectedGardenIndexRef = useRef(selectedGardenIndex);
-  const [selectedInstance, setSelectedInstance] = useState(null);
 
   useEffect(() => {
     selectedEmptyCellsRef.current = selectedEmptyCells;
@@ -47,122 +187,44 @@ function NotificationPage() {
     selectedGardenIndexRef.current = selectedGardenIndex;
   }, [selectedGardenIndex]);
 
+  // Fetch notifications when garden selection or gardens change
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setFontSize((prevFontSize) => prevFontSize + 0);
-    });
+    const loadNotifications = async () => {
+      setLoading(true);
+      setError(null);
+      const gardenId = gardens[selectedGardenIndex]?.id;
+      if (!gardenId) {
+        setError('No garden selected.');
+        setLoading(false);
+        return;
+      }
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current, { childList: true, subtree: true });
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-
-  // Fetch notifications by garden
-  const fetchNotifications = async () => {
-    setLoading(true);
-    setError(null);
-    const gardenId = gardens[selectedGardenIndex]?.id;
-    if (!gardenId) {
-      setError('No garden selected.');
+      const result = await fetchNotificationsByGarden(gardenId);
+      if (result.success) {
+        setNotifications(result.data);
+      } else {
+        setError('Failed to load notifications. Please try again later.');
+      }
       setLoading(false);
-      return;
-    }
-    if (DEBUG) {
-        console.log("--- fetchNotifications ---");
-    }
-      
-    try {
-      const response = await fetch(`http://localhost:8000/api/notifications/notifications/by_garden/?garden_id=${gardenId}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+    };
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Fetched notifications:', data);
-      if (!data) {
-        throw new Error('No data received');
-      }
-      if (DEBUG) {
-        console.log('Fetched data:', data);
-      }
-
-      // Flatten notifications and filter for PENDING status
-      const flattenedNotifications = data
-        .flatMap(garden => garden.notifications || [])
-        .filter(notification => notification.status === 'PENDING');
-      
-      setNotifications(flattenedNotifications);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      setError('Failed to load notifications. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchNotifications();
+    loadNotifications();
   }, [selectedGardenIndex, gardens]);
-
-  if (globalLoading) {
-    return (
-      <GridLoading />
-    );
-  }
-
-  const completeNotification = async (instanceId) => {
-    
-    try {
-      const response = await fetch(`http://localhost:8000/api/notifications/instances/${instanceId}/complete/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) throw new Error(`Failed to complete notification. Status: ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error('Error completing notification:', error);
-      throw error;
-    }
-  };
-
-  const skipNotification = async (instanceId) => {
-    if (DEBUG) {
-        console.log("--- skipNotification ---");
-        console.log('Instance ID:', instanceId);
-    }
-    try {
-      const response = await fetch(`http://localhost:8000/api/notifications/instances/${instanceId}/skip/`, {
-        method: 'POST',
-        credentials: ' Lights Outinclude',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) throw new Error(`Failed to skip notification. Status: ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error('Error skipping notification:', error);
-      throw error;
-    }
-  };
 
   const handleComplete = async (instanceId) => {
     if (DEBUG) {
-        console.log("--- handleComplete ---");
-        console.log('Instance ID:', instanceId);
+      console.log('--- handleComplete ---');
+      console.log('Instance ID:', instanceId);
     }
     try {
-      await completeNotification(instanceId);
-      await fetchNotifications();
+      const result = await completeNotification(instanceId);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      const fetchResult = await fetchNotificationsByGarden(gardens[selectedGardenIndex]?.id);
+      if (fetchResult.success) {
+        setNotifications(fetchResult.data);
+      }
     } catch (error) {
       alert(`Failed to complete notification: ${error.message}`);
     }
@@ -172,12 +234,18 @@ function NotificationPage() {
 
   const handleSkip = async (instanceId) => {
     if (DEBUG) {
-        console.log("--- handleSkip ---");
-        console.log('Instance ID:', instanceId);
+      console.log('--- handleSkip ---');
+      console.log('Instance ID:', instanceId);
     }
     try {
-      await skipNotification(instanceId);
-      await fetchNotifications();
+      const result = await skipNotification(instanceId);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      const fetchResult = await fetchNotificationsByGarden(gardens[selectedGardenIndex]?.id);
+      if (fetchResult.success) {
+        setNotifications(fetchResult.data);
+      }
     } catch (error) {
       alert(`Failed to skip notification: ${error.message}`);
     }
@@ -187,8 +255,8 @@ function NotificationPage() {
 
   const handleShowVisual = (instance) => {
     if (DEBUG) {
-        console.log("--- handleShowVisual ---");
-        console.log('Instance:', instance);
+      console.log('--- handleShowVisual ---');
+      console.log('Instance:', instance);
     }
     if (!instance) return;
     const garden = gardens[selectedGardenIndex];
@@ -205,16 +273,26 @@ function NotificationPage() {
     });
     
     if (DEBUG) {
-        console.log('Colored cells:', coloredCellsSet);
+      console.log('Colored cells:', coloredCellsSet);
     }
     setSelectedInstance(instance.instance_id);
     setColoredCells(coloredCellsSet);
     setToggleVisual(true);
   };
 
+  if (globalLoading) {
+    return <GridLoading />;
+  }
+
   if (error) {
     return (
-      <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ 
+        width: '100vw', 
+        height: '100vh', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center' 
+        }}>
         <div>{error}</div>
       </div>
     );
@@ -228,7 +306,6 @@ function NotificationPage() {
         onBack={() => navigate('/dashboard')}
       />
       <div className="notification-content-container" ref={containerRef}>
-
         {toggleVisual ? (
           <div className="visual-modal">
             <div style={{
@@ -330,18 +407,18 @@ function NotificationPage() {
                 marginBottom: '30px', 
                 borderRadius: '8px', 
                 overflowY: 'scroll', 
-                 background: 'linear-gradient(to bottom right, rgba(152, 152, 152, 0.6), rgba(65, 64, 64, 0.6))',
+                background: 'linear-gradient(to bottom right, rgba(152, 152, 152, 0.6), rgba(65, 64, 64, 0.6))',
                 padding: '20px',
                 marginRight: '30px',
                 marginLeft: '30px',
-                }}>
-            <NotificationList 
-            loading={loading}
-              notifications={notifications}
-              onComplete={handleComplete}
-              onSkip={handleSkip}
-              onShowVisual={handleShowVisual}
-            />
+            }}>
+              <NotificationList 
+                loading={loading}
+                notifications={notifications}
+                onComplete={handleComplete}
+                onSkip={handleSkip}
+                onShowVisual={handleShowVisual}
+              />
             </div>
           </>
         )}

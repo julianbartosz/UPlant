@@ -11,16 +11,17 @@
  * @example
  * <ChangeUsernameForm onCancel={() => console.log('Cancel clicked')} />
  * 
- * @remarks
+ * @remarks 
  * - The `newUsername` must be at least 5 characters long and different from the current username.
  * - Success and error messages are automatically cleared after 5 seconds.
  * - Uses the `VITE_USERNAME_CHANGE_API_URL` environment variable for the API endpoint.
  */
 
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useRef,  useEffect, useState } from 'react';
 import { FormWrapper, FormContent } from './utils';
 import { BASE_API, DEBUG } from '../../constants';
 import { UserContext } from '../../context/UserProvider';
+import { CSSTransition } from 'react-transition-group'; // You'll need to install this package
 
 /**
  * Performs the username change API request.
@@ -61,12 +62,22 @@ const changeUsername = async (newUsername, currentUsername) => {
   }
 };
 
-const ChangeUsernameForm = ({ onCancel }) => {
+const ChangeUsernameForm = ({ onCancel, focus=false }) => {
   const [newUsername, setNewUsername] = useState('');
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const formRef = useRef(null);
   const { user, setUser } = useContext(UserContext);
+
+  // Set visible to true after component mounts to trigger transition
+  useEffect(() => {
+    setVisible(true);
+    return () => {
+      setVisible(false);
+    };
+  }, []);
 
   useEffect(() => {
     if (user?.username && user.username !== newUsername) {
@@ -141,6 +152,16 @@ const ChangeUsernameForm = ({ onCancel }) => {
     setLoading(false);
   };
 
+
+  const handleCancel = () => {
+    setVisible(false);
+    // Delay the onCancel call to allow transition to complete
+    setTimeout(() => {
+      onCancel();
+    }, 300); // Match this with your CSS transition duration
+  };
+
+
   const fields = [
     {
       name: 'newUsername',
@@ -152,16 +173,27 @@ const ChangeUsernameForm = ({ onCancel }) => {
   ];
 
   return (
+    <CSSTransition
+      in={visible}
+      timeout={300}
+      classNames="form-transition"
+      unmountOnExit
+      nodeRef={formRef}
+    >
+      <div ref={formRef} className={focus && 'modal-overlay'}>
     <FormWrapper
-      onCancel={onCancel}
+      onCancel={handleCancel}
       onSubmit={handleSubmit}
       cancelLabel="Cancel"
       submitLabel={loading ? 'Submitting' : 'Submit'}
       isSubmitting={loading}
       cancelButtonStyle={{ backgroundColor: 'red' }}
+      focus={false}
     >
       <FormContent fields={fields} error={error} success={success} />
     </FormWrapper>
+    </div>
+    </CSSTransition>
   );
 };
 

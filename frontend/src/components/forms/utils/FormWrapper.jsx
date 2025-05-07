@@ -33,9 +33,10 @@ const FormWrapper = ({
   cancelLabel = 'Cancel',
   submitLabel = 'Submit',
   isSubmitting = false,
+  focus=false,
 }) => {
-  return (
-    <div className="form">
+  const content =  (
+    <div className="form parchment">
       <div className="form-header">
         <GenericButton
           label={cancelLabel}
@@ -56,6 +57,18 @@ const FormWrapper = ({
         />
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {focus ? (
+        <div className="modal-overlay">
+          {content}
+        </div>
+      ) : (
+        content
+      )}
+    </>
   );
 };
 

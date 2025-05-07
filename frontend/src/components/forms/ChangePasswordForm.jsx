@@ -15,11 +15,13 @@
  * - The `newPassword` and `confirmPassword` must match.
  * - Success and error messages are automatically cleared after 5 seconds.
  * - Uses the `BASE_API` constant for the API endpoint.
+ * - Includes smooth transition animation when appearing/disappearing.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { BASE_API, LOGIN_URL, DEBUG } from '../../constants';
-import{ FormWrapper, FormContent } from './utils';
+import { FormWrapper, FormContent } from './utils';
+import { CSSTransition } from 'react-transition-group'; // You'll need to install this package
 
 /**
  * Performs the password change API request.
@@ -66,13 +68,23 @@ const changePassword = async (currentPassword, newPassword, confirmPassword) => 
   }
 };
 
-const ChangePasswordForm = ({ onCancel }) => {
+const ChangePasswordForm = ({ onCancel, focus=false }) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const formRef = useRef(null);
+
+  // Set visible to true after component mounts to trigger transition
+  useEffect(() => {
+    setVisible(true);
+    return () => {
+      setVisible(false);
+    };
+  }, []);
 
   useEffect(() => {
     if (success) {
@@ -134,6 +146,14 @@ const ChangePasswordForm = ({ onCancel }) => {
     setLoading(false);
   };
 
+  const handleCancel = () => {
+    setVisible(false);
+    // Delay the onCancel call to allow transition to complete
+    setTimeout(() => {
+      onCancel();
+    }, 300); // Match this with your CSS transition duration
+  };
+
   const fields = [
     {
       name: 'currentPassword',
@@ -159,16 +179,27 @@ const ChangePasswordForm = ({ onCancel }) => {
   ];
 
   return (
-    <FormWrapper
-      onCancel={onCancel}
-      onSubmit={handleSubmit}
-      cancelLabel="Cancel"
-      submitLabel={loading ? 'Submitting' : 'Submit'}
-      isSubmitting={loading}
-      cancelButtonStyle={{ backgroundColor: 'blue' }}
+    <CSSTransition
+      in={visible}
+      timeout={300}
+      classNames="form-transition"
+      unmountOnExit
+      nodeRef={formRef}
     >
-      <FormContent fields={fields} error={error} success={success} />
-    </FormWrapper>
+      <div ref={formRef} className={focus && 'modal-overlay'}>
+        <FormWrapper
+          onCancel={handleCancel}
+          onSubmit={handleSubmit}
+          cancelLabel="Cancel"
+          submitLabel={loading ? 'Submitting' : 'Submit'}
+          isSubmitting={loading}
+          cancelButtonStyle={{ backgroundColor: 'blue' }}
+          focus={false}
+        >
+          <FormContent fields={fields} error={error} success={success} />
+        </FormWrapper>
+      </div>
+    </CSSTransition>
   );
 };
 

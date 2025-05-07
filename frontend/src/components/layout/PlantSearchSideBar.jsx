@@ -9,6 +9,8 @@
 import { useState } from 'react';
 import { PAGES, ICONS, BASE_API } from '../../constants';
 import { IoIosCut } from 'react-icons/io';
+import { useContext } from 'react';
+import { UserContext } from '../../context/UserProvider';
 import './styles/plant-search-side-bar.css';
 
 const DEBUG = import.meta.env.VITE_DEBUG === 'true';

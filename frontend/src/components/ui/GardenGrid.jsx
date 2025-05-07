@@ -12,7 +12,25 @@ import { useContext, useState, useEffect } from "react";
 import { UserContext } from "../../context/UserProvider";
 import { MAXSIZE_GARDEN, BASE_API, DEBUG } from "../../constants";
 import { TailSpin } from "react-loader-spinner";
+import { LoadingBarModal } from "../modals";
 import { LoadingBar } from "../widgets";
+
+const updateGardenSize = async (garden) => {
+    const response = await fetch(`${BASE_API}/gardens/gardens/${garden.id}/`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({size_x: garden.size_x, size_y: garden.size_y}),
+    });
+
+    if (!response.ok) {
+        throw new Error("Failed to update gardens");
+    }
+    return response;
+};
 
 const GardenGrid = ({
     selectedGardenIndex, 
@@ -59,7 +77,7 @@ const GardenGrid = ({
         const maxDimension = Math.max(garden.size_x, garden.size_y);
         const view = Math.min(width * 0.6, height * 0.6);
         return view / maxDimension;
-}
+    }
     const squareSize = calcSquareSize();
 
     const gridSize = { width: gardens[selectedGardenIndex].size_x, height: gardens[selectedGardenIndex].size_y };
@@ -139,20 +157,7 @@ const GardenGrid = ({
         // IIFE to handle async operation
         (async () => {
             try {
-                const response = await fetch(`${BASE_API}/gardens/gardens/${newGarden.id}/`, {
-                    method: 'PATCH',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({size_x: newGarden.size_x, size_y: newGarden.size_y}),
-                });
-
-                if (!response.ok) {
-                    throw new Error("Failed to update gardens");
-                }
-
+                await updateGardenSize(newGarden);
             } catch (error) {
                 console.error("Error updating gardens:", error);
                 try {
@@ -237,10 +242,10 @@ const GardenGrid = ({
                         alignItems: "center",
                         height: "100%",
                         width: '100%',
-                        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                        backgroundColor: 'rgba(192, 191, 191, 0.5)',
                         
                     }}>
-                        
+                        <LoadingBar isLoading={loading} seconds={loadingEstimate} style={{width: 'calc(100% - 30px)'}} />
                         
                             </div>
                     
@@ -255,4 +260,3 @@ const GardenGrid = ({
 }
 
 export default GardenGrid;
-

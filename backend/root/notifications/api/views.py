@@ -546,6 +546,22 @@ class NotificationInstanceViewSet(viewsets.ModelViewSet):
             notification__garden__user=self.request.user
         )
     
+    @action(detail=False, methods=['get'])
+    def counts(self, request):
+        """Get counts of pending and overdue notification instances"""
+        queryset = self.get_queryset().filter(status='PENDING')
+        
+        # Count total pending
+        total_pending = queryset.count()
+        
+        # Count overdue
+        overdue = queryset.filter(next_due__lt=timezone.now()).count()
+        
+        return Response({
+            'total_pending': total_pending,
+            'overdue': overdue
+        })
+    
     @action(detail=True, methods=['post'])
     def complete(self, request, pk=None):
         """Mark notification as completed"""

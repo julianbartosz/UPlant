@@ -1,20 +1,8 @@
 /**
- * GardenForm Component
+ * Form component for creating gardens with x/y dimensions and name
  * 
- * @file GardenForm.jsx
- * @component
- * @param {Object} props
- * @param {Function} props.callback - Callback function to handle the cancel action.
- * 
- * @returns {JSX.Element} The rendered GardenForm component.
- * 
- * @example
- * <GardenForm callback={() => console.log('Cancel clicked')} />
- * 
- * @remarks
- * - The `x` and `y` fields must be integers, and `name` must be a non-empty string.
- * - Success and error messages are automatically cleared after 5 seconds.
- * - Uses the `http://localhost:8000/api/gardens/gardens/` endpoint for the API request.
+ * @param {Function} callback - Cancel action handler
+ * @returns {JSX.Element} Rendered form
  */
 
 import { useContext, useEffect, useState } from 'react';
@@ -27,8 +15,8 @@ import './utils/styles/form.css';
 /**
  * Performs the garden creation API request.
  * 
- * @param {Object} newGarden - The garden data with size_x, size_y, and name.
- * @returns {Promise<{ success: boolean|null, data?: any, error?: any }>} The result of the API request.
+ * @param {{ size_x: number, size_y: number, name: string }} newGarden - The garden data with dimensions and name
+ * @returns {Promise<{ success: boolean|null, data?: any, error?: any }>}
  */
 const createGarden = async (newGarden) => {
   try {
@@ -56,7 +44,7 @@ const createGarden = async (newGarden) => {
   }
 };
 
-const GardenForm = ({ callback }) => {
+const GardenForm = ({ callback, focus=false }) => {
   const [x, setX] = useState('');
   const [y, setY] = useState('');
   const [name, setName] = useState('');
