@@ -1,15 +1,18 @@
+/**
+ * @file useContentSize.jsx
+ * @description A custom React hook that calculates and provides the size of a container element.
+ * It updates the size dynamically when the window is resized.
+ *
+ * @param {Object} containerRef - A React ref object pointing to the container element.
+ * @returns {Object} An object containing the width and height of the container element.
+ */
 import { useEffect, useState } from 'react';
-// import { useContext } from 'react';
-// import { UserContext } from '../context/UserProvider';
 
 const useContentSize = (containerRef) => {
-  // const { gardens } = useContext(UserContext);
   const [contentSize, setContentSize] = useState({ width: window.innerWidth - 234, height: window.innerHeight - 60 });
     useEffect(() => {
-      console.log("ISIDE")
       const handleResize = () => {
         if (containerRef.current) {
-          console.log("RESIZE")
           const { width, height } = containerRef.current.getBoundingClientRect();
           setContentSize({ width, height });
         }
@@ -19,7 +22,6 @@ const useContentSize = (containerRef) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [containerRef]);
-
 
   return contentSize;
 };

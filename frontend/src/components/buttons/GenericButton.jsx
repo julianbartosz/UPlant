@@ -2,7 +2,6 @@
 import React from 'react';
 
 const GenericButton = ({ onClick, label, style, disableMouseOver=false }) => {
-
     const buttonStyle = {
         color: 'white',
         padding: '10px 20px',
@@ -25,7 +24,6 @@ const GenericButton = ({ onClick, label, style, disableMouseOver=false }) => {
             e.target.style.transform = 'scale(1)';
         }
     };
-
 
     return (
         <button

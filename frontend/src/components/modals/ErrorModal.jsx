@@ -1,30 +1,7 @@
 /**
- * ErrorModal Component
- * 
  * @file ErrorModal.jsx
- * @component
- * @param {Object} props
- * @param {boolean} props.isOpen - Whether the modal is visible.
- * @param {Function} props.onClose - Callback to execute when the OK button is clicked.
- * @param {string} props.message - The error message to display.
- * 
- * @returns {JSX.Element|null} The rendered ErrorModal component or null if not open.
- * 
- * @example
- * <ErrorModal
- *   isOpen={true}
- *   onClose={() => console.log('Modal closed')}
- *   message="An error occurred while processing your request."
- * />
- * 
- * @remarks
- * - Displays an error message with a single OK button to dismiss the modal.
- * - Styled consistently with ConfirmModal, using the same CSS classes and layout.
- * - Implements focus management to focus the OK button when the modal opens.
- * - Includes ARIA attributes for accessibility.
- * - Supports DEBUG logging for user interactions.
+ * @description A reusable error modal component for displaying error messages.
  */
-
 import { useEffect, useRef } from 'react';
 import { DEBUG } from '../../constants';
 import './styles/generic-modal.css';

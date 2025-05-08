@@ -1,49 +1,34 @@
 /**
- * NotificationForm Component
- * 
  * @file NotificationForm.jsx
- * @component
- * @param {Object} props
- * @param {Function} props.setToggleForm - Function to toggle form visibility.
- * @param {Function} props.onBack - Callback function to handle the cancel action.
- * @param {number} props.selectedGardenIndex - Index of the selected garden.
- * 
- * @returns {JSX.Element} The rendered NotificationForm component.
- * 
- * @example
- * <NotificationForm setToggleForm={() => {}} onBack={() => {}} selectedGardenIndex={0} />
- * 
- * @remarks
- * - The `name` must be non-empty and unique, `type` must be selected, `interval` must be >= 1, and at least one plant must be selected.
- * - Success and error messages are automatically cleared after 5 seconds.
- * - Uses the `/api/notifications/notifications/` endpoint for creating notifications and associating plants.
+ * @description A form component for creating and managing notifications associated with plants in a garden.
  */
-
 import { useState, useEffect, useContext } from 'react';
 import { AddWithOptions } from '../ui';
 import { FormWrapper, FormContent } from './utils';
 import { UserContext } from '../../context/UserProvider';
-import { BASE_API, DEBUG } from '../../constants';
-
-const MAX_PLANTS_NOTIFICATION = 3;
-const MAX_CHAR_NOTIFICATION = 10;
+import { 
+  BASE_API, 
+  MAX_PLANTS_NOTIFICATION, 
+  MAX_CHAR_NOTIFICATION, 
+  DEBUG 
+} from '../../constants';
 
 /**
  * Performs the notification creation API request, including plant association and fetching updated data.
  * 
- * @param {Object} newNotification - The notification data with garden, name, type, interval, next_due, and plant_names.
- * @param {Array} plants - Array of plants to associate with the notification.
- * @param {number} gardenIndex - Index of the selected garden.
- * @returns {Promise<{ success: boolean|null, data?: any, error?: any }>} The result of the API request.
+ * @param {Object} newNotification
+ * @param {Array} plants 
+ * @param {number} gardenIndex
+ * @param {Function} refreshCounts
+ * @returns {Promise<{ success: boolean|null, data?: any, error?: any }>} 
  */
 const createNotification = async (newNotification, plants) => {
-    if (DEBUG) {
-        console.log('--- Create Notification Request ---');
-        console.log('New Notification Data:', newNotification);
-        console.log('Selected Plants:', plants);
-        }
+  if (DEBUG) {
+    console.log('--- Create Notification Request ---');
+    console.log('New Notification Data:', newNotification);
+    console.log('Selected Plants:', plants);
+  }
   try {
-    // Create notification
     const notificationResponse = await fetch(`${BASE_API}/notifications/notifications/`, {
       method: 'POST',
       credentials: 'include',
@@ -61,10 +46,9 @@ const createNotification = async (newNotification, plants) => {
     const notificationData = await notificationResponse.json();
 
     if (DEBUG) {
-        console.log('notification result:', notificationData);
+      console.log('notification result:', notificationData);
     }
 
-    // Associate plants
     for (const plant of plants) {
       try {
         const plantResponse = await fetch(`${BASE_API}/notifications/notifications/${notificationData.id}/add_plant/`, {
@@ -85,7 +69,6 @@ const createNotification = async (newNotification, plants) => {
       }
     }
 
-    // Fetch updated notification data
     const updatedNotificationResponse = await fetch(`${BASE_API}/notifications/notifications/${notificationData.id}/`, {
       method: 'GET',
       credentials: 'include',
@@ -115,25 +98,29 @@ const NotificationForm = ({ setToggleForm, onBack, selectedGardenIndex }) => {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [plantOptions, setPlantOptions] = useState([]);
-  const { gardens, dispatch } = useContext(UserContext);
+  const { gardens, dispatch, refreshCounts } = useContext(UserContext);
 
   useEffect(() => {
-
     const determinePlantOptions = () => {
-        setSelectedPlants(new Set());
+      setSelectedPlants(new Set());
       if (DEBUG) console.log('--- Determining plant options ---');
-      setPlantOptions([]);  
+      setPlantOptions([]);
       const garden = gardens[selectedGardenIndex];
-      const optionsTaken = garden.notifications.filter(notification => notification.type === formType).map(notification => notification.plant_names);
+      const optionsTaken = garden.notifications
+        .filter(notification => notification.type === formType)
+        .map(notification => notification.plant_names);
       if (DEBUG) console.log('Options taken:', optionsTaken);
-
-      const plantOptions = garden.cells.flat().filter(cell => cell !== null).map(cell => cell.plant_detail);
+     
+      const plantOptions = garden.cells
+        .flat()
+        .filter(cell => cell !== null)
+        .map(cell => cell.plant_detail);
       const uniqueOptions = Array.from(new Map(plantOptions.map(plant => [plant.id, plant])).values());
       const optionsFiltered = uniqueOptions.filter(plant => {
-            const isTaken = optionsTaken.some(taken => taken.includes(plant.name));
-            return !isTaken;
+        const isTaken = optionsTaken.some(taken => taken.includes(plant.name));
+        return !isTaken;
       });
-      
+
       if (DEBUG) console.log('Filtered plant options:', optionsFiltered);
       setPlantOptions(optionsFiltered);
     };
@@ -161,8 +148,8 @@ const NotificationForm = ({ setToggleForm, onBack, selectedGardenIndex }) => {
   const handlePlantSelection = (selected) => {
     if (DEBUG) console.log('Plants selected:', selected);
     if (selected.length > MAX_PLANTS_NOTIFICATION) {
-        setError({ message: `Select up to ${MAX_PLANTS_NOTIFICATION} plants.` });
-        return;
+      setError({ message: `Select up to ${MAX_PLANTS_NOTIFICATION} plants.` });
+      return;
     }
     setSelectedPlants(new Set(selected));
   };
@@ -177,16 +164,15 @@ const NotificationForm = ({ setToggleForm, onBack, selectedGardenIndex }) => {
     const interval = formInterval;
     const gardenIndex = selectedGardenIndex;
 
-    // Validation
     if (!name) {
       setError({ message: 'Enter a notification name.', name: [] });
       setSubmitting(false);
       return;
     }
     if (name.length > MAX_CHAR_NOTIFICATION) {
-        setError({ message: `Name > ${MAX_CHAR_NOTIFICATION} characters.` });
-        setSubmitting(false);
-        return;
+      setError({ message: `Name > ${MAX_CHAR_NOTIFICATION} characters.` });
+      setSubmitting(false);
+      return;
     }
     if (!type) {
       setError({ message: 'Select a notification type.', type: [] });
@@ -231,6 +217,7 @@ const NotificationForm = ({ setToggleForm, onBack, selectedGardenIndex }) => {
     const result = await createNotification(newNotification, plants, gardenIndex);
 
     if (result.success) {
+      refreshCounts();
       setSuccess({ message: 'Notification created successfully!' });
       dispatch({ type: 'ADD_NOTIFICATION', garden_index: selectedGardenIndex, payload: result.data });
       setFormName('');
@@ -311,10 +298,8 @@ const NotificationForm = ({ setToggleForm, onBack, selectedGardenIndex }) => {
     <FormWrapper
       onCancel={onBack}
       onSubmit={handleSubmit}
-      cancelLabel="Cancel"
       submitLabel={submitting ? 'Submitting...' : 'Submit'}
       isSubmitting={submitting}
-      cancelButtonStyle={{ backgroundColor: 'red' }}
     >
       <FormContent fields={fields} error={error} success={success} />
     </FormWrapper>

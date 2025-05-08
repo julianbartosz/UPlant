@@ -1,26 +1,24 @@
 /**
- * Form component for creating gardens with x/y dimensions and name
+ * @file GardenForm.jsx
+ * @description Form component for creating gardens with x/y dimensions and name
  * 
- * @param {Function} callback - Cancel action handler
- * @returns {JSX.Element} Rendered form
  */
-
 import { useContext, useEffect, useState } from 'react';
 import { GridLoading } from '../widgets';
-import FormWrapper from './utils/FormWrapper';
-import FormContent from './utils/FormContent';
+import { FormWrapper, FormContent } from './utils';
 import { UserContext } from '../../context/UserProvider';
+import { BASE_API } from '../../constants';
 import './utils/styles/form.css';
 
 /**
  * Performs the garden creation API request.
  * 
- * @param {{ size_x: number, size_y: number, name: string }} newGarden - The garden data with dimensions and name
+ * @param {{ size_x: number, size_y: number, name: string }} newGarden
  * @returns {Promise<{ success: boolean|null, data?: any, error?: any }>}
  */
 const createGarden = async (newGarden) => {
   try {
-    const url = 'http://localhost:8000/api/gardens/gardens/';
+    const url = `${BASE_API}/gardens/gardens/`;
     const requestBody = newGarden;
 
     const response = await fetch(url, {
@@ -164,10 +162,8 @@ const GardenForm = ({ callback, focus=false }) => {
     <FormWrapper
       onCancel={callback}
       onSubmit={handleSubmit}
-      cancelLabel="Return"
       submitLabel={loading ? 'Submitting' : 'Submit'}
       isSubmitting={loading}
-      cancelButtonStyle={{ backgroundColor: 'red' }}
     >
       <FormContent fields={fields} error={error} success={success} />
     </FormWrapper>

@@ -1,46 +1,29 @@
 /**
- * PromptModal Component
- * 
  * @file PromptModal.jsx
- * @component
- * @param {Object} props
- * @param {string} props.message - The message to display in the prompt.
- * @param {string} [props.placeholder=""] - Placeholder text for the input field.
- * @param {Function} props.onConfirm - Callback function to handle the confirmed input string.
+ * @description A reusable modal component that prompts the user for input and provides confirm and cancel actions.
+ *
+ * PromptModal Component
+ *
+ * @param {Object} props - Component properties.
+ * @param {string} props.message - The message to display in the modal.
+ * @param {string} [props.placeholder=''] - Placeholder text for the input field.
+ * @param {Function} props.onConfirm - Callback function to handle the confirm action. Receives the input value as an argument.
  * @param {Function} props.onCancel - Callback function to handle the cancel action.
- * @param {boolean} [props.isOpen=true] - Controls whether the modal is visible.
- * 
- * @returns {JSX.Element | null} The rendered PromptModal component or null if not open.
- * 
- * @example
- * <PromptModal
- *   message="Please enter your password to confirm account deletion:"
- *   placeholder="Enter password"
- *   onConfirm={(input) => console.log('Confirmed:', input)}
- *   onCancel={() => console.log('Cancelled')}
- *   isOpen={true}
- * />
- * 
- * @remarks
- * - Displays a modal with an input field for a string, using FormWrapper and FormContent for consistency.
- * - Validates that the input is not empty before allowing confirmation.
- * - Implements focus management and ARIA attributes for accessibility.
- * - Supports DEBUG logging for user interactions.
- * - Styled to match ConfirmModal and other form components.
+ * @param {boolean} [props.isOpen=true] - Determines whether the modal is open or closed.
+ *
+ * @returns {JSX.Element|null} The rendered modal component or null if not open.
  */
-
 import { useState, useEffect, useRef } from 'react';
 import { DEBUG } from '../../constants';
 import { FormWrapper, FormContent } from '../forms/utils';
 import { CSSTransition } from 'react-transition-group'; // You'll need to install this package
 import './styles/generic-modal.css';
 
-const PromptModal = ({ message, placeholder = '', onConfirm, onCancel, isOpen = true }) => {
+const PromptModal = ({ message, placeholder = '', onConfirm, onCancel, isOpen = true, ConfirmStyle={} }) => {
   const [input, setInput] = useState('');
   const [error, setError] = useState(null);
   const inputRef = useRef(null);
   const [visible, setVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
   const formRef = useRef(null);
 
   // Set visible to true after component mounts to trigger transition
@@ -57,10 +40,9 @@ const PromptModal = ({ message, placeholder = '', onConfirm, onCancel, isOpen = 
       inputRef.current.focus();
     }
   }, [isOpen]);
+    
 
   if (!isOpen) return null;
-
-
 
   const handleConfirm = () => {
 
@@ -74,13 +56,15 @@ const PromptModal = ({ message, placeholder = '', onConfirm, onCancel, isOpen = 
       if (DEBUG) {
         console.log('Error: Input is empty');
       }
+      // Remove the error after 5 seconds
+      setTimeout(() => setError(null), 5000);
       return;
     }
 
     setError(null);
-    setLoading(true);
+
     onConfirm(input);
-    setLoading(false);
+
     if (DEBUG) {
       console.log('Confirmed with input:', input);
     }
@@ -97,7 +81,7 @@ const PromptModal = ({ message, placeholder = '', onConfirm, onCancel, isOpen = 
             console.log('PromptModal cancelled');
         }
       onCancel();
-    }, 300); // Match this with your CSS transition duration
+    }, 300); // Matches the transition duration
   };
 
 
@@ -134,11 +118,9 @@ const PromptModal = ({ message, placeholder = '', onConfirm, onCancel, isOpen = 
         <FormWrapper
           onCancel={handleCancel}
           onSubmit={handleConfirm}
-          cancelLabel="Cancel"
-          submitLabel="Confirm"
           isSubmitting={false}
-          cancelButtonStyle={{ backgroundColor: 'blue' }}
-          submitButtonStyle={{ backgroundColor: 'green' }}
+          submitLabel="Confirm"
+          submitButtonStyle={{ ...ConfirmStyle}}
         >
           <FormContent fields={fields} error={error} success={null} />
         </FormWrapper>

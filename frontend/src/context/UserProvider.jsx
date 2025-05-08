@@ -1,12 +1,20 @@
-import { createContext, useState, useEffect, useReducer, useMemo } from 'react';
-import { initialState, gardensReducer } from './reducers';
+import { 
+     createContext, 
+     useState,
+     useEffect, 
+     useReducer, 
+     useMemo 
+    } from 'react';
+import { initialState, gardensReducer } from './reducers/gardensReducer';
 import { useFetch } from '../hooks';
-import { s } from 'framer-motion/client';
+import { DEBUG } from '../constants';
 
-// environment variables
-const DEBUG = import.meta.env.VITE_DEBUG === 'true';
-
-console.log("DEBIGGING:", DEBUG);
+// display DEBUG status in console
+if (DEBUG) {
+    console.log("DEBUG mode is ON");
+} else {
+    console.log("DEBUG mode is OFF");
+}
 
 export const UserContext = createContext(null);
 
@@ -16,52 +24,69 @@ export const UserProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     
-    /* ======= Fetching users, profile, gardens, and notifications ======= */
+    // Fetch user profile
     const { data: rawUser, error: userError } = useFetch('/api/users/me/', {
         method: 'GET',
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-        }
+        },
     });
 
+    // Fetch gardens and notifications
     const { data: rawGardens, error: gardensError } = useFetch('/api/gardens/gardens/', {
         method: 'GET',
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-        }
+        },
     });
-    
+
     const { data: rawNotifications, error: notificationsError } = useFetch('/api/notifications/notifications/', {
         method: 'GET',
         credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-        }
+        },
     });
-    
-    /* ======= Populating states ======= */
+
+    // Fetch notifications counts for nav bar bell
+    const { 
+        data: notificationsCounts, 
+        error: countsError,
+        refetch: refreshCounts
+    } = useFetch('/api/notifications/instances/counts/', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
     useEffect(() => {
 
-        if (userError || gardensError || notificationsError) {
+        if (userError || gardensError || notificationsError || countsError) {
             console.error("Error fetching data:", userError, gardensError, notificationsError);
             setError('Failed to fetch data');
             setLoading(false);
             return;
         }
-
+        if (DEBUG) {
+            console.log("Data fetch successful");
+        }
     }, [
-        rawUser, 
-        rawGardens, 
-        rawNotifications, 
-        gardens, 
+        rawUser,
+        rawGardens,
+        rawNotifications,
+        gardens,
         user,
-        loading, 
+        loading,
         error,
-        userError,  
-        gardensError, 
-        notificationsError
+        userError,
+        gardensError,
+        notificationsError,
+        countsError,
+        notificationsCounts
     ]);
 
     useEffect(() => {
@@ -73,42 +98,45 @@ export const UserProvider = ({ children }) => {
             // Remove sensitive data from user object
             setUser({ ...rawUser, email: undefined, zipcode: undefined });
         }
+    }, [rawUser]);
 
-    }, [rawUser]);  
-    
     useEffect(() => {
         if (rawNotifications && rawGardens && loading && gardens === null) {
             if (DEBUG) {
                 console.log("RAW Notifications:", rawNotifications);
                 console.log("RAW Gardens:", rawGardens);
             }
-            
-            console.log('Notifications and gardens fetched, populating gardens state' , rawNotifications);
-            const processedGardens = rawGardens.map(garden => {
-                return {...garden, notifications: rawNotifications.filter(notification => notification['garden'] === garden.id)};
+
+            const processedGardens = rawGardens.map((garden) => {
+                return {
+                    ...garden,
+                    notifications: rawNotifications.filter(
+                        (notification) => notification['garden'] === garden.id
+                    ),
+                };
             });
             dispatch({ type: 'POPULATE', payload: processedGardens });
             setLoading(false);
-            console.log("Fetched gardens, populating gardens state");
+
             if (DEBUG) {
-                console.log("Gardens:", processedGardens);
+                console.log("Processed Gardens:", processedGardens);
             }
         }
-    }
-    , [rawNotifications, rawGardens]);
+    }, [rawNotifications, rawGardens]);
 
-    
     const contextValue = useMemo(
         () => ({
-          gardens,
-          dispatch,
-          user,
-          setUser,
-          loading,
-          error,
+            gardens,
+            dispatch,
+            user,
+            setUser,
+            loading,
+            error,
+            refreshCounts,
+            notificationsCounts,
         }),
-        [gardens, dispatch, user, loading, error]
-      );
+        [gardens, dispatch, user, loading, error, refreshCounts, notificationsCounts]
+    );
 
     return (
         <UserContext.Provider value={contextValue}>

@@ -1,35 +1,19 @@
 /**
- * ChangePasswordForm Component
- * 
  * @file ChangePasswordForm.jsx
- * @component
- * @param {Object} props
- * @param {Function} props.onCancel - Callback function to handle the cancel action.
- * 
- * @returns {JSX.Element} The rendered ChangePasswordForm component.
- * 
- * @example
- * <ChangePasswordForm onCancel={() => console.log('Cancel clicked')} />
- * 
- * @remarks
- * - The `newPassword` and `confirmPassword` must match.
- * - Success and error messages are automatically cleared after 5 seconds.
- * - Uses the `BASE_API` constant for the API endpoint.
- * - Includes smooth transition animation when appearing/disappearing.
+ * @description A React component for handling password change functionality with form validation and animations.
  */
 
 import { useEffect, useState, useRef } from 'react';
 import { BASE_API, LOGIN_URL, DEBUG } from '../../constants';
 import { FormWrapper, FormContent } from './utils';
-import { CSSTransition } from 'react-transition-group'; // You'll need to install this package
+import { CSSTransition } from 'react-transition-group';
 
 /**
- * Performs the password change API request.
- * 
- * @param {string} currentPassword - The user's current password.
- * @param {string} newPassword - The new password.
- * @param {string} confirmPassword - The confirmation of the new password.
- * @returns {Promise<{ success: boolean, data?: any, error?: any }>} The result of the API request.
+ * Function to handle password change request.
+ * @param {string} currentPassword - The current password of the user.
+ * @param {string} newPassword - The new password to be set.
+ * @param {string} confirmPassword - Confirmation of the new password.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing success status and data or error.
  */
 const changePassword = async (currentPassword, newPassword, confirmPassword) => {
   if (DEBUG) {
@@ -68,7 +52,7 @@ const changePassword = async (currentPassword, newPassword, confirmPassword) => 
   }
 };
 
-const ChangePasswordForm = ({ onCancel, focus=false }) => {
+const ChangePasswordForm = ({ onCancel, focus = false }) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -107,7 +91,7 @@ const ChangePasswordForm = ({ onCancel, focus=false }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      setError({ error: null, message: "Passwords did not match." });
+      setError({ error: null, message: 'Passwords did not match.' });
       setConfirmPassword('');
       setNewPassword('');
       setCurrentPassword('');
@@ -128,15 +112,14 @@ const ChangePasswordForm = ({ onCancel, focus=false }) => {
       setCurrentPassword('');
       console.log('Password changed successfully.');
       window.location.href = LOGIN_URL;
-
     } else if (result.success === null) {
-      setError({ error: null, message: "Network Error." });
+      setError({ error: null, message: 'Network Error.' });
       setConfirmPassword('');
       setNewPassword('');
       setCurrentPassword('');
       console.error('Network error.');
     } else {
-      setError({ error: null, message: "Try again." });
+      setError({ error: null, message: 'Try again.' });
       setConfirmPassword('');
       setNewPassword('');
       setCurrentPassword('');
@@ -151,7 +134,7 @@ const ChangePasswordForm = ({ onCancel, focus=false }) => {
     // Delay the onCancel call to allow transition to complete
     setTimeout(() => {
       onCancel();
-    }, 300); // Match this with your CSS transition duration
+    }, 300); // Matching the transition duration
   };
 
   const fields = [
@@ -190,10 +173,9 @@ const ChangePasswordForm = ({ onCancel, focus=false }) => {
         <FormWrapper
           onCancel={handleCancel}
           onSubmit={handleSubmit}
-          cancelLabel="Cancel"
+          cancelLabel="Return"
           submitLabel={loading ? 'Submitting' : 'Submit'}
           isSubmitting={loading}
-          cancelButtonStyle={{ backgroundColor: 'blue' }}
           focus={false}
         >
           <FormContent fields={fields} error={error} success={success} />

@@ -2,6 +2,10 @@
  * SettingsPage Component
  * 
  * @file SettingsPage.jsx
+ * @version 1.0.0
+ * @description A page component that allows users to manage their account settings.
+ * This component provides options to change password, username, or delete the user account.
+ * 
  * @component
  * @returns {JSX.Element} The rendered SettingsPage component.
  * 
@@ -124,6 +128,7 @@ const SettingsPage = () => {
         <PromptModal
           message="Enter password to confirm deletion"
           placeholder="Enter password"
+          ConfirmStyle={{backgroundColor: '#A3351F'}}
           onConfirm={(password) => {
             handleDeleteAccount(password);
             setShowPromptModal(false);
@@ -141,7 +146,6 @@ const SettingsPage = () => {
   );
 };
 
-export default SettingsPage;
 
 /**
  * SettingsButtons Component
@@ -162,8 +166,6 @@ export default SettingsPage;
  * - Handles click events for changing password, username, and deleting account
  * - Style can be customized via CSS class or inline styles
  */
-
-
 const SettingsButtons = ({
   onPasswordChange,
   onUsernameChange,
@@ -193,31 +195,6 @@ const SettingsButtons = ({
     }
   }, [visible]);
 
-  // Add CSS to your stylesheet (don't forget to include this)
-  /*
-  .fade-enter {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  
-  .fade-enter-active {
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 300ms, transform 300ms;
-  }
-  
-  .fade-exit {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  
-  .fade-exit-active {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 300ms, transform 300ms;
-  }
-  */
-
   return (    
     <CSSTransition
       nodeRef={nodeRef}
@@ -244,7 +221,7 @@ const SettingsButtons = ({
         <GenericButton
           label="DELETE ACCOUNT"
           disableMouseOver={true}
-          style={{ backgroundColor: 'red', marginTop: '20px', width: '66%' }}
+          style={{ backgroundColor: '#A3351F', marginTop: '20px', width: '66%' }}
           onClick={onDeleteAccount}
         />
       </div>
@@ -252,3 +229,4 @@ const SettingsButtons = ({
   );
 };
 
+export default SettingsPage;

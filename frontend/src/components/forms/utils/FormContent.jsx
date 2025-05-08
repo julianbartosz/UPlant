@@ -1,31 +1,15 @@
-/**
- * FormContent Component
- * 
- * @file FormContent.jsx
- * @component
- * @param {Object} props
- * @param {Array} props.fields - Array of field objects with name, label, type, value, onChange, and optional component, options, or other props.
- * @param {Object|null} props.error - Error state for field-specific and general error messages.
- * @param {Object|null} props.success - Success state for success messages.
- * 
- * @returns {JSX.Element} The rendered FormContent component.
- * 
- * @example
- * <FormContent
- *   fields={[
- *     { name: 'username', label: 'Username', type: 'text', value: '', onChange: () => {} },
- *     { name: 'plants', label: 'Plants', component: AddWithOptions, handleSelection: () => {}, options: [] },
- *   ]}
- *   error={{ message: 'Error', username: ['Invalid'] }}
- *   success={{ message: 'Success' }}
- * />
- * 
- * @remarks
- * - Renders form fields dynamically: standard inputs (text, number), select elements, or custom components.
- * - Displays field-specific errors and general error/success messages.
- * - Uses styles from `form.css` for layout and error/success messages.
- */
 
+/**
+ * @file FormContent.jsx
+ * @description A React component for rendering a dynamic form with support for various input types, error messages, and success messages.
+ * 
+ * @param {Object} props - The props object.
+ * @param {Array} props.fields - An array of field objects to render. Each field object should contain properties like `name`, `label`, `type`, `value`, `onChange`, and optionally `component`, `options`, `placeholder`, and `min`.
+ * @param {Object} [props.error] - An object containing error messages for the fields. Each field's error can be an array of strings.
+ * @param {Object} [props.success] - An object containing a success message to display.
+ * 
+ * @returns {JSX.Element} The rendered form content.
+ */
 import './styles/form.css';
 
 const FormContent = ({ fields, error, success }) => {
@@ -36,11 +20,14 @@ const FormContent = ({ fields, error, success }) => {
           <label htmlFor={field.name} className="form-label">
             {field.label}:
           </label>
-          {error && error[field.name] && Array.isArray(error[field.name]) && error[field.name].map((err, index) => (
-            <div key={`${field.name}-error-${index}`} className="message-error">
-              {err.split('.')[0]}
-            </div>
-          ))}
+          {error &&
+            error[field.name] &&
+            Array.isArray(error[field.name]) &&
+            error[field.name].map((err, index) => (
+              <div key={`${field.name}-error-${index}`} className="message-error">
+                {err.split('.')[0]}
+              </div>
+            ))}
           {field.component ? (
             <field.component {...field} />
           ) : field.type === 'select' ? (

@@ -1,4 +1,34 @@
-import React, { useState } from 'react';
+/**
+ * @file NotificationList.jsx
+ * @version 1.0.0
+ * @description This component renders a list of notifications with sorting, filtering, and action capabilities.
+ * 
+ * @details
+ * - The `NotificationList` component allows users to sort notifications by various fields, filter by task type or name, 
+ *   and optionally display only today's notifications. It also provides actions to mark notifications as complete, skip them, 
+ *   or view additional visual details.
+ * 
+ * @component
+ * @param {Object} props - The props object.
+ * @param {boolean} props.loading - Indicates whether the notifications are still loading.
+ * @param {Array<Object>} props.notifications - The list of notification objects to display.
+ * @param {Function} props.onComplete - Callback function triggered when a notification is marked as complete.
+ * @param {Function} props.onSkip - Callback function triggered when a notification is skipped.
+ * @param {Function} props.onShowVisual - Callback function triggered to display visual details of a notification.
+ * 
+ * @example
+ * <NotificationList
+ *   loading={false}
+ *   notifications={[
+ *     { instance_id: 1, name: 'Water Plants', type_display: 'Water', plant_names: ['Fern'], next_due: '2023-10-01' },
+ *     { instance_id: 2, name: 'Fertilize Soil', type_display: 'Fertilize', plant_names: ['Cactus'], next_due: '2023-10-02' }
+ *   ]}
+ *   onComplete={(id) => console.log(`Complete notification with ID: ${id}`)}
+ *   onSkip={(id) => console.log(`Skip notification with ID: ${id}`)}
+ *   onShowVisual={(notification) => console.log('Show visual for:', notification)}
+ * />
+ */
+import { useState } from 'react';
 import { ThreeDots } from 'react-loader-spinner';
 import './styles/notification-list.css';
 
@@ -107,9 +137,6 @@ const NotificationList = ({ loading, notifications, onComplete, onSkip, onShowVi
               <th onClick={() => handleSort('next_due')}>
                 Due Date {sortField === 'next_due' && (sortOrder === 'asc' ? '↑' : '↓')}
               </th>
-              {/* <th onClick={() => handleSort('interval')}>
-                Interval (days) {sortField === 'interval' && (sortOrder === 'asc' ? '↑' : '↓')}
-              </th> */}
               <th>Actions</th>
               <th>Visual</th>
             </tr>

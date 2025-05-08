@@ -1,6 +1,5 @@
-import React from 'react';
 import TextButton from './TextButton';
-import './styles/btn-styles.css';
+import './styles/generic-btn.css';
 
 function BackButton({ onClick }) {
     return (

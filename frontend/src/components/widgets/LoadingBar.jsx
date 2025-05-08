@@ -1,11 +1,15 @@
+/**
+ * @file LoadingBar.jsx
+ * @description A React component that displays a loading bar animation based on the provided duration and loading state.
+ */
 import { useState, useEffect, useRef } from 'react';
-import "./styles/bar.css";
+import "./styles/loading-bar.css";
 
 function LoadingBar({ seconds, isLoading, style }) {
     const [width, setWidth] = useState(0);
     const [completed, setCompleted] = useState(false);
     const timerRef = useRef(null);
-    
+
     useEffect(() => {
         const sec = parseFloat(seconds);
 

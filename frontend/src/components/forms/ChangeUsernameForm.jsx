@@ -1,34 +1,20 @@
 /**
- * ChangeUsernameForm Component
- * 
  * @file ChangeUsernameForm.jsx
- * @component
- * @param {Object} props
- * @param {Function} props.onCancel - Callback function to handle the cancel action.
+ * @description A React component for handling username change functionality, including form validation, API interaction, and UI transitions.
  * 
- * @returns {JSX.Element} The rendered ChangeUsernameForm component.
- * 
- * @example
- * <ChangeUsernameForm onCancel={() => console.log('Cancel clicked')} />
- * 
- * @remarks 
- * - The `newUsername` must be at least 5 characters long and different from the current username.
- * - Success and error messages are automatically cleared after 5 seconds.
- * - Uses the `VITE_USERNAME_CHANGE_API_URL` environment variable for the API endpoint.
  */
-
-import { useContext, useRef,  useEffect, useState } from 'react';
+import { useContext, useRef, useEffect, useState } from 'react';
 import { FormWrapper, FormContent } from './utils';
 import { BASE_API, DEBUG } from '../../constants';
 import { UserContext } from '../../context/UserProvider';
-import { CSSTransition } from 'react-transition-group'; // You'll need to install this package
+import { CSSTransition } from 'react-transition-group';
 
 /**
  * Performs the username change API request.
  * 
- * @param {string} newUsername - The new username.
- * @param {string} currentUsername - The current username.
- * @returns {Promise<{ success: boolean|null, data?: any, error?: any }>} The result of the API request.
+ * @param {string} newUsername 
+ * @param {string} currentUsername 
+ * @returns {Promise<{ success: boolean|null, data?: any, error?: any }>}
  */
 const changeUsername = async (newUsername, currentUsername) => {
   if (DEBUG) {
@@ -62,7 +48,8 @@ const changeUsername = async (newUsername, currentUsername) => {
   }
 };
 
-const ChangeUsernameForm = ({ onCancel, focus=false }) => {
+
+const ChangeUsernameForm = ({ onCancel, focus = false }) => {
   const [newUsername, setNewUsername] = useState('');
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
@@ -134,12 +121,10 @@ const ChangeUsernameForm = ({ onCancel, focus=false }) => {
       setUser({ ...user, username: newUsername });
       setNewUsername(newUsername);
       console.log('Username changed successfully:', result.data);
-
     } else if (result.success === null) {
       setError({ message: 'Network Error.', error: result.error });
       setNewUsername(user.username);
       console.error('Network error:', result.error);
-
     } else {
       setError({
         message: 'Please try again.',
@@ -152,15 +137,13 @@ const ChangeUsernameForm = ({ onCancel, focus=false }) => {
     setLoading(false);
   };
 
-
   const handleCancel = () => {
     setVisible(false);
     // Delay the onCancel call to allow transition to complete
     setTimeout(() => {
       onCancel();
-    }, 300); // Match this with your CSS transition duration
+    }, 300); // Matches the transition duration
   };
-
 
   const fields = [
     {
@@ -181,18 +164,17 @@ const ChangeUsernameForm = ({ onCancel, focus=false }) => {
       nodeRef={formRef}
     >
       <div ref={formRef} className={focus && 'modal-overlay'}>
-    <FormWrapper
-      onCancel={handleCancel}
-      onSubmit={handleSubmit}
-      cancelLabel="Cancel"
-      submitLabel={loading ? 'Submitting' : 'Submit'}
-      isSubmitting={loading}
-      cancelButtonStyle={{ backgroundColor: 'red' }}
-      focus={false}
-    >
-      <FormContent fields={fields} error={error} success={success} />
-    </FormWrapper>
-    </div>
+        <FormWrapper
+          onCancel={handleCancel}
+          onSubmit={handleSubmit}
+          cancelLabel="Return"
+          submitLabel={loading ? 'Submitting' : 'Submit'}
+          isSubmitting={loading}
+          focus={false}
+        >
+          <FormContent fields={fields} error={error} success={success} />
+        </FormWrapper>
+      </div>
     </CSSTransition>
   );
 };
