@@ -28,6 +28,7 @@ const createNotification = async (newNotification, plants) => {
     console.log('New Notification Data:', newNotification);
     console.log('Selected Plants:', plants);
   }
+
   try {
     const notificationResponse = await fetch(`${BASE_API}/notifications/notifications/`, {
       method: 'POST',
@@ -211,6 +212,10 @@ const NotificationForm = ({ setToggleForm, onBack, selectedGardenIndex }) => {
       next_due: new Date(Date.now() + interval * 24 * 60 * 60 * 1000).toISOString(),
       plant_names: plants.map(plant => plant.name),
     };
+
+    if (type === 'OT') {
+      newNotification.subtype = name;
+    }
 
     if (DEBUG) console.log('New notification data:', newNotification);
 
