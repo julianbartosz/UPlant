@@ -6,7 +6,6 @@ from rest_framework.authentication import SessionAuthentication, TokenAuthentica
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from datetime import timedelta
-from django.db.models import Q
 import logging
 
 from notifications.models import Notification, NotificationInstance, NotificationPlantAssociation

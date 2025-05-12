@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { UserContext } from '../contexts/UserProvider';
+import { UserContext } from '../context/UserProvider';
 
 export const usePlants = () => {
     const context = useContext(UserContext);

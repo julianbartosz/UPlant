@@ -8,6 +8,8 @@
     height: auto;
     width: auto;
     border-radius: 10px;
+    border: 2px solid black;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.7);
 }
 
 .settings-content {

@@ -5,7 +5,7 @@
  * @param {Object} props
  * @param {Function} [props.handleSelection=() => {}]
  * @param {Array<Object>} [props.options]
- * @param {string} [props.labelField="common_name"]
+ * @param {string} [props.labelField="name"]
  * @param {string} [props.uniqueField="id"]
  * @returns {JSX.Element}
  */
@@ -14,25 +14,18 @@ import { useState } from 'react';
 import Select from 'react-select';
 import './styles/add-with-options.css';
 
+const MAX_PLANTS_NOTIFICATION = 3;
+
 const AddWithOptions = ({ 
     handleSelection=() => {},
-    options=[], 
-    labelField="common_name", 
+    selectedOptions, 
+    options=[],
+    labelField="name", 
     uniqueField="id"
 }) => {
 
 const [error, setError] = useState(false);
-const [selectedOptions, setSelectedOptions] = useState(new Set());
 
-const handleSelectChange = (selected) => {
-    if (selected.length === 0) {
-        setError(true);
-    } else {
-        setError(false);
-    }
-    setSelectedOptions(new Set(selected));
-    handleSelection(selected);
-};
 
     return (
         <div className={`add-with-options ${error ? 'shake' : ''}`}>
@@ -54,7 +47,7 @@ const handleSelectChange = (selected) => {
                 }}
                 options={options.filter(option => !Array.from(selectedOptions).some(selected => selected[uniqueField] === option[uniqueField]))}
                 value={Array.from(selectedOptions)}
-                onChange={handleSelectChange}
+                onChange={handleSelection}
                 placeholder={ "" }
                 getOptionLabel={(option) => option[labelField]}
                 getOptionValue={(option) => option[uniqueField]}

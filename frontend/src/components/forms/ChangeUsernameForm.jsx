@@ -17,144 +17,152 @@
  * - Uses the `VITE_USERNAME_CHANGE_API_URL` environment variable for the API endpoint.
  */
 
-import { useEffect, useState } from 'react';
-import { GenericButton } from '../buttons';
-import { useUser } from '../../hooks/useUser';
-import { GridLoading } from '../widgets';
-import './styles/form.css';
+import { useContext, useEffect, useState } from 'react';
+import { FormWrapper, FormContent } from './utils';
+import { BASE_API, DEBUG } from '../../constants';
+import { UserContext } from '../../context/UserProvider';
+
+/**
+ * Performs the username change API request.
+ * 
+ * @param {string} newUsername - The new username.
+ * @param {string} currentUsername - The current username.
+ * @returns {Promise<{ success: boolean|null, data?: any, error?: any }>} The result of the API request.
+ */
+const changeUsername = async (newUsername, currentUsername) => {
+  if (DEBUG) {
+    console.log('--- Change Username Request ---');
+    console.log('Current Username:', currentUsername);
+    console.log('New Username:', newUsername);
+  }
+
+  try {
+    const url = `${BASE_API}/users/me/update_username/`;
+    const requestBody = { username: newUsername };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      return { success: true, data: result };
+    } else {
+      const errorData = await response.json();
+      return { success: false, error: errorData };
+    }
+  } catch (e) {
+    return { success: null, error: e.message };
+  }
+};
 
 const ChangeUsernameForm = ({ onCancel }) => {
-    const [newUsername, setNewUsername] = useState(''); 
-    const [message, setMessage] = useState(''); 
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const { username, setUsername } = useUser();
+  const [newUsername, setNewUsername] = useState('');
+  const [success, setSuccess] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { user, setUser } = useContext(UserContext);
 
-    useEffect(() => {
-        const currentUsername = username; 
-        if (currentUsername && currentUsername !== newUsername) {
-            setNewUsername(currentUsername);
-        }
-    }, [username]);
+  useEffect(() => {
+    if (user?.username && user.username !== newUsername) {
+      setNewUsername(user.username);
+    }
+  }, [user?.username]);
 
-    useEffect(() => {
-        if (message) {
-            const timer = setTimeout(() => {
-                setMessage('');
-            }, 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [message]);
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
 
-    useEffect(() => {
-        if (error) {
-            const timer = setTimeout(() => {
-                setError(null);
-            }, 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [error]);
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
-    const handleSubmit = () => {
-
-        if (!newUsername) {
-            alert('Username cannot be empty.');
-            return;
-        }
-        if (newUsername === username) {
-            alert('New username cannot be the same as the current username.');
-            return;
-        }
-        if (newUsername.length < 5) {
-            alert('Username must be at least 5 characters long.');
-            return;
-        }
-
-        setLoading(true);
-
-        (async () => {
-            try {
-                const url = import.meta.env.VITE_USERNAME_CHANGE_API_URL; 
-
-                const requestBody = {
-                    username: newUsername,
-                };
-
-                const response = await fetch(url, {
-                    method: 'PATCH',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody),
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    setUsername(newUsername);
-                    setMessage("Success");
-                    console.log("Username updated successfully: ", result.username);
-                } else {
-                    const errorData = await response.json();
-                    setNewUsername(username); // reset to previous username
-                    setMessage("Error: " + response.statusText);
-                    console.error("Error changing username:", errorData.message);
-                }
-
-            } catch (e) {
-                setError("Error (severe): " + e.message);
-                console.error("Error changing username: ", e);
-            } finally {
-                setLoading(false);
-            }
-        })();
-    };
-
-    if (loading || !username) {
-        return (
-            <div className="loading-container">
-                <GridLoading />
-            </div>
-        );
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSuccess(null);
+    setError(null);
+    if (!newUsername) {
+      setError({ message: 'Username cannot be empty.' });
+      setNewUsername(user.username);
+      return;
+    }
+    if (newUsername === user?.username) {
+      setError({ message: 'Please try again.' });
+      setNewUsername(user.username);
+      return;
+    }
+    if (newUsername.length < 5) {
+      setError({ message: 'Username is too short.' });
+      return;
     }
 
-    return (
-        <div className="form">
-            <div className="form-header">
-                <GenericButton
-                    label="Return"
-                    onClick={onCancel}
-                    style={{ backgroundColor: 'red' }}
-                    className="form-cancel-button"
-                />
-            </div>
+    setLoading(true);
+    const result = await changeUsername(newUsername, user?.username);
+    if (DEBUG) {
+      console.log('--- Change Username Result ---');
+      console.log('Result:', result);
+    }
 
-            <div className="form-input-container">
-                <label htmlFor="newUsername" className="form-label">
-                    Change Username:
-                </label>
-                <input
-                    type="text"
-                    id="newUsername"
-                    name="newUsername"
-                    className="form-input"
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value)}
-                />
-               
-               
-                {message && <div style={{ color: 'green' }}>{message}</div>}
-                {error && <div style={{ color: 'red' }}>{error}</div>}
-                <div className="form-footer">
-                    <GenericButton
-                        className="form-button"
-                        label="Submit"
-                        onClick={handleSubmit}
-                    />
-                </div>
-            </div>
-        </div>
-    );
+    if (result.success) {
+      setSuccess({ message: 'Success.' });
+      setUser({ ...user, username: newUsername });
+      setNewUsername(newUsername);
+      console.log('Username changed successfully:', result.data);
+
+    } else if (result.success === null) {
+      setError({ message: 'Network Error.', error: result.error });
+      setNewUsername(user.username);
+      console.error('Network error:', result.error);
+
+    } else {
+      setError({
+        message: 'Please try again.',
+        error: result.error,
+      });
+      setNewUsername(user.username);
+      console.error('Problem changing username:', result.error);
+    }
+
+    setLoading(false);
+  };
+
+  const fields = [
+    {
+      name: 'newUsername',
+      label: 'New Username',
+      type: 'text',
+      value: newUsername,
+      onChange: (e) => setNewUsername(e.target.value),
+    },
+  ];
+
+  return (
+    <FormWrapper
+      onCancel={onCancel}
+      onSubmit={handleSubmit}
+      cancelLabel="Cancel"
+      submitLabel={loading ? 'Submitting' : 'Submit'}
+      isSubmitting={loading}
+      cancelButtonStyle={{ backgroundColor: 'red' }}
+    >
+      <FormContent fields={fields} error={error} success={success} />
+    </FormWrapper>
+  );
 };
 
 export default ChangeUsernameForm;

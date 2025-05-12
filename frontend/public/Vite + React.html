@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<!-- saved from url=(0040)http://localhost:5173/app/dashboard -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="module">import { injectIntoGlobalHook } from "/app/@react-refresh"
+injectIntoGlobalHook(window);
+window.$RefreshReg$ = () => {};
+window.$RefreshSig$ = () => (type) => type;</script>
+
+    <script type="module" src="./Vite + React_files/client"></script>
+
+    
+    <link rel="icon" type="image/svg+xml" href="http://localhost:5173/app/vite.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vite + React</title>
+    
+    <link rel="stylesheet" href="./Vite + React_files/main.css">
+  <style type="text/css" data-vite-dev-id="/app/src/styles/index.css">/* frontend/src/index.css */
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #540bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+</style><style type="text/css" data-vite-dev-id="/app/src/components/buttons/styles/btn-styles.css">  .grid-add-btn {
+    width: 30px;
+    height: 30px;
+    background-color: green;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+  }
+
+  .grid-add-btn:hover {
+    background-color: darkgreen;
+    transform: scale(1.1);
+  }
+
+  .grid-add-btn:active {
+    transform: scale(0.95);
+  }
+
+  .grid-add-btn:focus {
+    outline: none;
+  }
+
+  .garden-btn {
+    height: 40px;
+    background-color: green;
+    border: 2px solid black;
+    border-radius: 4px !important;
+    cursor: pointer;
+    color: black;
+    font-size: 20px;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+
+  .grid-remove-btn {
+    width: 30px;
+    height: 30px;
+    background-color: red;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+  }
+
+  .grid-remove-btn:hover {
+    background-color: darkred;
+    transform: scale(1.1);
+  }
+
+  .grid-remove-btn:active {
+    transform: scale(0.95);
+  }
+
+  .grid-remove-btn:focus {
+    outline: none;
+  }
+
+  .back-btn {
+    background-color: black;
+  }
+
+  .back-btn:hover {
+    cursor: pointer;
+  }
+
+  .add-garden-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: green;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+    display: flex;
+    align-items: left;
+    margin: auto;
+    outline: 2px solid black;
+  }
+
+  .add-garden-btn:focus {
+    outline: none;
+  }
+
+  .add-garden-btn:hover {
+    background-color: darkgreen;
+    transform: scale(1.1);
+  }
+
+  .add-garden-btn:active {
+    transform: scale(0.95);
+  }
+
+  .delete-garden-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: red;
+    color: white;
+    border: 2px solid black;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+  }
+
+  .delete-garden-btn:hover {
+    background-color: darkred;
+    transform: scale(1.1);
+  }
+
+  .delete-garden-btn:active {
+    transform: scale(0.95);
+  }
+
+  .no-style-btn {
+    margin: 0px !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+  }
+
+  .btn-container button {
+    width: 120px;
+    border-radius: 30px;
+    height: 40px;
+    border-color: black;
+    background-color: black;
+    color: white;
+  }
+
+  .circle-btn {
+    border-radius: 50%;
+    border: 3px solid black;
+<<<<<<< HEAD
+  }
+=======
+  }
+>>>>>>> origin/catalog-bf
+</style><style type="text/css" data-vite-dev-id="/app/src/components/buttons/styles/fancy-btn.css">
+
+.edit-button {
+    background-color: #007bff; /* Blue for edit */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px; /* Size for icon */
+  }
+  
+  .edit-button:hover:not(:disabled) {
+    background-color: #0056b3; /* Darker blue on hover */
+  }
+  
+  .edit-button:disabled {
+    background-color: #6c757d; /* Gray for disabled */
+    cursor: not-allowed;
+  }
+  
+  .trash-button {
+    background-color: #dc4045; /* Red for trash */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px; /* Size for icon */
+  }
+  
+  .trash-button:hover:not(:disabled) {
+    background-color: #c82333; /* Darker red on hover */
+  }
+  
+  .trash-button:disabled {
+    background-color: #6c757d; /* Gray for disabled */
+    cursor: not-allowed;
+  }
+  
+  .add-button {
+    background-color: #28a745; /* Green for add */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px; /* Size for icon */
+  }
+  
+  .add-button:hover:not(:disabled) {
+    background-color: #218838; /* Darker green on hover */
+  }
+  
+  .add-button:disabled {
+    background-color: #6c757d; /* Gray for disabled */
+    cursor: not-allowed;
+  }</style><style type="text/css" data-vite-dev-id="/app/src/components/buttons/styles/add-item-button.css">.add-item-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Space between icon and label */
+    width: 100%; /* Full width of table cell */
+    padding: 12px 20px;
+    background: linear-gradient(140deg, #28a745, #218838); /* Green gradient */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.1s ease;
+  }
+  
+  .add-item-button:hover:not(:disabled) {
+    background: linear-gradient(140deg, #34c759, #2aa844); /* Lighter gradient on hover */
+    transform: translateY(-1px);
+  }
+  
+  .add-item-button:focus {
+    outline: 2px solid #1e7e34; /* Darker green outline */
+    outline-offset: 2px;
+  }
+  
+  .add-item-button:disabled {
+    background: #6c757d; /* Gray for disabled */
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  
+  .add-item-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .add-item-label {
+    font-size: 16px;
+  }</style><style type="text/css" data-vite-dev-id="/app/src/components/ui/styles/garden-grid.css">
+.garden-grid-container-static {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.grid-container {
+padding: 30px;
+background-image: url("/app/wood-texture.jpg");
+border-radius: 4px;
+display: grid;
+border: 4px solid #000; /* Black border */
+position: relative;
+box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds subtle depth */
+}
+
+.selected {
+background-color: darkgreen; /* Green for the planted seed area */
+border: 1px solid #5A3220; /* Darker brown for the border */
+position: relative;
+}
+
+/* The Seed Hole (Circular Indentation) */
+.selected::after {
+content: '';
+position: absolute;
+width: 60%;  /* Adjusted to make the hole appear bigger */
+height: 60%;
+border-radius: 50%; /* Circular shape */
+background-color: #4B3621; /* Richer brown to resemble fertile soil */
+box-shadow: inset 0 6px 12px rgba(0, 0, 0, 0.6); /* Stronger shadow for more depth */
+transform: translate(-50%, -50%);
+top: 50%;
+left: 50%;
+}
+
+.selected-shear {
+background-color: darkgreen; /* Green for the planted seed area */
+border: 1px solid #5A3220; /* Darker brown for the border */
+position: relative;
+}
+
+/* The Seed Hole (Red X) */
+.selected-shear::after {
+content: '✖'; /* Unicode character for X */
+position: absolute;
+color: red; /* Red color for the X */
+font-size: 2rem; /* Adjust size as needed */
+font-weight: bold;
+transform: translate(-50%, -50%);
+top: 50%;
+left: 50%;
+}
+
+.grid {
+display: grid;
+}
+
+/* Tooltip Styling */
+.tooltip {
+z-index: 9999;
+}
+
+
+.garden-bar-container-static {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;  /* span full width of parent */
+height: 88px;
+z-index: 1; /* ensure it's above other content if needed */
+}
+
+.needs-care {
+background-color: #8B4513;
+border: 1px solid rgb(63, 0, 63);
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+overflow: hidden;
+border-radius: 4px;
+background-image: radial-gradient(circle, #9C6B30 20%,purple 80%); /* Adds texture */
+}
+
+.garden-container {
+position: relative;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: end;
+background: linear-gradient(to bottom, #156082,rgb(83, 118, 83));
+border-radius: 10px 0 0 0;
+}
+
+.garden-grid-container {
+    width: 65%;
+    outline: 2px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.garden-notification-container{
+display: flex;
+justify-content: center;
+height: 500px;
+width: 40%;
+border-top: 2px solid black;
+align-self: end;
+
+}
+
+.grid-container {
+padding: 30px;
+background-image: none;
+border-radius: 4px;
+display: grid;
+border: 4px solid #000; /* Black border */
+position: relative;
+box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds subtle depth */
+}
+
+.square {
+background-color: #8B4513; /* Soil brown */
+border: 1px solid #5A3220; /* Darker brown for border */
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+overflow: hidden;
+border-radius: 4px;
+box-shadow: inset 4px 4px 4px rgba(0, 0, 0, 0.5); /* Adds depth to look like ground */
+background-image: radial-gradient(circle, #9C6B30 20%, #7e3e10 80%); /* Adds texture */
+}
+
+.selected {
+border: 1px solid #5A3220; /* Darker brown for the border */
+position: relative;
+}
+
+/* The Seed Hole (Circular Indentation) */
+.selected::after {
+content: '';
+position: absolute;
+width: 45%;  /* Adjusted to make the hole appear bigger */
+height: 45%;
+border-radius: 50%; /* Circular shape */
+background-color: #5b4026; /* Richer brown to resemble fertile soil */
+box-shadow: inset 0 6px 12px rgba(0, 0, 0, 0.6); /* Stronger shadow for more depth */
+transform: translate(-50%, -50%);
+top: 50%;
+left: 50%;
+}
+
+.selected-shear {
+background-color: darkgreen; /* Green for the planted seed area */
+border: 1px solid #5A3220; /* Darker brown for the border */
+position: relative;
+}
+
+/* The Seed Hole (Red X) */
+.selected-shear::after {
+content: '✖'; /* Unicode character for X */
+position: absolute;
+color: red; /* Red color for the X */
+font-size: 2rem; /* Adjust size as needed */
+font-weight: bold;
+transform: translate(-50%, -50%);
+top: 50%;
+left: 50%;
+}
+
+.grid {
+display: grid;
+}
+
+/* Tooltip Styling */
+.tooltip {
+z-index: 9999;
+}
+
+
+.garden-bar-container {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;  /* span full width of parent */
+height: 88px;
+
+z-index: 1; /* ensure it's above other content if needed */
+}</style><style type="text/css" data-vite-dev-id="/app/src/components/widgets/styles/spinner.css">.spinner-container {
+    justify-content: center;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    background: rgba(71, 42, 13, 0.9);
+    padding: 25px;
+    height: auto;
+    width: auto;
+    border-radius: 10px;
+}
+
+.spinner-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+}</style><style type="text/css" data-vite-dev-id="/app/src/components/widgets/styles/bar.css">.l-container {
+    max-width: 400px;
+    margin: 20px auto;
+    text-align: center;
+    z-index: 1000;
+    background-color:red;
+}
+.input {
+    padding: 8px;
+    width: 100px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.button:hover {
+    background-color: #0056b3;
+}
+.loading-bar-container {
+    width: 300px;
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px auto;
+}
+.loading-bar {
+    height: 100%;
+    background-color: #28a745;
+    width: 0;
+}</style><style type="text/css" data-vite-dev-id="/app/src/components/ui/styles/toggle-switch.css">.switch-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 10px;
+}
+
+.switch-label {
+  font-size: 14px;
+  color: #333;
+}
+
+.switch-track {
+  width: 60px;
+  height: 28px;
+  background-color: #888;
+  border-radius: 999px;
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.switch-track.checked {
+  background-color: #4caf50;
+}
+
+.switch-handle {
+  width: 22px;
+  height: 22px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: left 0.25s;
+}
+
+.switch-track.checked .switch-handle {
+  left: 40px;
+}</style><style type="text/css" data-vite-dev-id="/app/src/components/modals/styles/confirm-modal.css">.modal-message {
+    font-size: 16px;
+    color: #343a40;
+    margin: 0 0 20px 0;
+  }
+  
+  .modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Space between buttons */
+  }
+  .modal-container {
+    background-color: #ffffff; /* White background */
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+  }
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* Above other content */
+  }
+  
+  .modal-cancel-button {
+    background-color: #dc4045;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 14px;
+  }
+  .modal-cancel-button:hover:not(:disabled) {
+    background-color: #c82333;
+  }
+  .modal-cancel-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }</style><style type="text/css" data-vite-dev-id="/app/src/components/ui/styles/data-table.css">.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, sans-serif;
+  /* color: white; */
+}
+
+.data-table th, .data-table td {
+  border: 2px solid rgb(47, 47, 47);
+  border-bottom: #343a40;
+  padding: 12px;
+  text-align: left;
+}
+
+.data-table th {
+  color:whitesmoke;
+  background-color: black;
+}
+
+.data-table td {
+  color:whitesmoke;
+  background-color: none;
+  color: black;
+  outline: none;
+}
+
+li {
+  margin-right: 40px;
+  margin-left: 40px;
+  text-align: left;
+}
+
+.data-table-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* Space between Edit and Delete buttons */
+
+}
+
+
+.data-table-empty {
+  padding: 20px;
+  text-align: center;
+  border: none;
+}
+
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa; /* Light gray background */
+  border: 1px solid #e9ecef; /* Subtle border */
+  border-radius: 8px;
+  padding: 20px;
+  min-height: 200px; /* Ensure sufficient height */
+}
+
+.empty-state-icon {
+  color: #6c757d; /* Muted gray for icon */
+  height: 48px;
+  width: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state-message {
+  font-family: 'Playfair Display', serif;
+  text-align: center;
+  font-size: 25px;
+  color: #343a40; /* Darker text for readability */
+  margin: 0 0 16px 0;
+  transform: rotate(-5deg); /* Slight tilt */
+}
+
+.empty-state-button {
+  padding: 8px 16px; /* Slightly larger for prominence */
+}
+
+.data-table-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* Space between Edit and Delete buttons */
+}
+
+
+.data-table-add-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* Space between label and button */
+  outline: none;
+}
+
+.empty-state-container {
+  animation: fadeIn 0.5s ease-in;
+
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+</style><style type="text/css" data-vite-dev-id="/app/src/components/ui/styles/add-with-options.css">.add-with-options {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    gap: 10px;
+}
+
+@keyframes shake {
+    0% {
+        transform: translateX(0);
+    }
+    20% {
+        transform: translateX(-5px);
+    }
+    40% {
+        transform: translateX(5px);
+    }
+    60% {
+        transform: translateX(-5px);
+    }
+    80% {
+        transform: translateX(5px);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.shake {
+    animation: shake 0.5s ease;
+}</style><style type="text/css" data-vite-dev-id="/app/src/components/layout/styles/garden-bar.css">  
+.garden-bar {
+  height: 30px;
+  border-radius: 10px;
+  margin: 30px;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+} 
+
+.garden-bar-item {
+  margin: 0 10px;
+  color: inherit;
+  margin-top: 30px;
+}
+
+.garden-bar-container {
+  display: flex;
+  top: 0;
+  /* left: 0; */
+  width: 100%;
+  /* height: 88px; */
+  /* z-index: 1; */
+  position: absolute;
+}
+
+  
+</style><style type="text/css" data-vite-dev-id="/app/src/components/layout/styles/nav-bar.css">.navbar {
+    position: fixed;
+    width: 100%;
+    height: 60px;
+    background: transparent;
+    display: flex;
+}
+
+.navbar h1 {
+    font-family: 'Brush Script MT', cursive;
+    color: black;
+    font-size: 50px;
+    font-weight: bold;
+}
+
+.left-container {
+    display: flex;
+    width: 500px;
+    align-items: center;
+    justify-content: flex-start;
+    margin-left: 10px;
+}
+
+.title-container {
+    text-align: center;
+    flex: 1;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+
+.right-container {
+    display: flex;
+    width: 500px;
+    align-items: center;
+    justify-content: flex-end;
+    margin-right: 10px;
+}
+
+.username {
+    color: black;
+    border: 1px dotted gray;
+    padding: 0 10px;
+    display: flex;
+    height: 40px;
+    align-items: center;
+}
+
+.right-option-icon {
+    color: black;
+    font-size: 50px;
+    cursor: pointer;
+    margin-left: 20px;
+    align-self: center;
+}
+
+
+
+</style><style type="text/css" data-vite-dev-id="/app/src/components/forms/utils/styles/form.css">/* form.css */
+
+.form {
+    justify-content: center;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 253, 253, 0.8);
+    border-radius: 10px;
+    padding: 30px;
+    outline: 2px solid #000;
+}
+
+.wood-form {
+    justify-content: center;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    background-image: url("/app/wood-texture.jpg");
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px;
+    padding: 40px;
+    outline: 4px solid #000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.form-content {
+    font-family: monospace;
+    width: 100%;
+    margin-top: 40px;
+}
+
+.form-header {
+    margin-bottom: 30px;
+}
+
+.form-footer {
+    margin-top: 10px;
+}
+
+.form-label {
+    margin-bottom: 5px;
+    color: black;
+}
+
+.form-field-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+}
+
+.form-input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    width: 200px;
+    margin-bottom: 14px;
+}
+
+.message-container {
+    min-height: 24px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Truncate content exceeding the height */
+    box-sizing: border-box; /* Prevent padding/margins from expanding */
+}
+
+.message-error {
+    color: red;
+    font-size: 14px;
+}
+
+.message-success {
+    color: green;
+    font-size: 14px;
+}</style><style type="text/css" data-vite-dev-id="/app/src/components/layout/styles/notification-section.css">.notification-section-container {
+    width: 100%;
+    height: 100%;
+}</style><style type="text/css" data-vite-dev-id="/app/src/components/layout/styles/plant-search-side-bar.css">.search-container {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    border: 4 px solid black;
+    top: 60px;
+    width: 200px;
+    height: calc(100vh - 60px);
+    background: linear-gradient(to right, rgb(152, 152, 152), rgb(65, 64, 64));
+    padding: 10px;
+    border-radius: 0 10px 0 0;
+    border: 2px solid black;
+}
+
+.search-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px;
+    margin-top: auto;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    font-size: 12px; 
+}
+
+.search-input:focus {
+    outline: none;
+    border: 2px solid #156082; 
+    box-shadow: 0 0 5px rgba(21, 96, 130, 0.5);
+}
+
+button.loading {
+    width: 25%;
+    margin-left: 10px;
+    padding: 10px;
+    color: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    background-color: transparent;
+    border-radius: 50%;   
+    pointer-events: none;
+}
+
+button.search-button {
+    width: 25%;
+    margin-left: 10px;
+    padding: 10px;
+    color: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    background-color: transparent;
+    border-radius: 50%;
+}
+
+button.search-button:hover {
+    background-color: white;
+    transform: scale(1.1);
+}
+
+button.search-button:active {
+    transform: scale(0.9);
+}
+
+.plant-list {
+    width: 50%;
+    height: calc(100% - 40px);
+    overflow-y: auto;
+}
+
+.item-container {
+    font-size: 21px;
+    flex: 1 0 50%;
+    box-sizing: border-box;
+    width: 100%; 
+}
+
+.plant-item {
+    padding: 10px;
+    border: 1px solid #083448;
+    background: linear-gradient(to bottom,#99642a,#47331f);
+    text-align: center;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    flex: 1 1 100%;
+    box-sizing: border-box;
+}
+
+.scrollable-section {
+    width: 98%;
+    height: calc(100vh - 161px);
+    overflow-y: scroll;
+    background: rgb(203, 203, 203);
+    background: linear-gradient(to left, rgb(118, 65, 37), rgb(143, 102, 75));
+    border-radius: 3px;
+    margin-top: auto;
+    margin-bottom: 22px;
+    outline: 1px solid white;
+    cursor: pointer;
+}
+
+.plant-common-name {
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.remove-plant-item {
+    padding: 10px;
+    border: 1px solid #083448;
+    background: linear-gradient(to bottom, rgb(255, 166, 0), rgb(255, 0, 0));
+    text-align: center;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    flex: 1 1 100%;
+    box-sizing: border-box;
+    cursor: pointer;
+}</style><style type="text/css" data-vite-dev-id="/app/src/components/layout/styles/notification-list.css">.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: linear-gradient(to right, rgb(152, 152, 152), rgb(65, 64, 64));
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    width: 85%;
+}
+
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 18px;
+  }
+  
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+    align-items: center;
+  }
+  
+  .filter-input {
+    padding: 8px 12px;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    flex: 1;
+    min-width: 200px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+  }
+  
+  .filter-input:focus {
+    border-color: #2196F3;
+    outline: none;
+  }
+  
+  .filter-select {
+    padding: 8px 12px;
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    flex: 1;
+    min-width: 200px;
+    background-color: white;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    color: black;
+  }
+  
+  .filter-select:focus {
+    border-color: #2196F3;
+    outline: none;
+  }
+  
+  .today-filter {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Reduced gap for tighter integration */
+    font-size: 14px;
+    color: #333;
+    padding: 6px 10px;
+    background-color: #f7f7f7;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .today-filter input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0; /* Remove default margin */
+    cursor: pointer;
+    accent-color: #2196F3; /* Matches visual button color */
+  }
+  
+  .today-filter label {
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+
+  }
+  
+  .table-wrapper {
+    overflow-x: auto;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333;
+  }
+  
+  th {
+    background-color: #f7f7f7;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+
+  .plant-names {
+    max-width: 200px;
+    white-space: normal;
+    word-wrap: break-word;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .complete {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .complete:hover {
+    background-color: #45a049;
+  }
+  
+  .skip {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .skip:hover {
+    background-color: #da190b;
+  }
+  
+  .visual-btn {
+    background-color: #2196F3;
+    color: white;
+  }
+  
+  .visual-btn:hover {
+    background-color: #1976D2;
+  }
+  
+  td.visual {
+    text-align: center;
+  }
+  
+  @media (max-width: 600px) {
+    .controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .filter-input, .filter-select {
+      min-width: auto;
+    }
+    th, td {
+      padding: 8px;
+      font-size: 13px;
+    }
+  }</style><style type="text/css" data-vite-dev-id="/app/src/pages/styles/dashboard-page.css">
+
+  .garden-grid-container {
+      width: 65%;
+      outline: 2px solid black;
+      display: flex;
+      justify-content: center;
+        align-items: center;
+  }
+  
+.garden-notification-container{
+    display: flex;
+    justify-content: center;
+    height: 500px;
+    width: 40%;
+    border-top: 2px solid black;
+    /* align-self: end; */
+    align-items: center;
+  }
+
+.grid-container {
+    padding: 30px;
+    background-image: url("/app/wood-texture.jpg");
+    border-radius: 4px;
+    display: grid;
+    border: 4px solid #000; /* Black border */
+    position: relative;
+    box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds subtle depth */
+}
+
+  .grid {
+    display: grid;
+  }
+  
+  /* Tooltip Styling */
+  .tooltip {
+    z-index: 9999;
+  }
+  
+  .dashboard-content {
+    border: 2px solid black;
+    position: fixed;
+    top: 60px;
+    left: 240px;
+    width: calc(100vw - 240px);
+    height: calc(100vh - 60px);
+    display: flex;
+    align-items: end;
+    background: linear-gradient(to bottom, #156082,rgb(83, 118, 83));
+    border-radius: 10px 0 0 0;
+  }
+  
+.notification-section-container {
+  border-top: 2px solid black;          
+  width: 40%;
+}
+</style><style type="text/css" data-vite-dev-id="/app/src/pages/styles/catalog-page.css">.catalog-content {
+    position: fixed;
+    top: 60px;
+    left: 240px;
+    width: calc(100vw - 240px);
+    height: calc(100vh - 60px);
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    color: black;
+    overflow-y: auto;
+    align-items: center;
+    justify-content: center;
+}
+
+.plant-details-container {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.plant-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 100%;
+    margin: 20px 0;
+}
+
+.plant-details-section {
+    background: rgba(255, 253, 253, 0.8);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.plant-image-section {
+    grid-column: span 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+}
+
+.fancy-frame {
+    padding: 8px;
+    background: linear-gradient(45deg, #f3e8c2, #d4c7a0);
+    border: 4px solid #8b6f47;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15), inset 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+.framed-image {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    display: block;
+}
+
+h2 {
+    font-size: 1.8em;
+    color: #333;
+    margin: 20px 0;
+    text-align: center;
+}
+
+h3 {
+    font-size: 1.2em;
+    color: #333;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+p {
+    margin: 8px 0;
+    font-size: 0.95em;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+}
+
+p > span:first-child {
+    font-weight: 600;
+    margin-right: 8px;
+    min-width: 120px;
+}
+
+.no-selection {
+    font-size: 1.2em;
+    color: #666;
+    text-align: center;
+    margin-top: 50px;
+}
+
+.tooltip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    font-size: 0.8em;
+    color: #333;
+    background-color: #d8d8d8;
+    border-radius: 50%;
+    cursor: help;
+    position: relative;
+    z-index: 1000;
+}
+.plant-details-entry {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed #ccc;
+    font-size: 0.95em;
+}
+
+.plant-details-entry:last-child {
+    border-bottom: none;
+}
+
+.plant-details-entry span:first-child {
+    color: #555;
+    flex: 1;
+}
+
+.plant-details-entry span:last-child {
+    flex: 2;
+    color: #333;
+}
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 180px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s;
+    z-index: 1001;
+}
+
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}</style><style type="text/css" data-vite-dev-id="/app/src/pages/styles/settings-page.css">.settings-form{
+    justify-content: center;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 40px;
+    height: auto;
+    width: auto;
+    border-radius: 10px;
+}
+
+.settings-content {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: auto;
+}</style><style type="text/css" data-vite-dev-id="/app/src/pages/styles/notifications-page.css">
+.garden-container-static {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    background: linear-gradient(to bottom, #156082,rgb(83, 118, 83));
+    flex-direction: column;
+    border: 2px solid black;
+  }
+
+
+.notification-page-container {
+    background: url('/app/public/garden_background.jpg') no-repeat center center;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+  
+  .notification-content-container {
+    position: fixed;
+    top: 60px;
+    width: 100vw;
+    height: calc(100vh - 60px);
+    background: linear-gradient(to bottom, #156082,rgb(83, 118, 83));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top: 2px solid black;
+  }
+  
+  .notification-buttons {
+    margin: 120px 0 10px 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .notification-button {
+    padding: 6px 12px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+
+  .garden-grid-container-static {
+
+
+    display: flex;
+    justify-content: center;
+    align-items: anchor-center;
+}
+  </style><style type="text/css" data-vite-dev-id="/app/src/styles/app.css">/* frontend/src/App.css */
+
+#root {
+  margin: 0 auto;
+  text-align: center;
+  background: url('/app/public/garden_background.jpg') no-repeat center center;
+  background-size: cover;
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+.app {
+  overflow: hidden;
+  height: 100vh;
+}
+
+.centered-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: black;
+}</style><style data-styled="active" data-styled-version="6.1.17">.bLjrEU{display:flex;}</style><style id="react-tooltip-core-styles" type="text/css">:root{--rt-color-white:#fff;--rt-color-dark:#222;--rt-color-success:#8dc572;--rt-color-error:#be6464;--rt-color-warning:#f0ad4e;--rt-color-info:#337ab7;--rt-opacity:0.9;--rt-transition-show-delay:0.15s;--rt-transition-closing-delay:0.15s}.core-styles-module_tooltip__3vRRp{position:absolute;top:0;left:0;pointer-events:none;opacity:0;will-change:opacity}.core-styles-module_fixed__pcSol{position:fixed}.core-styles-module_arrow__cvMwQ{position:absolute;background:inherit}.core-styles-module_noArrow__xock6{display:none}.core-styles-module_clickable__ZuTTB{pointer-events:auto}.core-styles-module_show__Nt9eE{opacity:var(--rt-opacity);transition:opacity var(--rt-transition-show-delay)ease-out}.core-styles-module_closing__sGnxF{opacity:0;transition:opacity var(--rt-transition-closing-delay)ease-in}</style><style id="react-tooltip-base-styles" type="text/css">
+.styles-module_tooltip__mnnfp{padding:8px 16px;border-radius:3px;font-size:90%;width:max-content}.styles-module_arrow__K0L3T{width:8px;height:8px}[class*='react-tooltip__place-top']>.styles-module_arrow__K0L3T{transform:rotate(45deg)}[class*='react-tooltip__place-right']>.styles-module_arrow__K0L3T{transform:rotate(140deg)}[class*='react-tooltip__place-bottom']>.styles-module_arrow__K0L3T{transform:rotate(225deg)}[class*='react-tooltip__place-left']>.styles-module_arrow__K0L3T{transform:rotate(315deg)}.styles-module_dark__xNqje{background:var(--rt-color-dark);color:var(--rt-color-white)}.styles-module_light__Z6W-X{background-color:var(--rt-color-white);color:var(--rt-color-dark)}.styles-module_success__A2AKt{background-color:var(--rt-color-success);color:var(--rt-color-white)}.styles-module_warning__SCK0X{background-color:var(--rt-color-warning);color:var(--rt-color-white)}.styles-module_error__JvumD{background-color:var(--rt-color-error);color:var(--rt-color-white)}.styles-module_info__BWdHW{background-color:var(--rt-color-info);color:var(--rt-color-white)}</style><style data-emotion="css" data-s="">.css-1ktriz-container{position:relative;box-sizing:border-box;width:200px;}</style><style data-emotion="css" data-s="">.css-1f43avz-a11yText-A11yText{z-index:9999;border:0;clip:rect(1px, 1px, 1px, 1px);height:1px;width:1px;position:absolute;overflow:hidden;padding:0;white-space:nowrap;}</style><style data-emotion="css" data-s="">.css-13cymwt-control{-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;cursor:default;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-flex-wrap:wrap;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;min-height:38px;outline:0!important;position:relative;-webkit-transition:all 100ms;transition:all 100ms;background-color:hsl(0, 0%, 100%);border-color:hsl(0, 0%, 80%);border-radius:4px;border-style:solid;border-width:1px;box-sizing:border-box;}</style><style data-emotion="css" data-s="">.css-13cymwt-control:hover{border-color:hsl(0, 0%, 70%);}</style><style data-emotion="css" data-s="">.css-hlgwow{-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;display:grid;-webkit-flex:1;-ms-flex:1;flex:1;-webkit-box-flex-wrap:wrap;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-overflow-scrolling:touch;position:relative;overflow:hidden;padding:2px 8px;box-sizing:border-box;}</style><style data-emotion="css" data-s="">.css-1lnyhqo-placeholder{grid-area:1/1/2/3;color:grey;margin-left:2px;margin-right:2px;box-sizing:border-box;}</style><style data-emotion="css" data-s="">.css-19bb58m{visibility:visible;-webkit-flex:1 1 auto;-ms-flex:1 1 auto;flex:1 1 auto;display:inline-grid;grid-area:1/1/2/3;grid-template-columns:0 min-content;margin:2px;padding-bottom:2px;padding-top:2px;color:hsl(0, 0%, 20%);box-sizing:border-box;}</style><style data-emotion="css" data-s="">.css-19bb58m:after{content:attr(data-value) " ";visibility:hidden;white-space:pre;grid-area:1/2;font:inherit;min-width:2px;border:0;margin:0;outline:0;padding:0;}</style><style data-emotion="css" data-s="">.css-1wy0on6{-webkit-align-items:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-align-self:stretch;-ms-flex-item-align:stretch;align-self:stretch;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;box-sizing:border-box;}</style><style data-emotion="css" data-s="">.css-1u9des2-indicatorSeparator{-webkit-align-self:stretch;-ms-flex-item-align:stretch;align-self:stretch;width:1px;background-color:hsl(0, 0%, 80%);margin-bottom:8px;margin-top:8px;box-sizing:border-box;}</style><style data-emotion="css" data-s="">.css-1xc3v61-indicatorContainer{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-transition:color 150ms;transition:color 150ms;color:hsl(0, 0%, 80%);padding:8px;box-sizing:border-box;}</style><style data-emotion="css" data-s="">.css-1xc3v61-indicatorContainer:hover{color:hsl(0, 0%, 60%);}</style><style data-emotion="css" data-s="">.css-tj5bde-Svg{display:inline-block;fill:currentColor;line-height:1;stroke:currentColor;stroke-width:0;}</style></head>
+  <body>
+    <div id="root"><div class="navbar"><div class="left-container"><div class="btn-container"><button class="back-btn" style="border-radius: 5px;">← Back</button></div></div><div class="title-container"><h1>Dashboard</h1></div><div class="right-container"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="right-option-icon" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M12.0786 1.1372a11.784 11.784 0 0 0-.913.0318c-1.4967.0794-2.9562.5037-4.3208 1.1086.2802-.0007.588-.0477.839.1086.3087.1709.4496.527.7445.711.4187.1627.8696.0071 1.2965-.0398 1.3661-.1587 2.7779.1102 4 .7387.788.4146 1.4997.9613 2.1525 1.5639 1.005.8840 1.831 1.9475 2.8264 2.8416.3247.2891.698.5257 1.1037.6836.9484.3725 1.9971.3434 2.9528.6917.3012.1013.571.2697.844.43-.1644-.537-.3395-1.0706-.5622-1.5858-.9824-2.3169-2.7202-4.2993-4.8793-5.5886-1.8269-1.1034-3.9525-1.6866-6.084-1.6953ZM4.988 3.4001C3.2443 4.6465 1.8497 6.3764.9985 8.3427.3013 9.93-.0243 11.6703.004 13.4009c.0008 2.9948.0057 5.9897-.0024 8.9845-.0154.163.0834.3006.1507.4407 1.158.0714 2.3218.0137 3.4823.0307-.5701-.2073-1.2237-.5473-1.3338-1.2082-.1799-.9524.2786-1.878.7702-2.6637.7888-1.2277 1.8336-2.2634 2.9106-3.2377 1.3071-1.1322 2.7534-2.0919 4.2371-2.9754.3977-.256.8553-.4575 1.1412-.8504-.26.0219-.5151.0858-.7516.196-.9872.4292-1.9234.9662-2.8458 1.5192-.8804.545-1.767 1.0845-2.5948 1.709-.579.4146-1.1191.8777-1.6796 1.3166-.1238-.9402-.3483-1.8625-.584-2.7801-.2892-1.2188-.477-2.475-.396-3.7302.06-1.2853.4697-2.5616 1.2342-3.6022.294-.4309.699-.7751.9776-1.2165.2396-.3774-.1208-.7677-.09-1.1613-.0056-.3005.1936-.5402.408-.7718zm15.5597 8.8498c-.1674-.0026-.3407.011-.498.028-1.316.161-2.5736.6137-3.7973 1.1052-2.7414 1.1517-5.3888 2.5755-7.7414 4.4042-.9378.7499-1.8651 1.5443-2.5592 2.5332-.2097.3296-.473.733-.324 1.1363.1912.2656.5474.3125.8495.403 1.056.094 2.1147-.0777 3.1456-.298 2.0806-.473 4.0946-1.257 5.9234-2.4084 1.3743-.7945 2.7032-1.6796 3.8954-2.7299.6688-.6066 1.3126-1.2602 1.7734-2.0433.213-.3758.401-.7872.392-1.2286.0025-.2486-.0236-.5595-.2648-.6971-.2394-.1514-.5155-.2003-.7946-.2046zm3.4259.0756c-.7889 1.993-2.4018 3.549-3.9691 4.8981-1.41 1.1436-2.9463 2.1275-4.5562 2.9648-2.185 1.2196-4.5369 2.177-6.999 2.6596 5.040.022 10.0706.004 15.1055.0088.226.0316.4575-.1425.4413-.3806.0066-2.8644 0-5.7288.0026-8.5933.0016-.5191.0073-1.0391-.0251-1.5573zM12.7172 15.757c.3604.7702.4009 1.6967.0543 2.4782-.3208.7686-.984 1.375-1.7687 1.6472-1.0505.362-2.276.0818-3.0656-.7014 1.4019-1.3824 3.0598-2.478 4.78-3.424z"></path></svg><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" class="right-option-icon" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M487.4 315.7l-42.6-24.6c4.3-23.2 4.3-47 0-70.2l42.6-24.6c4.9-2.8 7.1-8.6 5.5-14-11.1-40.6-30-67.8-54.7-94.6-3.8-4.1-10-5.1-14.8-2.3L380.8 110c-17.9-15.4-38.5-27.3-60.8-40.1V25.8c0-5.6-3.9-10.5-9.4-11.7-36.7-8.2-74.3-7.8-109.2 0-5.5 1.2-9.4 6.1-9.4 11.7V75c-22.2 7.9-42.8 19.8-60.8 40.1L88.7 85.5c-4.9-2.8-11-1.9-14.8 2.3-24.7 26.7-43.6 58.9-54.7 94.6-1.7 5.4.6 11.2 5.5 14L67.3 221c-4.3 23.2-4.3 47 0 70.2l-42.6 24.6c-4.9 2.8-7.1 8.6-5.5 14 11.1 40.6 30 67.8 54.7 94.6 3.8 4.1 10 5.1 14.8 2.3l42.6-24.6c17.9 15.4 38.5 27.3 60.8 40.1v49.2c0 5.6 3.9 10.5 9.4 11.7 36.7 8.2 74.3 7.8 109.2 0 5.5-1.2 9.4-6.1 9.4-11.7v-49.2c22.2-7.9 42.8-19.8 60.8-40.1l42.6 24.6c4.9 2.8 11 1.9 14.8-2.3 24.7-26.7 43.6-58.9 54.7-94.6 1.5-5.5-.7-11.3-5.6-14.1zM256 336c-44.1 0-80-40.9-80-80s40.9-80 80-80 80 40.9 80 80-40.9 80-80 80z"></path></svg></div></div><div class="search-container"><div class="search-header"><input class="search-input" type="text" placeholder="Enter plant name..." value=""><button class="search-button">🔍</button></div><div class="scrollable-section"><div class="item-container"><div class="remove-plant-item"><span role="img" aria-label="shear"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M308 277.2c25.5-33 80.5-111.5 90.2-140.4 7.2-17.6 10.6-32.8 10.4-46.2-.2-17.9-6-29.3-18.3-40.6-5.2-4.8-13.5-6.9-20-6.9L255.9 201.7l-10 13.4-2.9 3.9-.1.1-14.5 19.7c-.1.1-.2.3-.3.4-.5.8-7.5 10.9-15.2 22.7-3 4.6-6.1 9.5-9 14.1-3.5 5.6-6.6 11-8.8 15.2-3.6 7.1-7.3 14.4-10.7 21.5-3.7 7.5-7.2 14.6-10.4 20.7-10.2-7.3-22-11.1-34.3-11.1-17.5 0-33.7 7.7-45.8 21.6C82.4 407.1 76 374.6 76 393.1c0 18.5 6.4 36 17.9 49.3 12.1 13.9 28.4 21.6 45.8 21.6 14.4 0 28-5.2 39.2-15 10.5-9.1 18-21.3 21.8-40.4 1-3.1 11.6-34.7 26.1-57.3 9.2-14.4 22.2-23.4 29.6-27.8l13.5-9.7c0 .1 12.7-8.7 38.1-41.6zM139.9 421.1c-13.3 0-24-12.6-24-28s10.7-28 24-28 24 12.6 24 28c0 15.5-10.8 28-24 28zm116.2-132.9c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16z"></path><path d="M191.5 260.4c.7 1 1.6 1.9 2.5 2.7 1.7-2.8 3.6-5.7 5.4-8.6l46.5-65.8L140.9 48c-8.9 0-14.4.9-18.5 3.9-11.9 8.9-19.1 25.6-19.3 43.6-.2 13.5 3.3 28.6 10.4 46.2 8.6 21 42.6 70.2 78 118.7zM372 322.3c-12.3 0-24.1 3.8-34.3 11.1-3.2-6.1-6.7-13.2-10.4-20.7-3.4-6.9-6.9-14-10.4-20.8L306 305.8l-36.4 33.1c5.2 4.6 10.7 10.4 15.3 17.5 14.5 22.6 25 54.2 26 57.3 3.8 14.1 11.3 26.3 21.8 40.4 11.3 9.8 24.9 15 39.2 15 40.3 0 64-31.8 64-70.9s-28.6-70.9-63.9-70.9zm.1 98.8c-13.3 0-24-12.6-24-28s10.7-28 24-28 24 12.6 24 28c0 15.5-10.7 28-24 28z"></path></svg></span></div></div></div></div><div class="dashboard-content"><div class="garden-bar-container" style="display: flex; justify-content: flex-start;"><div class="garden-bar"><div class="garden-bar-item"><button class="no-style-btn"><svg stroke="currentColor" fill="currentColor" stroke-width="0" version="1.2" baseProfile="tiny" viewBox="0 0 24 24" class="add-garden-btn" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M18 10h-4v-4c0-1.104-.896-2-2-2s-2 .896-2 2l.071 4h-4.071c-1.104 0-2 .896-2 2s.896 2 2 2l4.071-.071-.071 4.071c0 1.104.896 2 2 2s2-.896 2-2v-4.071l4 .071c1.104 0 2-.896 2-2s-.896-2-2-2z"></path></svg></button></div><div class="garden-bar-item"><button class="no-style-btn"><svg stroke="currentColor" fill="currentColor" stroke-width="0" version="1.2" baseProfile="tiny" viewBox="0 0 24 24" class="delete-garden-btn" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M12 4c-4.419 0-8 3.582-8 8s3.581 8 8 8 8-3.582 8-8-3.581-8-8-8zm3.707 10.293c.391.391.391 1.023 0 1.414-.195.195-.451.293-.707.293s-.512-.098-.707-.293l-2.293-2.293-2.293 2.293c-.195.195-.451.293-.707.293s-.512-.098-.707-.293c-.391-.391-.391-1.023 0-1.414l2.293-2.293-2.293-2.293c-.391-.391-.391-1.023 0-1.414s1.023-.391 1.414 0l2.293 2.293 2.293-2.293c.391-.391 1.023-.391 1.414 0s.391 1.023 0 1.414l-2.293 2.293 2.293 2.293z"></path></svg></button><div class="btn-container"><button class="garden-btn" style="color: black; background-color: green; width: 120px; font-size: 16px;">Hey</button></div></div><div class="garden-bar-item"><button class="no-style-btn"><svg stroke="currentColor" fill="currentColor" stroke-width="0" version="1.2" baseProfile="tiny" viewBox="0 0 24 24" class="delete-garden-btn" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M12 4c-4.419 0-8 3.582-8 8s3.581 8 8 8 8-3.582 8-8-3.581-8-8-8zm3.707 10.293c.391.391.391 1.023 0 1.414-.195.195-.451.293-.707.293s-.512-.098-.707-.293l-2.293-2.293-2.293 2.293c-.195.195-.451.293-.707.293s-.512-.098-.707-.293c-.391-.391-.391-1.023 0-1.414l2.293-2.293-2.293-2.293c-.391-.391-.391-1.023 0-1.414s1.023-.391 1.414 0l2.293 2.293 2.293-2.293c.391-.391 1.023-.391 1.414 0s.391 1.023 0 1.414l-2.293 2.293 2.293 2.293z"></path></svg></button><div class="btn-container"><button class="garden-btn" style="color: black; background-color: lightgreen; width: 120px; font-size: 16px;">My garden</button></div></div><div class="garden-bar-item"><button class="no-style-btn"><svg stroke="currentColor" fill="currentColor" stroke-width="0" version="1.2" baseProfile="tiny" viewBox="0 0 24 24" class="delete-garden-btn" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M12 4c-4.419 0-8 3.582-8 8s3.581 8 8 8 8-3.582 8-8-3.581-8-8-8zm3.707 10.293c.391.391.391 1.023 0 1.414-.195.195-.451.293-.707.293s-.512-.098-.707-.293l-2.293-2.293-2.293 2.293c-.195.195-.451.293-.707.293s-.512-.098-.707-.293c-.391-.391-.391-1.023 0-1.414l2.293-2.293-2.293-2.293c-.391-.391-.391-1.023 0-1.414s1.023-.391 1.414 0l2.293 2.293 2.293-2.293c.391-.391 1.023-.391 1.414 0s.391 1.023 0 1.414l-2.293 2.293 2.293 2.293z"></path></svg></button><div class="btn-container"><button class="garden-btn" style="color: black; background-color: lightgreen; width: 120px; font-size: 16px;">New</button></div></div></div></div><div class="garden-grid-container" style="height: 688px;"><div class="grid-container" style="width: 465.6px; height: 465.6px;"><div class="grid" style="grid-template-columns: repeat(5, 93.12px); grid-template-rows: repeat(5, 93.12px);"><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content="Ashoka tree"><div class="square  " style="font-size: 46.56px;">🥜</div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content="Tree limonium"><div class="square  " style="font-size: 46.56px;">❓</div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div data-tooltip-id="my-tooltip" data-tooltip-content=""><div class="square  " style="font-size: 46.56px;"></div></div><div style="position: absolute; top: 50%; right: -20px; transform: translateY(-50%); z-index: 1; display: flex; flex-direction: column; justify-content: center;"><button class="circle-btn grid-remove-btn" style="padding-top: 5px;"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path></svg></button><button class="circle-btn grid-add-btn" style="padding-top: 5px;"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"></path></svg></button></div><div style="position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); z-index: 1; display: flex;"><button class="circle-btn grid-add-btn" style="padding-top: 5px;"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M413.1 222.5l22.2 22.2c9.4 9.4 9.4 24.6 0 33.9L241 473c-9.4 9.4-24.6 9.4-33.9 0L12.7 278.6c-9.4-9.4-9.4-24.6 0-33.9l22.2-22.2c9.5-9.5 25-9.3 34.3.4L184 343.4V56c0-13.3 10.7-24 24-24h32c13.3 0 24 10.7 24 24v287.4l114.8-120.5c9.3-9.8 24.8-10 34.3-.4z"></path></svg></button><button class="circle-btn grid-remove-btn" style="padding-top: 5px;"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M34.9 289.5l-22.2-22.2c-9.4-9.4-9.4-24.6 0-33.9L207 39c9.4-9.4 24.6-9.4 33.9 0l194.3 194.3c9.4 9.4 9.4 24.6 0 33.9L413 289.4c-9.5 9.5-25 9.3-34.3-.4L264 168.6V456c0 13.3-10.7 24-24 24h-32c-13.3 0-24-10.7-24-24V168.6L69.2 289.1c-9.3 9.8-24.8 10-34.3.4z"></path></svg></button></div></div></div></div><div class="notification-section-container" style="height: 688px;"><div class="data-table-container"><table class="data-table" role="grid" style="
+    outline: none;
+"><thead class="data-table-header" style="
+    border:  none;
+"><tr><th class="data-table-th">Name</th><th class="data-table-th">Type</th><th class="data-table-th">Plants</th><th class="data-table-th">Actions</th></tr></thead><tbody style="
+    border-bottom: none;
+    /* outline:  none; */
+    border: none;
+"><tr lassname="data-table-empty" style="
+    outline: none;
+"><td colspan="4"><button class="add-item-button "><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="add-item-icon" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span class="add-item-label">Add a new recurring reminder</span></button></td></tr></tbody></table></div></div></div></div>
+    <script type="module" src="./Vite + React_files/index.jsx"></script>
+  
+
+</body></html>

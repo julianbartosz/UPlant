@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import NotificationForm from '../forms/NotificationForm';
 import DataTable from '../ui/DataTable';
-import { useGardens } from '../../hooks/useGardens';
+import { UserContext } from '../../context/UserProvider';
 import './styles/notification-section.css';
 
 const NotificationSection = ({ contentSize, selectedGardenIndex }) => {
     const [toggleForm, setToggleForm] = useState(false);
-    const { gardens } = useGardens();
+    const { gardens } = useContext(UserContext)
     const plantOptions = gardens[selectedGardenIndex]?.cells
         .flat()
         .filter(item => item !== null)
@@ -18,18 +18,19 @@ const NotificationSection = ({ contentSize, selectedGardenIndex }) => {
         }, []);
 
     return (
-        <div className='notification-section-container'>
+        <>
             {toggleForm ? (
-                    <NotificationForm setToggleForm={setToggleForm} plantOptions={plantOptions} onBack={() => setToggleForm(false)} selectedGardenIndex={selectedGardenIndex} />
+                <div className='centered-content'>
+                     <NotificationForm setToggleForm={setToggleForm} plantOptions={plantOptions} onBack={() => setToggleForm(false)} selectedGardenIndex={selectedGardenIndex} />
+                </div>
+             
                 ) : (
                     <DataTable
                         selectedGardenIndex={selectedGardenIndex}
                         onAdd={() => setToggleForm(true)}
-                        setData={() => {}}
-                        fontSize={contentSize / 50}
                     />
                 )}
-        </div>
+        </>
     );
 };
 

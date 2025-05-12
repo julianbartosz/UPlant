@@ -1,115 +1,210 @@
 /**
- * This component renders a table displaying a list of notificationsList, their associated plants, and time intervals.
- * It allows adding new entries and removing existing ones.
+ * DataTable Component
  * 
+ * @file DataTable.jsx
  * @component
  * @param {Object} props
- * @param {Array} props.data
- *   @param {string} props.data[].id
- *   @param {string} props.data[].name
- *   @param {Array} props.data[].plants
- *     @param {string} props.data[].plants[].id
- *     @param {string} props.data[].plants[].common_name
- *   @param {string} props.data[].interval 
- * @param {Function} props.setData 
- * @param {Object} [props.style={}]
- * @param {Function} props.onAdd 
- * @returns {JSX.Element}
+ * @param {number} props.selectedGardenIndex - Index of the selected garden in the UserContext gardens array.
+ * @param {Function} props.onAdd - Callback function to trigger adding a new notification.
+ * @param {Function} props.onEdit - Callback function to trigger editing a notification, called with gardenIndex and notificationId.
+ * @returns {JSX.Element} The rendered DataTable component.
+ * 
+ * @example
+ * <DataTable
+ *   selectedGardenIndex={0}
+ *   onAdd={() => console.log('Add notification')}
+ *   onEdit={(gardenIndex, notificationId) => console.log(`Edit notification ${notificationId} in garden ${gardenIndex}`)}
+ * />
+ * 
+ * @remarks
+ * - Displays a table of notifications from the selected garden, including name, type, plants, and actions.
+ * - The `type` field is mapped to human-readable labels (e.g., `WA` to `Water`).
+ * - Allows adding notifications via an Add button in a styled perspective row (spanning all columns) or empty state, triggering the `onAdd` callback.
+ * - Allows editing and deleting notifications via Edit and Delete buttons in the Actions column.
+ * - Uses a ConfirmModal component for delete confirmation, replacing native window.confirm.
+ * - Shows an empty state with a notification icon, a cursive, tilted message, and an Add button when no notifications exist.
+ * - Uses `data-table.css` for styling the table, perspective row, empty state, and modal, and `buttons.css` for button styles.
+ * - Debug logging is controlled by `VITE_DEBUG` from constants.
+ * - Errors are logged to the console without UI feedback, as this is not a form.
  */
 
-import { DeleteButton, AddButton } from '../buttons';
-import useNotifications from '../../hooks/useNotifications';
-import { PiEmptyBold } from "react-icons/pi";
-import { FidgetSpinner, TailSpin} from 'react-loader-spinner';
-
+import { useContext, useState } from 'react';
+import { AddItemButton, EditButton, TrashButton } from '../buttons';
+import { FiBell } from 'react-icons/fi';
+import { UserContext } from '../../context/UserProvider';
+import { BASE_API, DEBUG } from '../../constants';
+import ConfirmModal from '../modals/ConfirmModal';
 import './styles/data-table.css';
 
+/**
+ * Maps notification type codes to human-readable labels.
+ * 
+ * @param {string} type - The notification type code (e.g., 'WA').
+ * @returns {string} The human-readable label (e.g., 'Water').
+ */
+const mapNotificationType = (type) => {
+  const typeMap = {
+    WA: 'Water',
+    FE: 'Fertilize',
+    PR: 'Prune',
+    HA: 'Harvest',
+    OT: 'Other',
+    WE: 'Weather',
+  };
+  return typeMap[type] || type;
+};
 
+/**
+ * Performs the notification deletion API request.
+ * 
+ * @param {string} notificationId - The ID of the notification to delete.
+ * @returns {Promise<{ success: boolean|null, error?: any }>} The result of the API request.
+ */
+const deleteNotification = async (notificationId) => {
+  try {
+    const url = `${BASE_API}/notifications/notifications/${notificationId}/`;
+    if (DEBUG) console.log(`Deleting notification at ${url}`);
 
-const DataTable = ({ 
-        selectedGardenIndex,    
-        onAdd,
-        fontSize,
-    }) => {
-     
-    const { mediateDeleteNotification, notificationsList} = useNotifications();
+    const response = await fetch(url, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.ok) {
+      return { success: true };
+    }
+    const errorData = await response.json();
+    return { success: false, error: errorData };
+  } catch (error) {
+    return { success: null, error: error.message };
+  }
+};
+
+const DataTable = ({ selectedGardenIndex, onAdd, onEdit }) => {
+  const { gardens, dispatch } = useContext(UserContext);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
+
+  const handleDeleteNotification = async (gardenIndex, notificationId) => {
+    setPendingDelete({ gardenIndex, notificationId });
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) return;
+
+    const { gardenIndex, notificationId } = pendingDelete;
+    const result = await deleteNotification(notificationId);
+
+    if (result.success) {
+      dispatch({ type: 'REMOVE_NOTIFICATION', garden_index: gardenIndex, notification_id: notificationId });
+      if (DEBUG) console.log('Notification deleted successfully');
+    } else if (result.success === null) {
+      console.error('Network error:', result.error);
+    } else {
+      console.error('Failed to delete notification:', result.error);
+    }
+
+    setIsModalOpen(false);
+    setPendingDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setIsModalOpen(false);
+    setPendingDelete(null);
+  };
+
+  const notifications = gardens[selectedGardenIndex]?.notifications || [];
+
+  return (
+    <>
     
-    // if (!notificationsList) {
-    //     return (
-    //         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-    //             <FidgetSpinner  
-    //                 visible={true}
-    //                 height="80"
-    //                 width="80"
-    //                 ariaLabel="fidget-spinner-loading"
-    //                 wrapperStyle={{}}
-    //                 wrapperClass="fidget-spinner-wrapper"
-    //                 ballColors={["#00BFFF", "#00BFFF", "#00BFFF"]}
-    //                 backgroundColor="#F4442D"
-    //             />
-    //             <div style={{ marginLeft: '20px', fontSize: 'small' }}>Loading...</div>
-    //         </div>
-    //     );
-    // }
-    
-    return (
-        <>
-            <table className="data-table" style={{ fontSize: fontSize }}>
-                <thead className="data-table-header">
-                    <tr>
-                        <th style={{ textAlign: 'center', fontSize: 'small' }}>Name</th>
-                        <th style={{ textAlign: 'center',fontSize: 'small' }}>Plants</th>
-                        <th style={{ textAlign: 'center', fontSize: 'small' }}>Interval</th>
-                        <th style={{ textAlign: 'center', fontSize: 'small' }}>
-                            <AddButton onClick={onAdd} />
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {notificationsList && notificationsList[selectedGardenIndex] ? (
-                    notificationsList[selectedGardenIndex].map((item, index) => (
-                        item && (
-                        <tr key={item.id}>
-                            <td>{item.name}</td>
-                            <td>
-                                {item && item.plant_names && item.plant_names.map(plant_name => (
-                                    <div key={item.id}>{plant_name}</div>
-                                ))}
-                            </td>
-                            <td style={{ textAlign: 'center' }}>{item.interval}</td>
-                            <td style={{ textAlign: 'center' }}>
-                                <DeleteButton onClick={() => mediateDeleteNotification(selectedGardenIndex, index)} />
-                            </td>
-                        </tr>)
-                    ))) : (
-
-                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                <FidgetSpinner  
-                    visible={true}
-                    height="80"
-                    width="80"
-                    ariaLabel="fidget-spinner-loading"
-                    wrapperStyle={{}}
-                    wrapperClass="fidget-spinner-wrapper"
-                    ballColors={["#00BFFF", "#00BFFF", "#00BFFF"]}
-                    backgroundColor="#F4442D"
-                />
-                <div style={{ marginLeft: '20px', fontSize: 'small' }}>Loading...</div>
-            </div>
-                 
-                    )}
-                </tbody>
-            </table>
-            {notificationsList && notificationsList[selectedGardenIndex] && notificationsList[selectedGardenIndex].length === 0  && (
-            <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 80px)', justifyContent: 'center', alignItems: 'center', fontSize: 'small' }}>
-            <PiEmptyBold style={{color: 'black', height: "70px", width: "70px"}} />
-            <ul>
-                <li style={{color: 'black'}}>You have zero configured notifications.</li>
-                <li style={{color: 'black'}}>Click the green "+" button to add a notification for your garden.</li>
-            </ul>
-            </div>)}
+      <table className="data-table" role="grid">
+      <caption style={{backgroundColor: 'black'}}>
+      🔔 Configure your maintenance / care routine 🔔
+  </caption>
+        <thead className="data-table-header">
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Plants</th>
+            <th>Days</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody >
+          {notifications.length > 0 ? (
+            <>
+              {notifications.map((item) =>
+                item && (
+                  <tr key={item.id} >
+                    <td className='name'>{item.name}</td>
+                    <td className="type">{mapNotificationType(item.type)}</td>
+                    <td className='plants' style= {{textAlign: 'left'}}>
+                      {item.plant_names?.map((plantName) => (
+                        <li key={plantName} className="data-table-plant">
+                        {plantName}
+                    </li>
+                      ))}
+                    </td>
+                    <td className='interval'>
+                      {item.interval}
+                    </td>
+                    <td className='data-table-actions'>
+                      <div>
+                        {/* <EditButton
+                          onClick={() => onEdit(selectedGardenIndex, item.id)}
+                          aria-label={`Edit notification ${item.name}`}
+                        /> */}
+                        <TrashButton
+                          onClick={() => handleDeleteNotification(selectedGardenIndex, item.id)}
+                          aria-label={`Delete notification ${item.name}`}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                )
+              )}
+              <tr aria-label="Add new notification row">
+                <td colSpan={5} className="data-table-add-action">
+                  <div className="data-table-add-content">
+                    <AddItemButton
+                      onClick={onAdd}
+                      ariaLabel="Add new recurring reminder"
+                      className="data-table-add-button"
+                    />
+                  </div>
+                </td>
+              </tr>
+  
             </>
-    );
+          ) : (
+            <tr aria-label="Add new notification row">
+                <td colSpan={5} className="data-table-add-action">
+                  <div className="data-table-add-content">
+                    <AddItemButton
+                      onClick={onAdd}
+                      ariaLabel="Add new recurring reminder"
+                      className="data-table-add-button"
+                    />
+                  </div>
+                </td>
+              </tr>
+          )}
+        </tbody>
+      </table>
+    
+    <ConfirmModal
+    isOpen={isModalOpen}
+    onConfirm={handleConfirmDelete}
+    onCancel={handleCancelDelete}
+    message="Are you sure you want to delete this notification?"
+  />
+  </>
+  );
 };
 
 export default DataTable;

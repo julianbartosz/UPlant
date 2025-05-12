@@ -1,8 +1,2 @@
-export { default as COLORS } from './colors';
-export { default as ICONS } from './icons';
-
-const MAXSIZE_GARDEN = 10;
-export { MAXSIZE_GARDEN };
-
-const PAGES = ['dashboard', 'catalog', 'settings', 'notifications', 'profile'];
-export { PAGES };
+export { MAXSIZE_GARDEN, PAGES, COLORS, ICONS } from './config';
+export { BASE_API, HOME_URL, LOGIN_URL, DEBUG } from './env';

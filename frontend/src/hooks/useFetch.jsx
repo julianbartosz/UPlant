@@ -1,84 +1,108 @@
 /**
  * @file useFetch.jsx
- * @description Custom React hook for fetching data from a given URL.
- * @param {string} url
- * @param {Object} [options={}] 
- * @param {string} [options.method='GET'] 
- * @param {Object} [options.headers={}] 
- * @param {Object} [options.body=null]
+ * @description Custom React hook for fetching data from a given URL with flexible configuration.
+ * @param {string} endpoint - The URL to fetch data from.
+ * @param {Object} [options={}] - Fetch options.
+ * @param {string} [options.method='GET'] - HTTP method (e.g., GET, POST, PUT).
+ * @param {Object} [options.headers={}] - Custom headers for the request.
+ * @param {Object|string|null} [options.body=null] - Request body (JSON object, string, or null).
+ * @param {boolean} [options.manual=false] - If true, fetch is not triggered automatically.
+ * @param {string} [options.credentials='include'] - Credentials mode for the request.
  * 
- * @returns {{ data: any, error: string | null }}
+ * @returns {{ data: any, error: string | null, loading: boolean, refetch: Function }}
  *
  * @example
- * const { data, error, loading } = useFetch('/api/data');
+ * const { data, error, loading, refetch } = useFetch('/api/data', {
+ *   method: 'POST',
+ *   headers: { 'Custom-Header': 'value' },
+ *   body: { key: 'value' }
+ * });
  */
 
-import { useState, useEffect } from "react";
-// import { DummyFetch } from "../debugger";
+// imports
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
-const useGet = (url) => {
+// environment variables
+const DEBUG = import.meta.env.VITE_DEBUG === 'true';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
-    if (!url) {
-        throw new Error("URL is required");
+const useFetch = (endpoint, options = {}) => {
+  const {
+    method = 'GET',
+    headers = {},
+    body = null,
+    manual = false,
+    credentials = 'include',
+  } = options;
+
+  if (!endpoint && !manual) {
+    throw new Error('ENDPOINT is required');
+  }
+
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(!manual);
+
+  // Memoize headers and body to prevent unnecessary re-renders
+  const memoizedHeaders = useMemo(() => headers, [JSON.stringify(headers)]);
+  const memoizedBody = useMemo(() => body, [JSON.stringify(body)]);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    const url = new URL(endpoint, BASE_URL);
+
+    if (DEBUG) {
+      console.log(`Request method: ${method}`);
+      console.log(`Request headers:`, memoizedHeaders);
+      console.log(`Request body:`, memoizedBody);
+      console.log(`Request URL: ${url}`);
     }
 
-    const allowedEndpoints = import.meta.env.VITE_ALLOWED_ENDPOINTS?.split(',') || [];
-    const isValidEndpoint = allowedEndpoints.some(endpoint => url.startsWith(endpoint));
+    try {
+      const fetchOptions = {
+        method,
+        credentials,
+        headers: {
+          'Authorization': `Token ${localStorage.getItem('token') || ''}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...memoizedHeaders,
+        },
+      };
 
-    if (!isValidEndpoint) {
-        throw new Error("The provided URL is not among the allowed endpoints");
+      if (memoizedBody) {
+        fetchOptions.body = typeof memoizedBody === 'string' ? memoizedBody : JSON.stringify(memoizedBody);
+      }
+
+      const response = await fetch(url, fetchOptions);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setData(result);
+      return result;
+    } catch (err) {
+      if (DEBUG) {
+        console.error('Fetch error:', err);
+      }
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
     }
+  }, [endpoint, method, memoizedHeaders, memoizedBody, credentials]);
 
-    const [data, setData] = useState(null);
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true);
-    
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
+  useEffect(() => {
+    if (!manual) {
+      fetchData();
+    }
+  }, [fetchData, manual]);
 
-            // if (import.meta.env.VITE_GARDENS_API_URL !== url && import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
-            //     console.log("Using dummy fetch");
-            //     console.log("Dummy fetch URL:", url);
-            //     const dummyData = await DummyFetch(url);
-            //     console.log("Dummy data:", dummyData);
-
-            //     setData(dummyData.data);
-            //     setLoading(false);
-            //     return;
-            // }
-
-            try {
-                const response = await fetch(url,  {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        // Alternative client-side token storage
-                        // 'Authorization': `Token ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                setData(result);
-                setLoading(false);
-
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-        
-        fetchData();
-    }, []);
-
-    return { data, setData, error, loading };
+  return { data, error, loading, refetch: fetchData };
 };
 
-export default useGet;
+export default useFetch;

@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { UserContext } from '../contexts/UserProvider';
+import { UserContext } from '../context/UserProvider';
 
 export const useUser = () => {
     const context = useContext(UserContext);
@@ -10,11 +10,11 @@ export const useUser = () => {
     
     const { username, setUsername, userId } = context;
 
-    const mediateDeleteAccount = async () => {
+    const mediateDeleteAccount = async (users) => {
 
-        if (!userId) {
-            throw new Error('User ID is not available');
-        }
+        // if (!userId) {
+        //     throw new Error('User ID is not available');
+        // }
 
         const confirmDelete = window.confirm('Are you sure you want to delete your account? This action cannot be undone.');
 
@@ -22,14 +22,15 @@ export const useUser = () => {
             return;
         }
 
-        const endpoint = `${import.meta.env.VITE_BACKEND_URL}/api/users/admin/users/${userId}/`; 
+        const endpoint = `${import.meta.env.VITE_BACKEND_URL}/api/users/me/delete/`; 
         try {
             const response = await fetch(endpoint, {
-                method: 'DELETE',
+                method: 'POST',
+                credentials: 'include',
                 headers: {
-                    'Authorization': `Token 9811995a3db487b9cd8d772aac66cacbf6dc861c`,
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({ password: users_password}),
             });  
 
             if (!response.ok) {

@@ -6,7 +6,7 @@
     top: 60px;
     width: 200px;
     height: calc(100vh - 60px);
-    background: linear-gradient(to right, rgb(152, 152, 152), rgb(65, 64, 64));
+    background: linear-gradient(to right, rgba(152, 152, 152, 0.8), rgba(65, 64, 64, 0.8));
     padding: 10px;
     border-radius: 0 10px 0 0;
     border: 2px solid black;
@@ -102,6 +102,7 @@ button.search-button:active {
     margin-top: auto;
     margin-bottom: 22px;
     outline: 1px solid white;
+    cursor: pointer;
 }
 
 .plant-common-name {
@@ -117,4 +118,5 @@ button.search-button:active {
     transition: background-color 0.2s ease, opacity 0.2s ease;
     flex: 1 1 100%;
     box-sizing: border-box;
+    cursor: pointer;
 }
