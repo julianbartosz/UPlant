@@ -1,29 +1,24 @@
+/**
+ * @file Weather.jsx
+ * @description A React component that displays weather information and provides gardening advice based on the current weather conditions.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Object} props.weather - The weather data object.
+ * @param {string} props.weather.name - The name of the location.
+ * @param {Object[]} props.weather.weather - Array containing weather condition details.
+ * @param {string} props.weather.weather[0].icon - The icon code for the current weather condition.
+ * @param {string} props.weather.weather[0].description - A textual description of the current weather condition.
+ * @param {Object} props.weather.main - Main weather details.
+ * @param {number} props.weather.main.temp - The current temperature in Celsius.
+ * @param {number} props.weather.main.humidity - The current humidity percentage.
+ * @param {Object} [props.weather.rain] - Rain data (optional).
+ * @param {number} [props.weather.rain["1h"]] - Rain volume for the last hour in mm (optional).
+ * 
+ * @returns {JSX.Element} A styled weather card with location, weather details, and gardening advice.
+ */
 import './styles/weather.css';
-import React, { useEffect } from 'react';
 
-import { useUser } from '../../hooks';
-
-const WeatherWidget = () => {
-  // Move later
-  const API_KEY = "ff501ab5606085a5564e2ee89a2856f2";
-
-  React.useEffect(() => {
-    const fetchWeather = async () => {
-      try {
-        const response = await fetch(`http://api.openweathermap.org/data/2.5/weather?q=London&appid=${API_KEY}&units=metric`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch weather data");
-        }
-        const data = await response.json();
-        setWeather(data);
-      } catch (error) {
-        console.error("Error fetching weather data:", error);
-      }
-    };
-
-    fetchWeather();
-  }, []);
-
+const Weather = ({ weather }) => {
   if (!weather) {
     return (
       <div className="loading">
@@ -104,7 +99,7 @@ const WeatherWidget = () => {
             <span>🌧️</span>
             <div>
               <p>Rain</p>
-              <p>{weather.rain["1h"]} mm/h</p>
+              <p>{weather.rain.oneHour} mm/h</p>
             </div>
           </div>
         )}
@@ -119,4 +114,4 @@ const WeatherWidget = () => {
   );
 };
 
-export default WeatherWidget;
+export default Weather;

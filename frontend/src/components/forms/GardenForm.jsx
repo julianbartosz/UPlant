@@ -1,38 +1,24 @@
 /**
- * GardenForm Component
- * 
  * @file GardenForm.jsx
- * @component
- * @param {Object} props
- * @param {Function} props.callback - Callback function to handle the cancel action.
+ * @description Form component for creating gardens with x/y dimensions and name
  * 
- * @returns {JSX.Element} The rendered GardenForm component.
- * 
- * @example
- * <GardenForm callback={() => console.log('Cancel clicked')} />
- * 
- * @remarks
- * - The `x` and `y` fields must be integers, and `name` must be a non-empty string.
- * - Success and error messages are automatically cleared after 5 seconds.
- * - Uses the `http://localhost:8000/api/gardens/gardens/` endpoint for the API request.
  */
-
 import { useContext, useEffect, useState } from 'react';
 import { GridLoading } from '../widgets';
-import FormWrapper from './utils/FormWrapper';
-import FormContent from './utils/FormContent';
+import { FormWrapper, FormContent } from './utils';
 import { UserContext } from '../../context/UserProvider';
+import { BASE_API } from '../../constants';
 import './utils/styles/form.css';
 
 /**
  * Performs the garden creation API request.
  * 
- * @param {Object} newGarden - The garden data with size_x, size_y, and name.
- * @returns {Promise<{ success: boolean|null, data?: any, error?: any }>} The result of the API request.
+ * @param {{ size_x: number, size_y: number, name: string }} newGarden
+ * @returns {Promise<{ success: boolean|null, data?: any, error?: any }>}
  */
 const createGarden = async (newGarden) => {
   try {
-    const url = 'http://localhost:8000/api/gardens/gardens/';
+    const url = `${BASE_API}/gardens/gardens/`;
     const requestBody = newGarden;
 
     const response = await fetch(url, {
@@ -56,7 +42,7 @@ const createGarden = async (newGarden) => {
   }
 };
 
-const GardenForm = ({ callback }) => {
+const GardenForm = ({ callback, focus=false }) => {
   const [x, setX] = useState('');
   const [y, setY] = useState('');
   const [name, setName] = useState('');
@@ -176,10 +162,8 @@ const GardenForm = ({ callback }) => {
     <FormWrapper
       onCancel={callback}
       onSubmit={handleSubmit}
-      cancelLabel="Return"
       submitLabel={loading ? 'Submitting' : 'Submit'}
       isSubmitting={loading}
-      cancelButtonStyle={{ backgroundColor: 'red' }}
     >
       <FormContent fields={fields} error={error} success={success} />
     </FormWrapper>

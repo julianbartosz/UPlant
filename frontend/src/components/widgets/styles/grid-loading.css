@@ -1,4 +1,6 @@
-.spinner-container {
+/* File: UPlant/frontend/src/components/widgets/styles/grid-loading.css */
+
+.gridloading-container {
     justify-content: center;
     flex-direction: column;
     display: flex;
@@ -10,7 +12,7 @@
     border-radius: 10px;
 }
 
-.spinner-wrapper {
+.gridloading-wrapper {
     display: flex;
     justify-content: center;
     align-items: center;

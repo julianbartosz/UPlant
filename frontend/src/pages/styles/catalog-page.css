@@ -1,3 +1,5 @@
+/* File: UPlant/frontend/src/pages/styles/catalog-page.css */
+
 .catalog-content {
     position: fixed;
     top: 60px;
@@ -114,6 +116,7 @@ p > span:first-child {
     position: relative;
     z-index: 1000;
 }
+
 .plant-details-entry {
     display: flex;
     justify-content: space-between;
@@ -134,6 +137,7 @@ p > span:first-child {
     flex: 2;
     color: #333;
 }
+
 .tooltip .tooltip-text {
     visibility: hidden;
     width: 180px;

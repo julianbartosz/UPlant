@@ -1,3 +1,5 @@
+/* File: UPlant/frontend/src/components/layout/styles/nav-bar.css */
+
 .navbar {
     position: fixed;
     width: 100%;
@@ -54,5 +56,6 @@
     align-self: center;
 }
 
-
-
+.notification-bell {
+    margin-top: 4px;
+}

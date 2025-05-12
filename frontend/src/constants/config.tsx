@@ -31,6 +31,15 @@ const COLORS: string[] = [
     "#008000"  // green
 ];
 
+/// The maximum number of plants that can be attached to a notification.
+const MAX_PLANTS_NOTIFICATION = 3;
+
+/// The maximum number of characters allowed in a notification name.
+const MAX_CHAR_NOTIFICATION = 10;
+
+ /** Ceiling for number of plants in search response */
+const MAX_RESPONSE_PLANTS = 30;
+
 /**
  * A mapping of plant families to their corresponding icons.
  * This object provides a fun and quirky way to associate plant families with representative emojis.
@@ -160,4 +169,12 @@ const ICONS: Record<string, string> = {
     default: '❓' // Default icon for unknown - "Who knows? Not me!"
 };
 
-export { MAXSIZE_GARDEN, PAGES, COLORS, ICONS };
+export { 
+    MAXSIZE_GARDEN, 
+    PAGES, 
+    COLORS, 
+    ICONS, 
+    MAX_PLANTS_NOTIFICATION, 
+    MAX_CHAR_NOTIFICATION,
+    MAX_RESPONSE_PLANTS
+};

@@ -4,22 +4,41 @@ import { Navigate } from 'react-router-dom';
 import UserProvider from './context/UserProvider';
 import './styles/app.css';
 
-function App() {
+const AccountAccess = ({ children }) => (
+  <UserProvider>
+    {children}
+  </UserProvider>
+);
 
+const ProtectedDashboard = () => (
+  <AccountAccess>
+    <DashboardPage />
+  </AccountAccess>
+);
+
+const ProtectedSettings = () => (
+  <AccountAccess>
+    <SettingsPage />
+  </AccountAccess>
+);
+
+const ProtectedNotifications = () => (
+  <AccountAccess>
+    <NotificationsPage />
+  </AccountAccess>
+);
+
+function App() {
   return (
-    <UserProvider>
-      <Router basename='/app'>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/catalog" element={<CatalogPage />} /> 
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="*" element={
-            <div className='centered-content'>🌱 Oops! Looks like you've wandered off the garden path. 🌱</div>} />
-        </Routes>
-      </Router>
-    </UserProvider>
+    <Router basename='/app'>
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<ProtectedDashboard />} />
+        <Route path="/settings" element={<ProtectedSettings />} />
+        <Route path="/notifications" element={<ProtectedNotifications />} />
+        <Route path="/catalog" element={<CatalogPage />} /> 
+      </Routes>
+    </Router>
   );
 }
 

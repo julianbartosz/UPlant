@@ -1,17 +1,186 @@
+/**
+ * NotificationPage Component
+ * 
+ * @file NotificationPage.jsx
+ * @version 1.0.0
+ * @description A page component that displays notifications for a selected garden.
+ * This component allows users to view, complete, skip, or visualize notifications related to their gardens.
+ * 
+ * @component
+ * @returns {JSX.Element} The rendered NotificationPage component.
+ * 
+ * @remarks
+ * - Fetches and displays notifications for a selected garden.
+ * - Allows users to complete, skip, or visualize notifications.
+ * - Uses context for garden data and custom hooks for content sizing.
+ * - Visual mode highlights garden cells related to a notification.
+ */
+
 import { useRef, useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NavBar, GardenBar } from '../components/layout';
 import { GardenGrid } from '../components/ui';
-
-import './styles/notifications-page.css';
 import { UserContext } from '../context/UserProvider';
 import { NotificationList } from '../components/layout';
 import { useContentSize } from '../hooks';
-import { BackButton, GenericButton } from '../components/buttons';
-import { Grid } from 'react-loader-spinner';
 import { GridLoading } from '../components/widgets';
-import { DEBUG } from '../constants';   
+import { DEBUG, BASE_API } from '../constants';   
+import './styles/notifications-page.css';
 
+/**
+ * Fetches notifications for a specific garden.
+ * 
+ * @param {string} gardenId - The ID of the garden to fetch notifications for.
+ * @returns {Promise<{ success: boolean, data?: any, error?: string }>} The result of the API request.
+ */
+const fetchNotificationsByGarden = async (gardenId) => {
+  if (DEBUG) {
+    console.log('Fetching notifications for garden:', gardenId);
+  }
+
+  try {
+    const response = await fetch(`${BASE_API}/notifications/notifications/by_garden/?garden_id=${gardenId}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Filter for PENDING notifications
+    const pendingNotifications = data
+      .flatMap(garden => garden.notifications || [])
+      .filter(notification => notification.status === 'PENDING');
+
+    return { success: true, data: pendingNotifications };
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Completes or skips a notification instance.
+ * 
+ * @param {string} instanceId - The ID of the notification instance.
+ * @param {string} action - The action to perform ('complete' or 'skip').
+ * @returns {Promise<{ success: boolean, data?: any, error?: string }>}
+ */
+const processNotification = async (instanceId, action) => {
+  if (DEBUG) {
+    console.log(`Processing notification (${action}):`, instanceId);
+  }
+
+  try {
+    const endpoint = `${BASE_API}/notifications/instances/${instanceId}/${action}/`;
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return { success: true, data: await response.json() };
+  } catch (error) {
+    console.error(`Error ${action} notification:`, error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Add CSS styles for the visual controls
+const visualControlsStyles = `
+.visual-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 88px;
+  z-index: 100;
+
+}
+
+.btn {
+  padding: 10px 20px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  min-width: 120px;
+  color: white;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn.return {
+  background-color: #4285F4;
+}
+
+.btn.return:hover {
+  background-color: #3B73C5;
+}
+
+.btn.skip {
+  background-color: #DB4437;
+}
+
+.btn.skip:hover {
+  background-color: #C53929;
+}
+
+.btn.complete {
+  background-color: #0F9D58;
+}
+
+.btn.complete:hover {
+  background-color: #0B8043;
+}
+
+.visual-modal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: center;
+}
+
+.notify-grid-container {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.notification-list-container {
+  border: 2px solid black;
+  width: 100%;
+  height: calc(100% - 148px);
+  margin-bottom: 30px;
+  border-radius: 8px;
+  overflow-y: auto;
+  background: linear-gradient(to bottom right, rgba(152, 152, 152, 0.6), rgba(65, 64, 64, 0.6));
+  padding: 20px;
+  margin-right: 30px;
+  margin-left: 30px;
+}
+`;
 
 function NotificationPage() {
   const navigate = useNavigate();
@@ -20,182 +189,90 @@ function NotificationPage() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [squareSize, setSquareSize] = useState(1);
-  const [fontSize, setFontSize] = useState(null);
   const [selectedGardenIndex, setSelectedGardenIndex] = useState(0);
-  const [selectedEmptyCells, setDugCells] = useState(new Set());
-  const [selectedPlantCells, setSelectedPlantCells] = useState(new Set());
   const [toggleVisual, setToggleVisual] = useState(false);
   const [coloredCells, setColoredCells] = useState(new Set());
+  const [selectedInstance, setSelectedInstance] = useState(null);
 
   const containerRef = useRef(null);
   const contentSize = useContentSize(containerRef);
-  const selectedEmptyCellsRef = useRef(selectedEmptyCells);
-  const selectedPlantCellsRef = useRef(selectedPlantCells);
-  const selectedGardenIndexRef = useRef(selectedGardenIndex);
-  const [selectedInstance, setSelectedInstance] = useState(null);
 
+  // Inject styles on component mount
   useEffect(() => {
-    selectedEmptyCellsRef.current = selectedEmptyCells;
-  }, [selectedEmptyCells]);
-
-  useEffect(() => {
-    selectedPlantCellsRef.current = selectedPlantCells;
-  }, [selectedPlantCells]);
-
-  useEffect(() => {
-    selectedGardenIndexRef.current = selectedGardenIndex;
-  }, [selectedGardenIndex]);
-
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setFontSize((prevFontSize) => prevFontSize + 0);
-    });
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current, { childList: true, subtree: true });
-    }
-
-    return () => observer.disconnect();
+    const styleEl = document.createElement('style');
+    styleEl.innerHTML = visualControlsStyles;
+    document.head.appendChild(styleEl);
+    
+    return () => {
+      document.head.removeChild(styleEl);
+    };
   }, []);
 
-
-  // Fetch notifications by garden
-  const fetchNotifications = async () => {
-    setLoading(true);
-    setError(null);
-    const gardenId = gardens[selectedGardenIndex]?.id;
-    if (!gardenId) {
-      setError('No garden selected.');
-      setLoading(false);
-      return;
-    }
-    if (DEBUG) {
-        console.log("--- fetchNotifications ---");
-    }
-      
-    try {
-      const response = await fetch(`http://localhost:8000/api/notifications/notifications/by_garden/?garden_id=${gardenId}`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Fetched notifications:', data);
-      if (!data) {
-        throw new Error('No data received');
-      }
-      if (DEBUG) {
-        console.log('Fetched data:', data);
-      }
-
-      // Flatten notifications and filter for PENDING status
-      const flattenedNotifications = data
-        .flatMap(garden => garden.notifications || [])
-        .filter(notification => notification.status === 'PENDING');
-      
-      setNotifications(flattenedNotifications);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-      setError('Failed to load notifications. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch notifications when garden selection or gardens change
   useEffect(() => {
-    fetchNotifications();
+    const loadNotifications = async () => {
+      setLoading(true);
+      setError(null);
+      
+      const gardenId = gardens[selectedGardenIndex]?.id;
+      if (!gardenId) {
+        setError('No garden selected.');
+        setLoading(false);
+        return;
+      }
+
+      const result = await fetchNotificationsByGarden(gardenId);
+      if (result.success) {
+        setNotifications(result.data);
+      } else {
+        setError('Failed to load notifications. Please try again later.');
+      }
+      
+      setLoading(false);
+    };
+
+    loadNotifications();
   }, [selectedGardenIndex, gardens]);
 
-  if (globalLoading) {
-    return (
-      <GridLoading />
-    );
-  }
-
-  const completeNotification = async (instanceId) => {
-    
-    try {
-      const response = await fetch(`http://localhost:8000/api/notifications/instances/${instanceId}/complete/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) throw new Error(`Failed to complete notification. Status: ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error('Error completing notification:', error);
-      throw error;
-    }
-  };
-
-  const skipNotification = async (instanceId) => {
-    if (DEBUG) {
-        console.log("--- skipNotification ---");
-        console.log('Instance ID:', instanceId);
-    }
-    try {
-      const response = await fetch(`http://localhost:8000/api/notifications/instances/${instanceId}/skip/`, {
-        method: 'POST',
-        credentials: ' Lights Outinclude',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) throw new Error(`Failed to skip notification. Status: ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error('Error skipping notification:', error);
-      throw error;
-    }
-  };
-
   const handleComplete = async (instanceId) => {
-    if (DEBUG) {
-        console.log("--- handleComplete ---");
-        console.log('Instance ID:', instanceId);
-    }
     try {
-      await completeNotification(instanceId);
-      await fetchNotifications();
+      const result = await processNotification(instanceId, 'complete');
+      if (result.success) {
+        refreshNotifications();
+      } else {
+        throw new Error(result.error);
+      }
     } catch (error) {
       alert(`Failed to complete notification: ${error.message}`);
     }
-    setToggleVisual(false);
-    setSelectedInstance(null);
+    
+    resetVisualMode();
   };
 
   const handleSkip = async (instanceId) => {
-    if (DEBUG) {
-        console.log("--- handleSkip ---");
-        console.log('Instance ID:', instanceId);
-    }
     try {
-      await skipNotification(instanceId);
-      await fetchNotifications();
+      const result = await processNotification(instanceId, 'skip');
+      if (result.success) {
+        refreshNotifications();
+      } else {
+        throw new Error(result.error);
+      }
     } catch (error) {
       alert(`Failed to skip notification: ${error.message}`);
     }
-    setToggleVisual(false);
-    setSelectedInstance(null);
+    
+    resetVisualMode();
   };
 
   const handleShowVisual = (instance) => {
-    if (DEBUG) {
-        console.log("--- handleShowVisual ---");
-        console.log('Instance:', instance);
-    }
     if (!instance) return;
+    
     const garden = gardens[selectedGardenIndex];
     if (!garden) return;
 
     const coloredCellsSet = new Set();
     const plantNames = instance.plant_names;
+    
     garden.cells.forEach((row, i) => {
       row.forEach((cell, j) => {
         if (cell && plantNames.some(p => p === (cell.common_name || cell.plant_detail.name))) {
@@ -204,17 +281,40 @@ function NotificationPage() {
       });
     });
     
-    if (DEBUG) {
-        console.log('Colored cells:', coloredCellsSet);
-    }
     setSelectedInstance(instance.instance_id);
     setColoredCells(coloredCellsSet);
     setToggleVisual(true);
   };
 
+  const refreshNotifications = async () => {
+    const gardenId = gardens[selectedGardenIndex]?.id;
+    if (!gardenId) return;
+    
+    const result = await fetchNotificationsByGarden(gardenId);
+    if (result.success) {
+      setNotifications(result.data);
+    }
+  };
+
+  const resetVisualMode = () => {
+    setToggleVisual(false);
+    setSelectedInstance(null);
+    setColoredCells(new Set());
+  };
+
+  if (globalLoading) {
+    return <GridLoading />;
+  }
+
   if (error) {
     return (
-      <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ 
+        width: '100vw', 
+        height: '100vh', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center' 
+      }}>
         <div>{error}</div>
       </div>
     );
@@ -228,120 +328,55 @@ function NotificationPage() {
         onBack={() => navigate('/dashboard')}
       />
       <div className="notification-content-container" ref={containerRef}>
-
         {toggleVisual ? (
           <div className="visual-modal">
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              flexDirection: 'column',
-              alignItems: 'center',
-              marginBottom: '10px',
-              gap: '8px'
-            }}>
-              <button
-                style={{
-                  width: '120px',
-                  padding: '8px 16px',
-                  background: 'blue',
-                  color: 'white',
-                  border: '2px solid #333',
-                  borderRadius: '6px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s'
-                }}
-                onClick={() => setToggleVisual(false)}
-                onMouseOver={(e) => e.target.style.background = '#3B4A8A'}
-                onMouseOut={(e) => e.target.style.background = 'blue'}
+            {/* Visual controls at the top of the container */}
+            <div className="visual-controls">
+              <button 
+                className="btn return"
+                onClick={() => resetVisualMode()}
               >
                 Return
               </button>
-              <button
-                style={{
-                  width: '120px',
-                  padding: '8px 16px',
-                  background: 'red',
-                  color: 'white',
-                  border: '2px solid #333',
-                  borderRadius: '6px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s'
-                }}
+              <button 
                 className="btn skip"
-                onClick={() => { handleSkip(selectedInstance); }}
-                onMouseOver={(e) => e.target.style.background = '#E55A5A'}
-                onMouseOut={(e) => e.target.style.background = 'red'}
+                onClick={() => handleSkip(selectedInstance)}
               >
                 Skip
               </button>
-              <button
-                style={{
-                  width: '120px',
-                  padding: '8px 16px',
-                  background: 'green',
-                  color: 'white',
-                  border: '2px solid #333',
-                  borderRadius: '6px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s'
-                }}
+              <button 
                 className="btn complete"
-                onClick={() => { handleComplete(selectedInstance); }}
-                onMouseOver={(e) => e.target.style.background = '#27AE60'}
-                onMouseOut={(e) => e.target.style.background = 'green'}
+                onClick={() => handleComplete(selectedInstance)}
               >
                 Complete
               </button>
             </div>
-            <GardenGrid
-              coloredCells={coloredCells}
-              interactive={false}
-              gardens={gardens}
-              selectedGardenIndex={selectedGardenIndex}
-              setSelectedGardenIndex={setSelectedGardenIndex}
-              squareSize={squareSize}
-              fontSize={fontSize}
-              contentSize={contentSize}
-              selectedEmptyCells={selectedEmptyCellsRef.current}
-              selectedPlantCells={selectedPlantCellsRef.current}
-            />
+            <div className="notify-grid-container">
+              <GardenGrid
+                coloredCells={coloredCells}
+                interactive={false}
+                selectedGardenIndex={selectedGardenIndex}
+                contentSize={contentSize}
+              />
+            </div>
+          
           </div>
         ) : (
           <>
-            <div>
-              <GardenBar
-                selectedGardenIndex={selectedGardenIndex}
-                setSelectedGardenIndex={setSelectedGardenIndex}
-                onAdd={() => setToggleVisual(!toggleVisual)}
-                dynamic={false}
-                centered={true}
-              />
-            </div>
-            <div style={{
-                border: '2px solid black', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                width: '100vw', 
-                alignSelf: 'end', 
-                height: 'calc(100% - 148px)', 
-                marginBottom: '30px', 
-                borderRadius: '8px', 
-                overflowY: 'scroll', 
-                 background: 'linear-gradient(to bottom right, rgba(152, 152, 152, 0.6), rgba(65, 64, 64, 0.6))',
-                padding: '20px',
-                marginRight: '30px',
-                marginLeft: '30px',
-                }}>
-            <NotificationList 
-            loading={loading}
-              notifications={notifications}
-              onComplete={handleComplete}
-              onSkip={handleSkip}
-              onShowVisual={handleShowVisual}
+            <GardenBar
+              selectedGardenIndex={selectedGardenIndex}
+              setSelectedGardenIndex={setSelectedGardenIndex}
+              dynamic={false}
+              centered={true}
             />
+            <div className="notification-list-container">
+              <NotificationList 
+                loading={loading}
+                notifications={notifications}
+                onComplete={handleComplete}
+                onSkip={handleSkip}
+                onShowVisual={handleShowVisual}
+              />
             </div>
           </>
         )}

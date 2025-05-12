@@ -1,8 +1,10 @@
+/* File: UPlant/frontend/src/components/layout/styles/plant-search-side-bar.css */
+
 .search-container {
     display: flex;
     flex-direction: column;
     position: fixed;
-    border: 4 px solid black;
+    border: 4px solid black;
     top: 60px;
     width: 200px;
     height: calc(100vh - 60px);
@@ -24,16 +26,16 @@
     width: 100%;
     padding: 10px;
     box-sizing: border-box;
-    font-size: 12px; 
+    font-size: 12px;
 }
 
 .search-input:focus {
     outline: none;
-    border: 2px solid #156082; 
+    border: 2px solid #156082;
     box-shadow: 0 0 5px rgba(21, 96, 130, 0.5);
 }
 
-button.loading {
+button.search-loading {
     width: 25%;
     margin-left: 10px;
     padding: 10px;
@@ -43,7 +45,7 @@ button.loading {
     font-size: 16px;
     transition: background-color 0.3s ease;
     background-color: transparent;
-    border-radius: 50%;   
+    border-radius: 50%;
     pointer-events: none;
 }
 
@@ -61,7 +63,7 @@ button.search-button {
 }
 
 button.search-button:hover {
-    background-color: white;
+    background-color: rgba(39, 39, 39, 0.5);
     transform: scale(1.1);
 }
 
@@ -79,13 +81,13 @@ button.search-button:active {
     font-size: 21px;
     flex: 1 0 50%;
     box-sizing: border-box;
-    width: 100%; 
+    width: 100%;
 }
 
 .plant-item {
     padding: 10px;
     border: 1px solid #083448;
-    background: linear-gradient(to bottom,#99642a,#47331f);
+    background: linear-gradient(to bottom, #99642a, #47331f);
     text-align: center;
     transition: background-color 0.2s ease, opacity 0.2s ease;
     flex: 1 1 100%;

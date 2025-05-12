@@ -1,30 +1,31 @@
 /**
  * @file useFetch.jsx
- * @description Custom React hook for fetching data from a given URL with flexible configuration.
- * @param {string} endpoint - The URL to fetch data from.
- * @param {Object} [options={}] - Fetch options.
- * @param {string} [options.method='GET'] - HTTP method (e.g., GET, POST, PUT).
- * @param {Object} [options.headers={}] - Custom headers for the request.
- * @param {Object|string|null} [options.body=null] - Request body (JSON object, string, or null).
- * @param {boolean} [options.manual=false] - If true, fetch is not triggered automatically.
- * @param {string} [options.credentials='include'] - Credentials mode for the request.
+ * @description A custom React hook for performing HTTP requests with support for memoized headers and body, 
+ *              
  * 
- * @returns {{ data: any, error: string | null, loading: boolean, refetch: Function }}
- *
- * @example
- * const { data, error, loading, refetch } = useFetch('/api/data', {
- *   method: 'POST',
- *   headers: { 'Custom-Header': 'value' },
- *   body: { key: 'value' }
- * });
+ * @param {string} endpoint - The API endpoint to fetch data from.
+ * @param {Object} [options={}] - Configuration options for the fetch request.
+ * @param {string} [options.method='GET'] - HTTP method to use for the request.
+ * @param {Object} [options.headers={}] - Additional headers to include in the request.
+ * @param {Object|string|null} [options.body=null] - Request body to send with the request.
+ * @param {boolean} [options.manual=false] - If true, disables automatic fetching and requires manual invocation of `refetch`.
+ * @param {string} [options.credentials='include'] - Credentials mode for the request (e.g., 'include', 'same-origin').
+ * 
+ * @returns {Object} - An object containing the following properties:
+ *   @property {any} data - The response data from the fetch request.
+ *   @property {string|null} error - The error message, if an error occurred during the fetch.
+ *   @property {boolean} loading - Indicates whether the fetch request is in progress.
+ *   @property {Function} refetch - A function to manually trigger the fetch request.
+ * 
+ * @throws {Error} - Throws an error if the `endpoint` is not provided and `manual` is false.
  */
-
-// imports
-import { useState, useEffect, useCallback, useMemo } from 'react';
-
-// environment variables
-const DEBUG = import.meta.env.VITE_DEBUG === 'true';
-const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+import { 
+  useState, 
+  useEffect, 
+  useCallback, 
+  useMemo 
+} from 'react';
+import { BASE_API, DEBUG } from '../constants';
 
 const useFetch = (endpoint, options = {}) => {
   const {
@@ -36,7 +37,7 @@ const useFetch = (endpoint, options = {}) => {
   } = options;
 
   if (!endpoint && !manual) {
-    throw new Error('ENDPOINT is required');
+    throw new Error('Endpoint prop is required');
   }
 
   const [data, setData] = useState(null);
@@ -51,7 +52,7 @@ const useFetch = (endpoint, options = {}) => {
     setLoading(true);
     setError(null);
 
-    const url = new URL(endpoint, BASE_URL);
+    const url = new URL(endpoint, BASE_API);
 
     if (DEBUG) {
       console.log(`Request method: ${method}`);

@@ -1,12 +1,14 @@
 /**
- * DataTable Component
- * 
  * @file DataTable.jsx
+ * @description A responsive data table component that displays notifications with CRUD operations.
+ * This component renders notification data in a structured table format and provides functionality
+ * for adding and removing notifications.
+ * 
  * @component
  * @param {Object} props
  * @param {number} props.selectedGardenIndex - Index of the selected garden in the UserContext gardens array.
  * @param {Function} props.onAdd - Callback function to trigger adding a new notification.
- * @param {Function} props.onEdit - Callback function to trigger editing a notification, called with gardenIndex and notificationId.
+ * @param {Function} [props.onEdit] - Callback function to trigger editing a notification, called with gardenIndex and notificationId.
  * @returns {JSX.Element} The rendered DataTable component.
  * 
  * @example
@@ -16,21 +18,28 @@
  *   onEdit={(gardenIndex, notificationId) => console.log(`Edit notification ${notificationId} in garden ${gardenIndex}`)}
  * />
  * 
- * @remarks
- * - Displays a table of notifications from the selected garden, including name, type, plants, and actions.
- * - The `type` field is mapped to human-readable labels (e.g., `WA` to `Water`).
- * - Allows adding notifications via an Add button in a styled perspective row (spanning all columns) or empty state, triggering the `onAdd` callback.
- * - Allows editing and deleting notifications via Edit and Delete buttons in the Actions column.
- * - Uses a ConfirmModal component for delete confirmation, replacing native window.confirm.
- * - Shows an empty state with a notification icon, a cursive, tilted message, and an Add button when no notifications exist.
- * - Uses `data-table.css` for styling the table, perspective row, empty state, and modal, and `buttons.css` for button styles.
- * - Debug logging is controlled by `VITE_DEBUG` from constants.
- * - Errors are logged to the console without UI feedback, as this is not a form.
+ * @details
+ * - Content Structure:
+ *   - The table displays notification data including name, type, plants, interval, and action controls
+ *   - Each row represents a single notification with its associated properties
+ *   - The first column shows the notification name
+ *   - The type column displays a human-readable version of notification type codes (e.g., 'WA' to 'Water')
+ *   - The plants column lists all plants associated with the notification
+ *   - The days column shows the notification interval
+ *   - The actions column contains controls for modifying or removing notifications
+ * 
+ * - Features:
+ *   - Delete confirmation via modal dialog to prevent accidental removals
+ *   - Empty state handling with a consistent UI for adding new notifications
+ *   - Add button in a specially styled perspective row for visual emphasis
+ *   - Type mapping to convert backend codes to user-friendly text
+ *   - Integration with UserContext for state management
+ *   - Proper error handling for API requests
+ *   - Accessibility support with appropriate ARIA labels
+ * 
  */
-
 import { useContext, useState } from 'react';
-import { AddItemButton, EditButton, TrashButton } from '../buttons';
-import { FiBell } from 'react-icons/fi';
+import { AddItemButton, TrashButton } from '../buttons';
 import { UserContext } from '../../context/UserProvider';
 import { BASE_API, DEBUG } from '../../constants';
 import ConfirmModal from '../modals/ConfirmModal';
@@ -83,12 +92,16 @@ const deleteNotification = async (notificationId) => {
   }
 };
 
-const DataTable = ({ selectedGardenIndex, onAdd, onEdit }) => {
-  const { gardens, dispatch } = useContext(UserContext);
+/**
+ * DataTable component for displaying and managing notifications
+ */
+const DataTable = ({ selectedGardenIndex, onAdd }) => {
+  const { gardens, dispatch, refreshCounts } = useContext(UserContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(null);
 
-  const handleDeleteNotification = async (gardenIndex, notificationId) => {
+  // Handlers for deletion flow
+  const handleDeleteNotification = (gardenIndex, notificationId) => {
     setPendingDelete({ gardenIndex, notificationId });
     setIsModalOpen(true);
   };
@@ -100,8 +113,14 @@ const DataTable = ({ selectedGardenIndex, onAdd, onEdit }) => {
     const result = await deleteNotification(notificationId);
 
     if (result.success) {
-      dispatch({ type: 'REMOVE_NOTIFICATION', garden_index: gardenIndex, notification_id: notificationId });
+      dispatch({ 
+        type: 'REMOVE_NOTIFICATION', 
+        garden_index: gardenIndex, 
+        notification_id: notificationId 
+      });
+      
       if (DEBUG) console.log('Notification deleted successfully');
+      refreshCounts();
     } else if (result.success === null) {
       console.error('Network error:', result.error);
     } else {
@@ -117,15 +136,31 @@ const DataTable = ({ selectedGardenIndex, onAdd, onEdit }) => {
     setPendingDelete(null);
   };
 
+  // Get notifications for the selected garden
   const notifications = gardens[selectedGardenIndex]?.notifications || [];
+
+  // Render the add button row
+  const renderAddButtonRow = () => (
+    <tr aria-label="Add new notification row">
+      <td colSpan={5} className="data-table-add-action">
+        <div className="data-table-add-content">
+          <AddItemButton
+            onClick={onAdd}
+            ariaLabel="Add new recurring reminder"
+            className="data-table-add-button"
+          />
+        </div>
+      </td>
+    </tr>
+  );
 
   return (
     <>
-    
       <table className="data-table" role="grid">
-      <caption style={{backgroundColor: 'black'}}>
-      🔔 Configure your maintenance / care routine 🔔
-  </caption>
+        <caption style={{ backgroundColor: 'black' }}>
+          🔔 Configure your maintenance / care routine 🔔
+        </caption>
+        
         <thead className="data-table-header">
           <tr>
             <th>Name</th>
@@ -135,30 +170,25 @@ const DataTable = ({ selectedGardenIndex, onAdd, onEdit }) => {
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody >
+        
+        <tbody>
           {notifications.length > 0 ? (
             <>
               {notifications.map((item) =>
                 item && (
-                  <tr key={item.id} >
-                    <td className='name'>{item.name}</td>
+                  <tr key={item.id}>
+                    <td className="name">{item.name}</td>
                     <td className="type">{mapNotificationType(item.type)}</td>
-                    <td className='plants' style= {{textAlign: 'left'}}>
+                    <td className="plants" style={{ textAlign: 'left' }}>
                       {item.plant_names?.map((plantName) => (
                         <li key={plantName} className="data-table-plant">
-                        {plantName}
-                    </li>
+                          {plantName}
+                        </li>
                       ))}
                     </td>
-                    <td className='interval'>
-                      {item.interval}
-                    </td>
-                    <td className='data-table-actions'>
+                    <td className="interval">{item.interval}</td>
+                    <td className="data-table-actions">
                       <div>
-                        {/* <EditButton
-                          onClick={() => onEdit(selectedGardenIndex, item.id)}
-                          aria-label={`Edit notification ${item.name}`}
-                        /> */}
                         <TrashButton
                           onClick={() => handleDeleteNotification(selectedGardenIndex, item.id)}
                           aria-label={`Delete notification ${item.name}`}
@@ -168,42 +198,21 @@ const DataTable = ({ selectedGardenIndex, onAdd, onEdit }) => {
                   </tr>
                 )
               )}
-              <tr aria-label="Add new notification row">
-                <td colSpan={5} className="data-table-add-action">
-                  <div className="data-table-add-content">
-                    <AddItemButton
-                      onClick={onAdd}
-                      ariaLabel="Add new recurring reminder"
-                      className="data-table-add-button"
-                    />
-                  </div>
-                </td>
-              </tr>
-  
+              {renderAddButtonRow()}
             </>
           ) : (
-            <tr aria-label="Add new notification row">
-                <td colSpan={5} className="data-table-add-action">
-                  <div className="data-table-add-content">
-                    <AddItemButton
-                      onClick={onAdd}
-                      ariaLabel="Add new recurring reminder"
-                      className="data-table-add-button"
-                    />
-                  </div>
-                </td>
-              </tr>
+            renderAddButtonRow()
           )}
         </tbody>
       </table>
-    
-    <ConfirmModal
-    isOpen={isModalOpen}
-    onConfirm={handleConfirmDelete}
-    onCancel={handleCancelDelete}
-    message="Are you sure you want to delete this notification?"
-  />
-  </>
+      
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        message="Are you sure you want to delete this notification?"
+      />
+    </>
   );
 };
 

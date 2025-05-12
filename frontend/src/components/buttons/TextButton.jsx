@@ -1,5 +1,4 @@
-import React from 'react';
-import './styles/btn-styles.css';
+import './styles/generic-btn.css';
 
 function TextButton({
     onLeftClick = () => {},

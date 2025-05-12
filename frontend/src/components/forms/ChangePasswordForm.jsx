@@ -1,33 +1,19 @@
 /**
- * ChangePasswordForm Component
- * 
  * @file ChangePasswordForm.jsx
- * @component
- * @param {Object} props
- * @param {Function} props.onCancel - Callback function to handle the cancel action.
- * 
- * @returns {JSX.Element} The rendered ChangePasswordForm component.
- * 
- * @example
- * <ChangePasswordForm onCancel={() => console.log('Cancel clicked')} />
- * 
- * @remarks
- * - The `newPassword` and `confirmPassword` must match.
- * - Success and error messages are automatically cleared after 5 seconds.
- * - Uses the `BASE_API` constant for the API endpoint.
+ * @description A React component for handling password change functionality with form validation and animations.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { BASE_API, LOGIN_URL, DEBUG } from '../../constants';
-import{ FormWrapper, FormContent } from './utils';
+import { FormWrapper, FormContent } from './utils';
+import { CSSTransition } from 'react-transition-group';
 
 /**
- * Performs the password change API request.
- * 
- * @param {string} currentPassword - The user's current password.
- * @param {string} newPassword - The new password.
- * @param {string} confirmPassword - The confirmation of the new password.
- * @returns {Promise<{ success: boolean, data?: any, error?: any }>} The result of the API request.
+ * Function to handle password change request.
+ * @param {string} currentPassword - The current password of the user.
+ * @param {string} newPassword - The new password to be set.
+ * @param {string} confirmPassword - Confirmation of the new password.
+ * @returns {Promise<Object>} - A promise that resolves to an object containing success status and data or error.
  */
 const changePassword = async (currentPassword, newPassword, confirmPassword) => {
   if (DEBUG) {
@@ -66,13 +52,23 @@ const changePassword = async (currentPassword, newPassword, confirmPassword) => 
   }
 };
 
-const ChangePasswordForm = ({ onCancel }) => {
+const ChangePasswordForm = ({ onCancel, focus = false }) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const formRef = useRef(null);
+
+  // Set visible to true after component mounts to trigger transition
+  useEffect(() => {
+    setVisible(true);
+    return () => {
+      setVisible(false);
+    };
+  }, []);
 
   useEffect(() => {
     if (success) {
@@ -95,7 +91,7 @@ const ChangePasswordForm = ({ onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      setError({ error: null, message: "Passwords did not match." });
+      setError({ error: null, message: 'Passwords did not match.' });
       setConfirmPassword('');
       setNewPassword('');
       setCurrentPassword('');
@@ -116,15 +112,14 @@ const ChangePasswordForm = ({ onCancel }) => {
       setCurrentPassword('');
       console.log('Password changed successfully.');
       window.location.href = LOGIN_URL;
-
     } else if (result.success === null) {
-      setError({ error: null, message: "Network Error." });
+      setError({ error: null, message: 'Network Error.' });
       setConfirmPassword('');
       setNewPassword('');
       setCurrentPassword('');
       console.error('Network error.');
     } else {
-      setError({ error: null, message: "Try again." });
+      setError({ error: null, message: 'Try again.' });
       setConfirmPassword('');
       setNewPassword('');
       setCurrentPassword('');
@@ -132,6 +127,14 @@ const ChangePasswordForm = ({ onCancel }) => {
     }
 
     setLoading(false);
+  };
+
+  const handleCancel = () => {
+    setVisible(false);
+    // Delay the onCancel call to allow transition to complete
+    setTimeout(() => {
+      onCancel();
+    }, 300); // Matching the transition duration
   };
 
   const fields = [
@@ -159,16 +162,26 @@ const ChangePasswordForm = ({ onCancel }) => {
   ];
 
   return (
-    <FormWrapper
-      onCancel={onCancel}
-      onSubmit={handleSubmit}
-      cancelLabel="Cancel"
-      submitLabel={loading ? 'Submitting' : 'Submit'}
-      isSubmitting={loading}
-      cancelButtonStyle={{ backgroundColor: 'blue' }}
+    <CSSTransition
+      in={visible}
+      timeout={300}
+      classNames="form-transition"
+      unmountOnExit
+      nodeRef={formRef}
     >
-      <FormContent fields={fields} error={error} success={success} />
-    </FormWrapper>
+      <div ref={formRef} className={focus && 'modal-overlay'}>
+        <FormWrapper
+          onCancel={handleCancel}
+          onSubmit={handleSubmit}
+          cancelLabel="Return"
+          submitLabel={loading ? 'Submitting' : 'Submit'}
+          isSubmitting={loading}
+          focus={false}
+        >
+          <FormContent fields={fields} error={error} success={success} />
+        </FormWrapper>
+      </div>
+    </CSSTransition>
   );
 };
 

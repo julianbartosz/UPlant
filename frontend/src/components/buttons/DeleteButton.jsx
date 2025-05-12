@@ -1,6 +1,5 @@
-import React from 'react';
 import { TiDelete } from 'react-icons/ti';
-import './styles/btn-styles.css';
+import './styles/generic-btn.css';
 
 function DeleteButton({ onClick }) {
     return (

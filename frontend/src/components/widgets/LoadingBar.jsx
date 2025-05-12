@@ -1,5 +1,9 @@
+/**
+ * @file LoadingBar.jsx
+ * @description A React component that displays a loading bar animation based on the provided duration and loading state.
+ */
 import { useState, useEffect, useRef } from 'react';
-import "./styles/bar.css";
+import "./styles/loading-bar.css";
 
 function LoadingBar({ seconds, isLoading, style }) {
     const [width, setWidth] = useState(0);
@@ -35,15 +39,16 @@ function LoadingBar({ seconds, isLoading, style }) {
         };
     }, [isLoading, seconds]);
 
-    const shouldShowBar = isLoading || (completed && isLoading !== undefined);
+    const shouldShowBar = isLoading;
 
     return (
         shouldShowBar && (
             <div className="l-container" style={style}>
-                <div className="loading-bar-container">
+                <div className="loading-bar-container" style={style}>
                     <div
                         className="loading-bar"
                         style={{
+                            zIndex: 1001,
                             width: `${width}%`,
                             transition: isLoading && !completed ? `width ${seconds}s linear` : 'none'
                         }}

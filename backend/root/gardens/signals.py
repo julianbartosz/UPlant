@@ -3,13 +3,12 @@
 import logging
 from django.db.models.signals import post_save, pre_save, post_delete
 from django.dispatch import receiver
-from django.utils import timezone
 from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Q
 from django.conf import settings
 
-from gardens.models import Garden, GardenLog, PlantHealthStatus
+from gardens.models import Garden, GardenLog
 from services.search_service import reindex_model
 
 logger = logging.getLogger(__name__)
@@ -24,13 +23,16 @@ def garden_saved_handler(sender, instance, created, **kwargs):
         logger.info(f"New garden created: {instance.name or 'Unnamed'} (ID: {instance.id})")
         
         # Initialize welcome notification for new gardens
-        if not kwargs.get('raw', False):  # Skip during fixtures loading
-            try:
-                # Lazy import to avoid circular import
-                from services.notification_service import create_welcome_notification
-                create_welcome_notification(instance)
-            except Exception as e:
-                logger.error(f"Failed to create welcome notification: {e}")
+
+        # + Removing this +
+        
+        # if not kwargs.get('raw', False):  # Skip during fixtures loading
+        #     try:
+        #         # Lazy import to avoid circular import
+        #         from services.notification_service import create_welcome_notification
+        #         create_welcome_notification(instance)
+        #     except Exception as e:
+        #         logger.error(f"Failed to create welcome notification: {e}")
     else:
         # Garden was updated
         logger.debug(f"Garden updated: {instance.name or 'Unnamed'} (ID: {instance.id})")

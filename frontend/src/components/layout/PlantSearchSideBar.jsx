@@ -1,34 +1,87 @@
 /**
  * @file PlantSearchSideBar.jsx
+ * @version 1.0.0
  * @description A React component that provides a sidebar for searching and displaying plants,
  * with support for dashboard and catalog pages. Includes plant search functionality
  * and conditional rendering based on page type.
- * @version 1.0.0
+ * 
+ * @component
+ * @param {Object} props - The component props.
+ * @param {string} props.page - The current page type ('dashboard' or 'catalog').
+ * @param {Function} [props.onShearClick] - Callback function for shear action (required for 'dashboard' page).
+ * @param {Function} [props.onPlantClick] - Callback function for plant selection (required for 'catalog' page).
+ * @returns {JSX.Element} The rendered PlantSearchSideBar component.
+ * 
+ * @details
+ * - The component allows users to search for plants by name and displays the results in a scrollable section.
+ * - The sidebar includes a shear item for the dashboard page and plant items for both dashboard and catalog pages.
+ * - The component handles API requests to fetch plant data and manages loading states.
+ * - It validates the required props based on the current page type and provides error handling for API requests.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PAGES, ICONS, BASE_API } from '../../constants';
 import { IoIosCut } from 'react-icons/io';
+import { DEBUG, MAX_RESPONSE_PLANTS } from '../../constants';
+import { ThreeDots } from 'react-loader-spinner';
 import './styles/plant-search-side-bar.css';
 
-const DEBUG = import.meta.env.VITE_DEBUG === 'true';
-
- /** Ceiling for number of plants in search response */
-const MAX_RESPONSE_SIZE = 30;
+// Term for initalizing plantlist
+// Yields diverse icons
+const QUERY_ON_MOUNT = "q";
 
 /**
- * PlantSearchSideBar component for searching and displaying plant information
- * @param {Object} props - Component props
- * @param {string} props.page - The current page ('dashboard' or 'catalog')
- * @param {Function} [props.onShearClick] - Callback for shear action (required for dashboard)
- * @param {Function} [props.onPlantClick] - Callback for plant selection (required for catalog)
- * @returns {JSX.Element} The rendered sidebar component
- * @throws {Error} If page is invalid or required callbacks are missing
+ * Fetches plants based on the search query
+ * @param {string} query
+ * @returns {Promise<Array>}
  */
+const fetchPlants = async (query) => {
+  if (DEBUG) {
+    console.log('Searching for plants with query:', query);
+  }
+
+  if (!query.trim()) {
+    return [];
+  }
+
+  try {
+    const response = await fetch(
+      `${BASE_API}/plants/search/?q=${query}&limit=${MAX_RESPONSE_PLANTS}`,
+      {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      if (DEBUG) {
+        console.log('Failed to fetch plants: ', response);
+      }
+      alert(`Error: ${response.status} - ${response.statusText}`);
+      return [];
+    }
+
+    const results = await response.json();
+
+    if (DEBUG) {
+      console.log('Response Data:', results);
+    }
+
+    return results.results.filter(
+      (plant) => plant.common_name && plant.id && plant.family
+    );
+  } catch (error) {
+    console.error('Error searching plants:', error);
+    alert('Failed to search plants. Please try again.');
+    return [];
+  }
+};
 
 const PlantSearchSideBar = ({ page, onShearClick = null, onPlantClick = null }) => {
   const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [plantsList, setPlantsList] = useState(null);
 
   // Validate props
@@ -44,58 +97,31 @@ const PlantSearchSideBar = ({ page, onShearClick = null, onPlantClick = null }) 
     throw new Error('onPlantClick function is required for catalog page');
   }
 
+  useEffect(() => {
+    if (DEBUG) {
+      console.log('Component mounted. Fetching initial plants...');
+    }
+
+    // Fetch initial plants on mount
+    const fetchInitialPlants = async () => {
+      // Loading on mount
+      const initialPlants = await fetchPlants(QUERY_ON_MOUNT);
+      setPlantsList(initialPlants);
+      setLoading(false);
+    };
+
+    fetchInitialPlants();
+  }, []);
+
   /**
-   * Handles plant search API call and updates state with results
+   * Handles plant search and updates state with results
    * @async
    */
   const handlePlantSearch = async () => {
-    if (DEBUG) {
-      console.log('Searching for plants with query:', query);
-    }
-
-    if (!query.trim()) {
-      return;
-    }
-
     setLoading(true);
-
-    try {
-      const response = await fetch(
-        `${BASE_API}/plants/search/?q=${query}&limit=${MAX_RESPONSE_SIZE}`,
-        {
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json', 
-          },
-        }
-      );
-
-      if (!response.ok) {
-        if (DEBUG) {
-          console.log('Failed to fetch plants: ', response);
-        }
-        alert(`Error: ${response.status} - ${response.statusText}`);
-        return;
-      }
-
-      const results = await response.json();
-
-      if (DEBUG) {
-        console.log('Response Data:', results);
-      }
-
-      setPlantsList(
-        results.results.filter(
-          (plant) => plant.common_name && plant.id && plant.family
-        )
-      );
-      
-    } catch (error) {
-      console.error('Error searching plants:', error);
-      alert('Failed to search plants. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    const plants = await fetchPlants(query);
+    setPlantsList(plants);
+    setLoading(false);
   };
 
   return (
@@ -109,7 +135,7 @@ const PlantSearchSideBar = ({ page, onShearClick = null, onPlantClick = null }) 
           placeholder="Enter plant name..."
         />
         <button
-          className={loading ? 'loading' : 'search-button'}
+          className={loading ? 'search-loading' : 'search-button'}
           onClick={handlePlantSearch}
           disabled={loading}
         >
@@ -122,14 +148,31 @@ const PlantSearchSideBar = ({ page, onShearClick = null, onPlantClick = null }) 
             <ShearItem onClick={onShearClick} />
           </div>
         )}
-        {Array.isArray(plantsList) && plantsList.length > 0 ? (
-          plantsList.map((plant) => (
-            <div className="item-container" key={plant.id}>
-              <PlantItem plant={plant} onClick={onPlantClick} />
+        {Array.isArray(plantsList) && !loading ? (
+          plantsList.length > 0 ? (
+            plantsList.map((plant) => (
+              <div className="item-container" key={plant.id}>
+                <PlantItem plant={plant} onClick={onPlantClick} />
+              </div>
+            ))
+          ) : (
+            <div style={{ marginTop: '20px', textAlign: 'center', color: 'rgb(177, 174, 174)' }}>
+              🌱 We couldn't find any plants matching your search . Maybe try a different term? 🌿
             </div>
-          ))
+          )
         ) : (
-          null
+          <div style={{ marginTop: '25px', width: '100%', height: 'calc(100% - 88px)',display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <ThreeDots 
+              height="80"
+              width="80"
+              radius="9"
+              color="rgb(177, 174, 174)"
+              ariaLabel="three-dots-loading"
+              wrapperStyle={{}}
+              wrapperClassName=""
+              visible={true}
+            />
+          </div>
         )}
       </div>
     </div>

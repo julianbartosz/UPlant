@@ -1,7 +1,4 @@
-import React from 'react';
-import './styles/btn-styles.css'; 
-import { FaArrowRight } from 'react-icons/fa';
-
+import './styles/generic-btn.css'; 
 
 function CircleButton({className, onClick, text="", Icon}) {
     return (

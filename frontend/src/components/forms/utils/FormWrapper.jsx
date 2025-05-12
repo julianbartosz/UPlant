@@ -1,46 +1,30 @@
 /**
- * FormWrapper Component
- * 
  * @file FormWrapper.jsx
- * @component
- * @param {Object} props
- * @param {React.ReactNode} props.children - The form content (e.g., inputs, labels).
- * @param {Function} props.onCancel - Callback function for the Cancel button.
- * @param {Function} props.onSubmit - Callback function for the Submit button.
- * @param {string} [props.cancelLabel="Cancel"] - Label for the Cancel button.
- * @param {string} [props.submitLabel="Submit"] - Label for the Submit button.
- * @param {boolean} [props.isSubmitting=false] - Whether the form is submitting (affects Submit button).
- * 
- * @returns {JSX.Element} The rendered FormWrapper component.
- * 
- * @example
- * <FormWrapper onCancel={() => console.log('Canceled')} onSubmit={() => console.log('Submitted')}>
- *   <input type="text" />
- * </FormWrapper>
- * 
- * @remarks
- * - Provides a consistent form layout with Cancel and Submit buttons.
- * - Uses styles from `form.css` for layout and button appearance.
+ * @description A reusable form wrapper component with cancel and submit buttons, 
+ *              supporting optional modal overlay and customizable labels.
  */
-
 import { GenericButton } from "../../buttons";
-import "./styles/form.css"
+import "./styles/form.css";
 
 const FormWrapper = ({
   children,
   onCancel,
   onSubmit,
-  cancelLabel = 'Cancel',
+  cancelLabel = "Return",
   submitLabel = 'Submit',
   isSubmitting = false,
+  focus = false,
+  cancelButtonStyle = {},
+  submitButtonStyle = {},
 }) => {
-  return (
-    <div className="form">
+  const content = (
+    <div className="form parchment">
       <div className="form-header">
         <GenericButton
           label={cancelLabel}
           onClick={onCancel}
-          style={{ backgroundColor: 'blue' }}
+          // Soft blue for default
+          style={{ backgroundColor: '#6495ED', ...cancelButtonStyle }}
           className="form-cancel-button"
           disabled={isSubmitting}
         />
@@ -52,10 +36,22 @@ const FormWrapper = ({
           onClick={onSubmit}
           className="form-button"
           disabled={isSubmitting}
-          style={{ backgroundColor: 'rgba(56, 55, 55, 0.8)' }}
+          style={{ backgroundColor: 'rgba(56, 55, 55, 0.8)', ...submitButtonStyle }}
         />
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {focus ? (
+        <div className="form-overlay">
+          {content}
+        </div>
+      ) : (
+        content
+      )}
+    </>
   );
 };
 
