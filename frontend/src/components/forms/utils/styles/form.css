@@ -1,0 +1,157 @@
+/* File: UPlant/frontend/src/components/forms/utils/styles/form.css */
+
+.form {
+  justify-content: center;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(to bottom right, rgba(152, 152, 152, 0.8), rgba(61, 61, 61, 0.8));
+  border-radius: 10px;
+  padding: 30px;
+  outline: 2px solid #000;
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.6);
+}
+
+.wood-form {
+  justify-content: center;
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  background-image: url("/app/wood-texture.jpg");
+  background-size: cover;
+  background-position: center;
+  border-radius: 10px;
+  padding: 40px;
+  outline: 4px solid #000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.parchment {
+  background: linear-gradient(to bottom, rgba(248, 243, 232, 0.9), rgba(233, 221, 199, 0.9));
+  color: #3b2f2f;
+  padding: 2rem;
+  font-family: 'Georgia', serif;
+  border: 1px solid #c5ae84;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.1), 5px 5px 20px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+.form-content {
+  font-family: monospace;
+  width: 100%;
+  margin-top: 40px;
+}
+
+.form-header {
+  margin-bottom: 30px;
+}
+
+.form-footer {
+  margin-top: 10px;
+}
+
+.form-label {
+  margin-bottom: 5px;
+  color: black;
+}
+
+.form-field-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+
+.form-input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  width: 200px;
+  margin-bottom: 14px;
+}
+
+.message-container {
+  min-height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Truncate content exceeding the height */
+  box-sizing: border-box; /* Prevent padding/margins from expanding */
+}
+
+.message-error {
+  color: red;
+  font-size: 14px;
+}
+
+.message-success {
+  color: green;
+  font-size: 14px;
+}
+
+.form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); 
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  z-index: 9999; /* Above other content */
+  height: 100%;
+  width: 100%;
+}
+
+
+/* Form transition styles */
+
+.form-transition-enter {
+  opacity: 0;
+  transform: translateY(-5px);
+  position: relative;
+}
+
+.form-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 400ms ease-out, transform 400ms cubic-bezier(0.19, 1, 0.22, 1);
+  position: relative;
+}
+
+.form-transition-enter-done {
+  opacity: 1;
+  transform: translateY(0);
+  position: relative;
+}
+
+.form-transition-exit {
+  opacity: 1;
+  transform: translateY(0);
+  position: relative;
+}
+
+.form-transition-exit-active {
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: opacity 300ms ease-in-out, transform 300ms ease-out;
+  position: relative;
+}
+
+.form-transition-appear {
+  opacity: 0;
+  transform: translateY(-5px);
+  position: relative;
+}
+
+.form-transition-appear-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 400ms ease-out, transform 400ms cubic-bezier(0.19, 1, 0.22, 1);
+  position: relative;
+}

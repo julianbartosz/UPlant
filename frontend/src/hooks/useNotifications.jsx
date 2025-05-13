@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
-import { UserContext } from '../contexts/UserProvider';
+import { UserContext } from '../context/UserProvider';
 
 const useNotifications = () => {
     
@@ -96,60 +96,60 @@ const useNotifications = () => {
         setNotifications(updatedNotifications);
         callback();
     
-        try {
-            // Create notification
-            const notificationResponse = await fetch('http://localhost:8000/api/notifications/notifications/', {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newNotification),
-            });
-    
-            if (!notificationResponse.ok) {
-                console.error("Add notification failed", notificationResponse);
-                setNotifications(prevNotificationsList); // Rollback
-                return;
-            }
-    
-            const notificationData = await notificationResponse.json();
-            console.log("Notification data:", notificationData);
-    
-            // Process plants one at a time
-            for (const plant of plants) {
-                try {
-                    const plantResponse = await fetch(`http://localhost:8000/api/notifications/notifications/${notificationData.id}/add_plant/`, {
-                        method: 'POST', // Changed to POST as GET with body is non-standard
-                        credentials: 'include',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ plant_id: plant.id }), // Adjust based on API requirements
-                    });
-    
-                    if (!plantResponse.ok) {
-                        console.error("Add plant failed", plantResponse);
-                        continue; // Continue with next plant
-                    }
-    
-                    const plantData = await plantResponse.json();
-                    console.log("Plant association data:", plantData);
-                    gardenNotifications.push(plantData);
-                } catch (error) {
-                    console.error("Error adding plant:", plant.id, error);
-                    // Continue with next plant instead of failing entirely
-                }
-            }
-    
-            console.log("Garden notifications:", gardenNotifications);
-            console.log("Plants:", plants);
-            console.log("Plant IDs:", plants.map(plant => plant.id));
-    
-        } catch (error) {
-            console.error("Error adding notification:", error);
-            setNotifications(prevNotificationsList); // Rollback to previous state
+    try {
+        // Create notification
+        const notificationResponse = await fetch('http://localhost:8000/api/notifications/notifications/', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(newNotification),
+        });
+
+        if (!notificationResponse.ok) {
+            console.error("Add notification failed", notificationResponse);
+            setNotifications(prevNotificationsList); // Rollback
+            return;
         }
+
+        const notificationData = await notificationResponse.json();
+        console.log("Notification data:", notificationData);
+
+        // Process plants one at a time
+        for (const plant of plants) {
+            try {
+                const plantResponse = await fetch(`http://localhost:8000/api/notifications/notifications/${notificationData.id}/add_plant/`, {
+                    method: 'POST', // Changed to POST as GET with body is non-standard
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ plant_id: plant.id }), // Adjust based on API requirements
+                });
+
+                if (!plantResponse.ok) {
+                    console.error("Add plant failed", plantResponse);
+                    continue; // Continue with next plant
+                }
+
+                const plantData = await plantResponse.json();
+                console.log("Plant association data:", plantData);
+                gardenNotifications.push(plantData);
+            } catch (error) {
+                console.error("Error adding plant:", plant.id, error);
+                // Continue with next plant instead of failing entirely
+            }
+        }
+
+        console.log("Garden notifications:", gardenNotifications);
+        console.log("Plants:", plants);
+        console.log("Plant IDs:", plants.map(plant => plant.id));
+
+    } catch (error) {
+        console.error("Error adding notification:", error);
+        setNotifications(prevNotificationsList); // Rollback to previous state
+    }
     };
 
     const mediateDeleteNotification = async (gardenIndex, notificationIndex) => {

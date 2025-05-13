@@ -1,35 +1,43 @@
+/**
+ * @file NotificationSection.jsx
+ * @version 1.0.0
+ * @description This component renders a section for managing notifications, including a form for adding notifications
+ * and a data table for displaying existing notifications.
+ * 
+ * @component
+ * @param {Object} props - The props object.
+ * @param {number} props.selectedGardenIndex
+ * 
+ * @example
+ * <NotificationSection
+ *   selectedGardenIndex={0}
+ * />
+ */
 import { useState } from 'react';
-import NotificationForm from '../forms/NotificationForm';
-import DataTable from '../ui/DataTable';
-import { useGardens } from '../../hooks/useGardens';
+import { NotificationForm } from '../forms';
+import { DataTable } from '../ui';
 import './styles/notification-section.css';
 
-const NotificationSection = ({ contentSize, selectedGardenIndex }) => {
+const NotificationSection = ({ selectedGardenIndex }) => {
     const [toggleForm, setToggleForm] = useState(false);
-    const { gardens } = useGardens();
-    const plantOptions = gardens[selectedGardenIndex]?.cells
-        .flat()
-        .filter(item => item !== null)
-        .reduce((unique, item) => {
-            if (!unique.some(plant => plant.id === item.id)) {
-                unique.push(item);
-            }
-            return unique;
-        }, []);
 
     return (
-        <div className='notification-section-container'>
+        <>
             {toggleForm ? (
-                    <NotificationForm setToggleForm={setToggleForm} plantOptions={plantOptions} onBack={() => setToggleForm(false)} selectedGardenIndex={selectedGardenIndex} />
-                ) : (
-                    <DataTable
+                <div className="centered-content">
+                    <NotificationForm
+                        setToggleForm={setToggleForm}
+                        onBack={() => setToggleForm(false)}
                         selectedGardenIndex={selectedGardenIndex}
-                        onAdd={() => setToggleForm(true)}
-                        setData={() => {}}
-                        fontSize={contentSize / 50}
                     />
-                )}
-        </div>
+                </div>
+            ) : (
+                <DataTable
+                    selectedGardenIndex={selectedGardenIndex}
+                    onAdd={() => setToggleForm(true)}
+                />
+            )}
+        </>
     );
 };
 

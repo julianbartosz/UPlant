@@ -6,7 +6,6 @@ from rest_framework.authentication import SessionAuthentication, TokenAuthentica
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from datetime import timedelta
-from django.db.models import Q
 import logging
 
 from notifications.models import Notification, NotificationInstance, NotificationPlantAssociation
@@ -546,6 +545,22 @@ class NotificationInstanceViewSet(viewsets.ModelViewSet):
         return NotificationInstance.objects.filter(
             notification__garden__user=self.request.user
         )
+    
+    @action(detail=False, methods=['get'])
+    def counts(self, request):
+        """Get counts of pending and overdue notification instances"""
+        queryset = self.get_queryset().filter(status='PENDING')
+        
+        # Count total pending
+        total_pending = queryset.count()
+        
+        # Count overdue
+        overdue = queryset.filter(next_due__lt=timezone.now()).count()
+        
+        return Response({
+            'total_pending': total_pending,
+            'overdue': overdue
+        })
     
     @action(detail=True, methods=['post'])
     def complete(self, request, pk=None):

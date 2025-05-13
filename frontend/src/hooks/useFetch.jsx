@@ -1,84 +1,109 @@
 /**
  * @file useFetch.jsx
- * @description Custom React hook for fetching data from a given URL.
- * @param {string} url
- * @param {Object} [options={}] 
- * @param {string} [options.method='GET'] 
- * @param {Object} [options.headers={}] 
- * @param {Object} [options.body=null]
+ * @description A custom React hook for performing HTTP requests with support for memoized headers and body, 
+ *              
  * 
- * @returns {{ data: any, error: string | null }}
- *
- * @example
- * const { data, error, loading } = useFetch('/api/data');
+ * @param {string} endpoint - The API endpoint to fetch data from.
+ * @param {Object} [options={}] - Configuration options for the fetch request.
+ * @param {string} [options.method='GET'] - HTTP method to use for the request.
+ * @param {Object} [options.headers={}] - Additional headers to include in the request.
+ * @param {Object|string|null} [options.body=null] - Request body to send with the request.
+ * @param {boolean} [options.manual=false] - If true, disables automatic fetching and requires manual invocation of `refetch`.
+ * @param {string} [options.credentials='include'] - Credentials mode for the request (e.g., 'include', 'same-origin').
+ * 
+ * @returns {Object} - An object containing the following properties:
+ *   @property {any} data - The response data from the fetch request.
+ *   @property {string|null} error - The error message, if an error occurred during the fetch.
+ *   @property {boolean} loading - Indicates whether the fetch request is in progress.
+ *   @property {Function} refetch - A function to manually trigger the fetch request.
+ * 
+ * @throws {Error} - Throws an error if the `endpoint` is not provided and `manual` is false.
  */
+import { 
+  useState, 
+  useEffect, 
+  useCallback, 
+  useMemo 
+} from 'react';
+import { BASE_API, DEBUG } from '../constants';
 
-import { useState, useEffect } from "react";
-// import { DummyFetch } from "../debugger";
+const useFetch = (endpoint, options = {}) => {
+  const {
+    method = 'GET',
+    headers = {},
+    body = null,
+    manual = false,
+    credentials = 'include',
+  } = options;
 
-const useGet = (url) => {
+  if (!endpoint && !manual) {
+    throw new Error('Endpoint prop is required');
+  }
 
-    if (!url) {
-        throw new Error("URL is required");
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(!manual);
+
+  // Memoize headers and body to prevent unnecessary re-renders
+  const memoizedHeaders = useMemo(() => headers, [JSON.stringify(headers)]);
+  const memoizedBody = useMemo(() => body, [JSON.stringify(body)]);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    const url = new URL(endpoint, BASE_API);
+
+    if (DEBUG) {
+      console.log(`Request method: ${method}`);
+      console.log(`Request headers:`, memoizedHeaders);
+      console.log(`Request body:`, memoizedBody);
+      console.log(`Request URL: ${url}`);
     }
 
-    // const allowedEndpoints = import.meta.env.VITE_ALLOWED_ENDPOINTS?.split(',') || [];
-    // const isValidEndpoint = allowedEndpoints.some(endpoint => url.startsWith(endpoint));
+    try {
+      const fetchOptions = {
+        method,
+        credentials,
+        headers: {
+          'Authorization': `Token ${localStorage.getItem('token') || ''}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...memoizedHeaders,
+        },
+      };
 
-    // if (!isValidEndpoint) {
-    //     throw new Error("The provided URL is not among the allowed endpoints");
-    // }
+      if (memoizedBody) {
+        fetchOptions.body = typeof memoizedBody === 'string' ? memoizedBody : JSON.stringify(memoizedBody);
+      }
 
-    const [data, setData] = useState(null);
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(true);
-    
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
+      const response = await fetch(url, fetchOptions);
 
-            // if (import.meta.env.VITE_GARDENS_API_URL !== url && import.meta.env.VITE_USE_DUMMY_FETCH === 'true') {
-            //     console.log("Using dummy fetch");
-            //     console.log("Dummy fetch URL:", url);
-            //     const dummyData = await DummyFetch(url);
-            //     console.log("Dummy data:", dummyData);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-            //     setData(dummyData.data);
-            //     setLoading(false);
-            //     return;
-            // }
+      const result = await response.json();
+      setData(result);
+      return result;
+    } catch (err) {
+      if (DEBUG) {
+        console.error('Fetch error:', err);
+      }
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [endpoint, method, memoizedHeaders, memoizedBody, credentials]);
 
-            try {
-                const response = await fetch(url,  {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        // Alternative client-side token storage
-                        // 'Authorization': `Token ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
+  useEffect(() => {
+    if (!manual) {
+      fetchData();
+    }
+  }, [fetchData, manual]);
 
-                    }
-                });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                setData(result);
-                setLoading(false);
-
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-        
-        fetchData();
-    }, []);
-
-    return { data, setData, error, loading };
+  return { data, error, loading, refetch: fetchData };
 };
 
-export default useGet;
+export default useFetch;

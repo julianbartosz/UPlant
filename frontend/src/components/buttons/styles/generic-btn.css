@@ -1,0 +1,173 @@
+  /* File: UPlant/frontend/src/components/buttons/styles/generic-btn.css */
+
+  .grid-add-btn {
+    width: 30px;
+    height: 30px;
+    background-color: green;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+  }
+
+  .grid-add-btn:hover {
+    background-color: darkgreen;
+    transform: scale(1.1);
+  }
+
+  .grid-add-btn:active {
+    transform: scale(0.95);
+  }
+
+  .grid-add-btn:focus {
+    outline: none;
+  }
+
+  .garden-btn {
+    height: 40px;
+    background-color: green;
+    border: 2px solid black;
+    border-radius: 4px !important;
+    cursor: pointer;
+    color: black;
+    font-size: 20px;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+
+  .grid-remove-btn {
+    width: 30px;
+    height: 30px;
+    background-color: red;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+  }
+
+  .grid-remove-btn:hover {
+    background-color: darkred;
+    transform: scale(1.1);
+  }
+
+  .grid-remove-btn:active {
+    transform: scale(0.95);
+  }
+
+  .grid-remove-btn:focus {
+    outline: none;
+  }
+
+  .back-btn {
+    background-color: black;
+  }
+
+  .back-btn:hover {
+    cursor: pointer;
+  }
+
+  .add-garden-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: green;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+    display: flex;
+    align-items: left;
+    margin: auto;
+    outline: 2px solid black;
+  }
+
+  .add-garden-btn:focus {
+    outline: none;
+  }
+
+  .add-garden-btn:hover {
+    background-color: darkgreen;
+    transform: scale(1.1);
+  }
+
+  .add-garden-btn:active {
+    transform: scale(0.95);
+  }
+
+  .delete-garden-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: red;
+    color: white;
+    border: 2px solid black;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+  }
+
+  .delete-garden-btn:hover {
+    background-color: darkred;
+    transform: scale(1.1);
+  }
+
+  .delete-garden-btn:active {
+    transform: scale(0.95);
+  }
+
+  .no-style-btn {
+    margin: 0px !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+  }
+
+  .btn-container button {
+    width: 120px;
+    border-radius: 30px;
+    height: 40px;
+    border-color: black;
+    background-color: black;
+    color: white;
+  }
+
+  .circle-btn {
+    border-radius: 50%;
+    border: 3px solid black;
+  }
+
+  .add-item-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Space between icon and label */
+    width: 100%; /* Full width of table cell */
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #28a745, #218838); /* Green gradient */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.1s ease;
+  }
+
+  .add-item-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #34c759, #2aa844); /* Lighter gradient on hover */
+    transform: translateY(-1px);
+  }
+
+  .add-item-button:focus {
+    outline: 2px solid #1e7e34; /* Darker green outline */
+    outline-offset: 2px;
+  }
+
+  .add-item-button:disabled {
+    background: #6c757d; /* Gray for disabled */
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .add-item-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .add-item-label {
+    font-size: 16px;
+  }

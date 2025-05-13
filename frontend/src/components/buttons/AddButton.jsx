@@ -1,6 +1,5 @@
-import React from 'react';
 import { TiPlus } from 'react-icons/ti';
-import './styles/btn-styles.css';
+import './styles/generic-btn.css';
 
 function AddButton({ onClick, style }) {
     return (

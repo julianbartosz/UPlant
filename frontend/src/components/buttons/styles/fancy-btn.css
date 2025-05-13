@@ -1,0 +1,65 @@
+.edit-button {
+    background-color: #007bff; /* Blue for edit */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px; /* Size for icon */
+  }
+  
+  .edit-button:hover:not(:disabled) {
+    background-color: #0056b3; /* Darker blue on hover */
+  }
+  
+  .edit-button:disabled {
+    background-color: #6c757d; /* Gray for disabled */
+    cursor: not-allowed;
+  }
+  
+  .trash-button {
+    background-color: #dc3545; /* Red for trash */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px; /* Size for icon */
+  }
+  
+  .trash-button:hover:not(:disabled) {
+    background-color: #c82333; /* Darker red on hover */
+  }
+  
+  .trash-button:disabled {
+    background-color: #6c757d; /* Gray for disabled */
+    cursor: not-allowed;
+  }
+  
+  .add-button {
+    background-color: #28a745; /* Green for add */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px; /* Size for icon */
+  }
+  
+  .add-button:hover:not(:disabled) {
+    background-color: #218838; /* Darker green on hover */
+  }
+  
+  .add-button:disabled {
+    background-color: #6c757d; /* Gray for disabled */
+    cursor: not-allowed;
+  }

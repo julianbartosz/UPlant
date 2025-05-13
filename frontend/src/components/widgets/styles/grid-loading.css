@@ -1,0 +1,21 @@
+/* File: UPlant/frontend/src/components/widgets/styles/grid-loading.css */
+
+.gridloading-container {
+    justify-content: center;
+    flex-direction: column;
+    display: flex;
+    align-items: center;
+    background: rgba(71, 42, 13, 0.9);
+    padding: 25px;
+    height: auto;
+    width: auto;
+    border-radius: 10px;
+}
+
+.gridloading-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+}
